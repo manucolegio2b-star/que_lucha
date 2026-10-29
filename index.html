@@ -88,8 +88,12 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
 .consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:#2F5BEA}
 .zoom{position:fixed;inset:0;background:rgba(17,24,39,.86);z-index:50;overflow:auto;padding:16px}
-.zoom .poster{width:900px;max-width:none;margin:40px auto 20px}
+.zoom img{display:block;width:900px;max-width:none;margin:40px auto 20px;border-radius:4px}
 .zoom button{position:fixed;top:12px;right:12px;height:44px;padding:0 16px;border-radius:12px;border:0;background:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.posterimg{display:block;width:100%;aspect-ratio:32/45;border-radius:4px;box-shadow:0 6px 18px rgba(17,24,39,.22);background:#fff}
+.posterimg.wait{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#5B6472;font-size:15px}
+.spin{width:34px;height:34px;border:4px solid #E5E8ED;border-top-color:#2F5BEA;border-radius:50%;animation:g 1s linear infinite}
+@keyframes g{to{transform:rotate(360deg)}}
 .over{position:fixed;inset:0;background:rgba(244,246,248,.96);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center}
 .bar{width:100%;max-width:320px;height:10px;border-radius:5px;background:#E5E8ED;overflow:hidden}
 .bar i{display:block;height:100%;background:#2F5BEA;width:0;transition:width .2s}
@@ -158,7 +162,7 @@ const $$ = (s,r) => Array.from((r||document).querySelectorAll(s));
 function nuevoEstado(){
   return {step:"producto", producto:null, variante:null, anio:C.ANIO_POR_DEFECTO,
     datos:{nombre:"",servicio:"",categoria:"",movil:""}, fotos:[], slots:new Array(13).fill(null),
-    consent:true, enviado:null, errores:{}};
+    consent:true, enviado:null, errores:{}, montaje:null};
 }
 let S = nuevoEstado();
 const prod = () => PRODUCTOS[S.producto];
@@ -208,15 +212,57 @@ const LAYOUTS = {
   5:[[0,0,49.5,49.5],[50.5,0,49.5,49.5],[0,50.5,32.6,49.5],[33.7,50.5,32.6,49.5],[67.4,50.5,32.6,49.5]],
   6:[[0,0,32.6,49.5],[33.7,0,32.6,49.5],[67.4,0,32.6,49.5],[0,50.5,32.6,49.5],[33.7,50.5,32.6,49.5],[67.4,50.5,32.6,49.5]]
 };
-function posterHTML(){
-  const t=tema(), urls=S.fotos.map(f=>f.preview);
-  const L = LAYOUTS[Math.min(6,Math.max(1,urls.length))];
-  let h='<div class="poster" role="img" aria-label="Vista previa de '+esc(prod().nombre)+' del año '+S.anio+'" style="background:'+t.bg+';color:#2b2622">';
-  h+='<div class="pa">';
-  urls.forEach((u,i)=>{ const r=L[i]; if(r) h+='<div class="c" style="left:'+r[0]+'%;top:'+r[1]+'%;width:'+r[2]+'%;height:'+r[3]+'%"><img src="'+u+'" alt=""></div>'; });
-  h+='</div><div class="yr" style="color:'+t.ac+'">'+S.anio+'</div><div class="ms">';
-  for(let m=0;m<12;m++) h+=mesHTML(S.anio,m,{ac:t.ac});
-  return h+'</div></div>';
+// ---- Montaje del póster: se dibuja en un canvas. Lo que se ve en la vista previa es EXACTAMENTE la imagen que se envía ----
+function rectRedondo(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function dibujaCover(g,bmp,x,y,w,h,r){
+  const sw=bmp.width, sh=bmp.height, k=Math.max(w/sw,h/sh), dw=sw*k, dh=sh*k;
+  g.save(); rectRedondo(g,x,y,w,h,r); g.clip(); g.drawImage(bmp,x+(w-dw)/2,y+(h-dh)/2,dw,dh); g.restore();
+}
+function claveMontaje(){ return [prod().id,variante()?variante().id:"",S.anio].concat(S.fotos.map(f=>f.preview)).join("|"); }
+async function componerPoster(){
+  const t=tema(), W=C.MONTAJE_PX||2400, H=Math.round(W*45/32), u=W/100;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const g=cv.getContext("2d");
+  g.fillStyle=t.bg; g.fillRect(0,0,W,H);
+  const FUENTE='system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+  const ax=4*u, ay=4*u, aw=92*u, ah=.38*H, L=LAYOUTS[Math.min(6,Math.max(1,S.fotos.length))];
+  for(let i=0;i<S.fotos.length && i<6;i++){
+    const q=L[i], x=ax+q[0]/100*aw, y=ay+q[1]/100*ah, w=q[2]/100*aw, h=q[3]/100*ah;
+    const bmp=await cargarBitmap(S.fotos[i].blob);
+    dibujaCover(g,bmp,x,y,w,h,.8*u);
+    if(bmp.close) bmp.close();
+  }
+  g.textBaseline="alphabetic"; g.textAlign="left";
+  g.fillStyle=t.ac; g.font="800 "+(8*u)+"px "+FUENTE;
+  g.fillText(String(S.anio),4*u,ay+ah+2.5*u+7*u);
+  const colw=(92-3*2.5)/4*u, gap=2.5*u, top=ay+ah+12*u, fila=2.86*u, bloque=3.5*u+6*fila, disp=H-3.5*u-top, paso=(disp-bloque)/2;
+  for(let m=0;m<12;m++){
+    const x0=4*u+(m%4)*(colw+gap), y0=top+Math.floor(m/4)*paso;
+    g.fillStyle=t.ac; g.font="700 "+(2.6*u)+"px "+FUENTE; g.textAlign="left";
+    g.fillText(MESES[m].toUpperCase(),x0,y0+2.6*u);
+    const off=(new Date(S.anio,m,1).getDay()+6)%7, dias=new Date(S.anio,m+1,0).getDate(), dw=colw/7;
+    g.font="400 "+(2.2*u)+"px "+FUENTE; g.textAlign="center";
+    for(let d=1; d<=dias; d++){
+      const pos=off+d-1;
+      g.fillStyle=(pos%7===6)?"#B23A2E":"#2b2622";
+      g.fillText(String(d), x0+(pos%7)*dw+dw/2, y0+3.5*u+(Math.floor(pos/7)+1)*fila-.7*u);
+    }
+  }
+  const blob=await aBlob(cv,.9); cv.width=cv.height=1;
+  if(!blob) throw new Error("No se pudo crear el montaje");
+  return blob;
+}
+let montajeEnCurso=null;
+function prepararMontaje(){
+  const key=claveMontaje();
+  if(S.montaje && S.montaje.key===key) return Promise.resolve();
+  if(montajeEnCurso && montajeEnCurso.key===key) return montajeEnCurso.p;
+  if(S.montaje && S.montaje.url) URL.revokeObjectURL(S.montaje.url);
+  S.montaje=null;
+  const p=componerPoster().then(blob=>{ if(claveMontaje()===key) S.montaje={key,blob,url:URL.createObjectURL(blob),mb:(blob.size/1048576).toFixed(1).replace(".",",")+" MB"}; })
+    .catch(e=>{ console.error(e); if(claveMontaje()===key) S.montaje={key,fallo:true}; })
+    .then(()=>{ montajeEnCurso=null; });
+  montajeEnCurso={key,p}; return p;
 }
 function hojaHTML(idx){ // idx 0 = portada, 1..12 = meses
   const t=tema(), f=S.slots[idx];
@@ -322,7 +368,10 @@ function vPrevia(){
     h+='<div class="hscroll">'; for(let i=0;i<13;i++) h+=hojaHTML(i); h+='</div>';
     h+='<div class="thumbs">'+S.slots.map((f,i)=>'<div><img src="'+f.preview+'" alt="">'+(i===0?"Port.":MES3[i-1])+'</div>').join("")+'</div>';
   } else {
-    h+='<div id="posterWrap" style="cursor:zoom-in">'+posterHTML()+'</div><p class="small center">Toca el póster para verlo más grande.</p>';
+    const m=S.montaje;
+    if(m && m.url) h+='<img id="posterImg" class="posterimg" src="'+m.url+'" alt="Vista previa de tu calendario" style="cursor:zoom-in"><p class="small center">Toca el póster para verlo más grande.</p>';
+    else if(m && m.fallo) h+='<div class="bad">No se ha podido dibujar la vista previa, pero puedes enviar tus fotos y lo prepararemos nosotros.</div>';
+    else h+='<div class="posterimg wait"><div class="spin"></div><div>Preparando tu calendario…</div></div>';
   }
   const v=variante(), mod = v? v.nombre : "";
   const filas = es12()
@@ -330,14 +379,14 @@ function vPrevia(){
     : [["Producto",p.nombre],v?["Diseño",mod]:null,["Año",String(S.anio)],["Fotos",String(n)],["Papel","Cartulina 300 g · 32 × 45 cm"],["Precio",p.precio]].filter(Boolean);
   h+='<div class="sum">'+filas.map(f=>'<div><span>'+f[0]+'</span><span>'+esc(f[1])+'</span></div>').join("")+'</div>';
   h+='<div style="margin-top:auto;display:flex;flex-direction:column;gap:12px"><label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>Acepto el uso de mis fotos para hacer el calendario y que se borren al terminar el pedido.</span></label>'+
-     '<button type="button" class="btn" style="margin-top:0" id="enviar" '+(S.consent?"":"disabled")+'>Confirmar y enviar '+n+' foto'+(n===1?"":"s")+'</button></div>';
+     '<button type="button" class="btn" style="margin-top:0" id="enviar" '+((S.consent&&(es12()||S.montaje))?"":"disabled")+'>Confirmar y enviar '+n+' foto'+(n===1?"":"s")+'</button></div>';
   return h;
 }
 function vGracias(){
   const e=S.enviado;
   let h='<div class="top"><div class="brand"><div class="logo">'+I.logo+'</div><div>'+esc(C.NEGOCIO)+'</div></div></div>';
   h+='<div class="center"><div class="ok">'+I.bigcheck+'</div><h1>¡Gracias, '+esc(e.nombre)+'!</h1>'+
-     '<p class="sub" style="margin-top:8px">Hemos recibido tus '+e.items.length+' foto'+(e.items.length===1?"":"s")+' y el diseño que has confirmado. Lo revisaremos antes de imprimir.</p>'+
+     '<p class="sub" style="margin-top:8px">Hemos recibido tus '+e.nFotos+' foto'+(e.nFotos===1?"":"s")+' y el diseño que has confirmado. Lo revisaremos antes de imprimir.</p>'+
      '<p style="margin:14px 0 0;font-size:14px;color:#5B6472">Tu código de pedido</p><div style="font-size:30px;font-weight:800;letter-spacing:4px;color:#2F5BEA">'+esc(e.codigo)+'</div></div>';
   h+='<div class="files">'+e.items.map(it=>'<div class="file"><img src="'+it.preview+'" alt=""><div class="n">'+esc(it.etq)+'<small>'+esc(it.nombre)+' · '+it.mb+'</small></div><div class="e">'+I.check+'Enviada</div></div>').join("")+'</div>';
   h+='<div style="margin-top:auto;display:flex;flex-direction:column;gap:10px"><button type="button" class="btn2" id="otro">Hacer otro pedido</button><p class="small center">Tus fotos se borrarán cuando tengas tu pedido.</p></div>';
@@ -409,7 +458,7 @@ async function procesar(file){
   if(!blob||!pb) throw new Error("No se pudo procesar la foto");
   return {nombre:file.name||"foto.jpg", blob, preview:URL.createObjectURL(pb), mb:(blob.size/1048576).toFixed(1).replace(".",",")+" MB"};
 }
-function liberar(){ S.fotos.forEach(f=>URL.revokeObjectURL(f.preview)); S.slots.forEach(f=>f&&URL.revokeObjectURL(f.preview)); if(S.enviado) S.enviado.items.forEach(i=>URL.revokeObjectURL(i.preview)); }
+function liberar(){ S.fotos.forEach(f=>URL.revokeObjectURL(f.preview)); S.slots.forEach(f=>f&&URL.revokeObjectURL(f.preview)); if(S.montaje&&S.montaje.url) URL.revokeObjectURL(S.montaje.url); if(S.enviado){ S.enviado.items.forEach(i=>URL.revokeObjectURL(i.preview)); } }
 
 async function aniadir(files, slotInicial){
   files = Array.from(files).filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name));
@@ -462,8 +511,11 @@ async function http(url,opts){
 }
 let envio=null;
 function bindPrevia(){
-  const pw=$("#posterWrap"); if(pw) pw.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML=posterHTML()+'<button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
-  const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!c.checked; });
+  const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+S.montaje.url+'" alt=""><button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
+  const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!(c.checked&&(es12()||S.montaje)); });
+  if(!es12() && !(S.montaje && S.montaje.key===claveMontaje())){
+    prepararMontaje().then(()=>{ if(S.step==="previa") render(); });
+  }
   $("#enviar").addEventListener("click",enviar);
 }
 function listaEnvio(){
@@ -480,8 +532,17 @@ async function enviar(){
   const pintar=(msg,pct,err)=>{ ov.innerHTML='<div style="font-size:18px;font-weight:700">'+esc(msg)+'</div>'+(err?'':'<div class="bar"><i style="width:'+pct+'%"></i></div><div class="small">No cierres esta pantalla.</div>');
     if(err){ ov.insertAdjacentHTML("beforeend",'<div class="bad">'+esc(err)+'</div><button class="btn" style="max-width:340px;margin:0" id="reint">Reintentar</button><button class="btn2" style="max-width:340px" id="cancel">Volver</button>'); $("#reint").onclick=()=>{ov.remove();enviar();}; $("#cancel").onclick=()=>ov.remove(); } };
   try{
+    const montaje = (!es12() && S.montaje && S.montaje.blob) ? S.montaje : null;
+    const pasos=total+(montaje?1:0);
     pintar("Enviando tus fotos… 0 de "+total,0);
-    const rutas=[]; let n=0;
+    const rutas=[]; let n=0, rutaMontaje=null;
+    if(montaje){
+      rutaMontaje=envio.id+"/montaje.jpg";
+      if(!envio.subidas[rutaMontaje]){
+        await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+rutaMontaje,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:montaje.blob});
+        envio.subidas[rutaMontaje]=true;
+      }
+    }
     // Las fotos repetidas (mismo blob) se suben una vez por hueco igualmente: cada hueco = un archivo
     for(const it of lista){
       const ruta=envio.id+"/"+it.clave+".jpg"; rutas.push(ruta);
@@ -489,13 +550,13 @@ async function enviar(){
         await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+ruta,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:it.f.blob});
         envio.subidas[ruta]=true;
       }
-      n++; pintar("Enviando tus fotos… "+n+" de "+total, Math.round(n/total*95));
+      n++; pintar("Enviando tus fotos… "+n+" de "+total, Math.round((n+(montaje?1:0))/pasos*95));
     }
     pintar("Guardando tu pedido…",98);
     const v=variante();
     const fila={id:envio.id,producto:S.producto,modelo:v?v.id:null,anio:S.anio,
       datos:{nombre:S.datos.nombre,servicio:S.datos.servicio,categoria:S.datos.categoria,movil:S.datos.movil,codigo:envio.codigo,n_fotos:total,
-             etiquetas:lista.map(i=>i.etq)},
+             etiquetas:lista.map(i=>i.etq), montaje:rutaMontaje},
       fotos:rutas};
     if(!envio.guardado){
       await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)});
@@ -503,10 +564,11 @@ async function enviar(){
     }
     // éxito
     const items=lista.map(it=>({etq:it.etq,nombre:it.f.nombre,mb:it.f.mb,preview:it.f.preview}));
-    S.enviado={nombre:S.datos.nombre,codigo:envio.codigo,items};
+    if(montaje) items.unshift({etq:"Tu calendario (montaje)",nombre:"montaje.jpg",mb:montaje.mb,preview:montaje.url});
+    S.enviado={nombre:S.datos.nombre,codigo:envio.codigo,items,nFotos:total};
     envio=null; ov.remove();
     // los blobs ya no hacen falta
-    S.fotos=[]; S.slots=new Array(13).fill(null);
+    S.fotos=[]; S.slots=new Array(13).fill(null); S.montaje=null;
     S.step="gracias"; history.pushState({step:"gracias"},""); render(); window.scrollTo(0,0);
   }catch(err){
     console.error(err);
