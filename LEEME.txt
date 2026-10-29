@@ -1,0 +1,9 @@
+WEB DEL CLIENTE - ETAPA 1
+Archivos: index.html (la web) y config.js (URL y clave de Supabase, nombre del negocio).
+Para cambiar el nombre del negocio edita NEGOCIO en config.js.
+
+PUBLICAR GRATIS EN CLOUDFLARE PAGES
+1. Crea cuenta en dash.cloudflare.com > Workers & Pages > Create > Pages > Upload assets.
+2. Pon un nombre al proyecto y sube esta carpeta (index.html y config.js).
+3. Te da una dirección tipo nombre.pages.dev. Esa es la web para tus clientes.
+Para actualizar: vuelve a subir los archivos (New deployment).
