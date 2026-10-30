@@ -208,7 +208,7 @@ function mesHTML(anio, m, opts){
 const ZONA_BASE = C.ZONA_FOTOS || {w:29.44, h:17.1};   // cm (se usa en los diseños que aún no tienen plantilla real)
 // Diseños con plantilla real. zona = rectángulo de fotos en cm sobre la hoja de 32 x 45. anios = años para los que hay plantilla.
 const DISENOS = {
-  nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.527,y:5.131,w:18.959,h:14.325}}
+  nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}}
 };
 function disenoAct(){ const v=variante(); return (prod() && v && DISENOS[v.id] && DISENOS[v.id].producto===prod().id) ? DISENOS[v.id] : null; }
 function Z(){ const d=disenoAct(); return d? d.zona : ZONA_BASE; }
