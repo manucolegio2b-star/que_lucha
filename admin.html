@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Panel de pedidos</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F4F6F8;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer}
+.bar{background:#fff;border-bottom:1px solid #E5E8ED}
+.bar>div{max-width:1216px;margin:0 auto;padding:12px 32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:10px;background:#2F5BEA;display:flex;align-items:center;justify-content:center}
+.brand b{display:block;font-size:15px;font-weight:600}.brand span{font-size:13px;color:#5B6472}
+nav{display:flex;gap:6px}
+nav a,nav button{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:600;color:#374151;background:transparent;border:0}
+nav a.on{background:#E3EAFD;color:#1E3FA8}
+main{max-width:1216px;margin:0 auto;padding:28px 32px 40px;display:flex;flex-direction:column;gap:20px}
+h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
+h2{margin:0 0 10px;font-size:16px}
+.sub{margin:0;font-size:15px;color:#5B6472}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.cnt{display:flex;flex-wrap:wrap;gap:10px}
+.cnt div{border-radius:12px;padding:8px 14px;font-size:14px}.cnt strong{font-size:18px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{height:40px;padding:0 16px;border-radius:10px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151}
+.seg button[aria-pressed=true]{background:#2F5BEA;border-color:#2F5BEA;color:#fff}
+.filters{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+.tbl{background:#fff;border:1px solid #E5E8ED;border-radius:14px;overflow:hidden}
+.tr{display:grid;grid-template-columns:70px 1.3fr 1.6fr 60px 100px 110px 170px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #EEF0F3;font-size:14px}
+.tr:last-child{border:0}
+.th{background:#F9FAFB;font-size:12px;font-weight:700;color:#5B6472;text-transform:uppercase;letter-spacing:.3px}
+a.tr:hover{background:#F4F7FF}
+.sm{font-size:12.5px;color:#5B6472}
+.pill{display:inline-block;border-radius:8px;padding:4px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.empty{padding:36px;text-align:center;color:#5B6472}
+.card{background:#fff;border:1px solid #E5E8ED;border-radius:14px;padding:18px 20px}
+.cols{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start}
+.col{display:flex;flex-direction:column;gap:20px}
+.kv{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #F0F2F5;font-size:14px}.kv:last-child{border:0}
+.kv span:first-child{color:#5B6472}.kv span:last-child{font-weight:600;text-align:right}
+.ph{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid #F0F2F5}.ph:last-child{border:0}
+.ph img{width:76px;height:76px;object-fit:cover;border-radius:10px;background:#E5E8ED;flex:none;cursor:zoom-in}
+.ph .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:600}
+.ph .t small{font-weight:400;color:#5B6472}
+.b{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151}
+.b.ok[aria-pressed=true]{background:#DDF3E6;border-color:#2E9E5B;color:#14532D}
+.b.no[aria-pressed=true]{background:#FDE7E4;border-color:#D4574A;color:#8A2A20}
+.b.pri{background:#2F5BEA;border-color:#2F5BEA;color:#fff;width:100%;height:48px;font-size:15px}
+.b.pri[disabled]{background:#B8C0CC;border-color:#B8C0CC;cursor:not-allowed}
+.b.full{width:100%}
+.steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;align-items:center;gap:10px;font-size:14px}
+.steps .m{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#E5E8ED;color:#5B6472}
+.steps .done .m{background:#2E9E5B;color:#fff}.steps .cur .m{background:#2F5BEA;color:#fff}.steps .cur{font-weight:700}
+.back{display:inline-flex;align-items:center;gap:6px;color:#2F5BEA;font-weight:600;font-size:14px;height:36px}
+label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
+input,select{height:42px;border:1.5px solid #B8C0CC;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit;background:#fff;width:100%}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
+.login{max-width:380px;margin:12vh auto;padding:28px;display:flex;flex-direction:column;gap:14px}
+.err{color:#B42318;font-size:14px}
+.big{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 6px 18px rgba(17,24,39,.22);background:#fff}
+.q{display:grid;grid-template-columns:1fr 70px 100px;gap:8px;font-size:14px;padding:6px 0;border-bottom:1px solid #F0F2F5}
+.warn{display:flex;gap:10px;background:#FFF1CC;color:#7A4B00;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+.zoom{position:fixed;inset:0;background:rgba(17,24,39,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.zoom img{max-width:100%;max-height:100%;border-radius:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:70}
+@media(max-width:900px){.cols,.big{grid-template-columns:1fr}.tr{grid-template-columns:60px 1fr 1fr 90px;}.tr>:nth-child(4),.tr>:nth-child(5){display:none}main,.bar>div{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+const C=window.CONFIG, BASE=C.SUPABASE_URL, KEY=C.SUPABASE_KEY;
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PRODUCTOS={quelucha:{n:1,nombre:"Calendario Que Lucha!",corto:"Que Lucha!",precio:"1 €",tam:"Cartulina 300 g · 32 × 45 cm"},
+  premium:{n:2,nombre:"Calendario Póster Premium",corto:"Póster Premium",precio:"3 €",tam:"Cartulina 300 g · 32 × 45 cm"},
+  "12hojas":{n:3,nombre:"Calendario de 12 hojas",corto:"12 hojas",precio:"12,50 €",tam:"Cartulina 300 g · 32 × 45 cm · 7 hojas a dos caras"}};
+const MODELOS={raton:"Ratón",nido:"Nido",conejo:"Conejo",modelo1:"Modelo 1",modelo2:"Modelo 2"};
+const SIT={rev:["Por revisar fotos","#FFF1CC","#7A4B00"],listo:["Listo para imprimir","#E3EAFD","#1E3FA8"],imp:["Impreso","#DDF1F3","#0F5A66"],ent:["Entregado","#DDF3E6","#14532D"]};
+const ORDEN=["rev","listo","imp","ent"];
+const SIGUIENTE={rev:"Marcar fotos como revisadas",listo:"Marcar como impreso",imp:"Marcar como entregado"};
+// Plantillas a resolución de impresión (200 ppp) para el archivo final
+const PLANTILLAS={nido:{base:"disenos/nido/base_full.jpg",marco:"disenos/nido/marco_full.png"}};
+const I={logo:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/></svg>',
+ back:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+ print:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg>'};
+
+// ---------- Sesión ----------
+let ses=null; try{ ses=JSON.parse(localStorage.getItem("ql_ses")||"null"); }catch(e){}
+function guardar(j){ ses={access:j.access_token,refresh:j.refresh_token,exp:Date.now()+Math.max(60,(j.expires_in||3600)-60)*1000}; try{localStorage.setItem("ql_ses",JSON.stringify(ses));}catch(e){} }
+function salir(){ ses=null; try{localStorage.removeItem("ql_ses");}catch(e){} pedidos=[]; pintar(); }
+async function tokenReq(tipo,body){
+  const r=await fetch(BASE+"/auth/v1/token?grant_type="+tipo,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error_description||j.msg||"No se pudo entrar"); return j;
+}
+async function refrescar(){ if(!ses) throw new Error("Sin sesión"); try{ guardar(await tokenReq("refresh_token",{refresh_token:ses.refresh})); }catch(e){ salir(); throw new Error("La sesión ha caducado. Vuelve a entrar."); } }
+async function api(path,opts,reintento){
+  opts=opts||{}; if(!ses) throw new Error("Sin sesión");
+  if(Date.now()>ses.exp) await refrescar();
+  const h=Object.assign({apikey:KEY,Authorization:"Bearer "+ses.access},opts.headers||{});
+  const r=await fetch(BASE+path,Object.assign({},opts,{headers:h}));
+  if(r.status===401 && reintento!==false){ await refrescar(); return api(path,opts,false); }
+  if(!r.ok){ let t=""; try{t=await r.text();}catch(e){} throw new Error("Error "+r.status+": "+t.slice(0,160)); }
+  return r;
+}
+
+// ---------- Datos ----------
+let pedidos=[], cargando=false, errorCarga="";
+async function cargar(){
+  cargando=true; errorCarga=""; pintar();
+  try{ const r=await api("/rest/v1/pedidos?select=*&order=creado.desc&limit=2000"); pedidos=await r.json(); }
+  catch(e){ errorCarga=e.message; }
+  cargando=false; pintar();
+}
+async function guardarCambios(p,cambios){
+  Object.assign(p,cambios);
+  try{ await api("/rest/v1/pedidos?id=eq."+p.id,{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(cambios)}); }
+  catch(e){ aviso("No se pudo guardar: "+e.message); await cargar(); }
+  pintar();
+}
+function aviso(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),4500); }
+const fecha=s=>new Date(s).toLocaleDateString("es-ES");
+const detalle=p=>(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+" · "+p.anio;
+const pill=(bg,fg,t)=>'<span class="pill" style="background:'+bg+';color:'+fg+'">'+t+'</span>';
+const pPago=p=>p.pagado?pill("#DDF3E6","#14532D","Pagado"):pill("#FFF1CC","#7A4B00","Sin pagar");
+const pSit=p=>{ const s=SIT[p.situacion]||SIT.rev; return pill(s[1],s[2],s[0]); };
+const nFotos=p=>(p.datos&&p.datos.n_fotos)||(p.fotos||[]).length;
+function fila(p){
+  const d=p.datos||{};
+  return '<a class="tr" href="#/pedido/'+p.numero+'"><span style="font-weight:700">'+p.numero+'</span>'+
+   '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div></span>'+
+   '<span><div style="font-weight:600">'+(PRODUCTOS[p.producto]?PRODUCTOS[p.producto].n+" · "+PRODUCTOS[p.producto].corto:esc(p.producto))+'</div><div class="sm">'+esc(detalle(p))+'</div></span>'+
+   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+'</span></a>';
+}
+const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendario</span><span>Fotos</span><span>Fecha</span><span>Pago</span><span>Situación</span></div>';
+
+// ---------- Estructura ----------
+function barra(ruta){
+  return '<div class="bar"><div><div class="brand"><div class="logo">'+I.logo+'</div><div><b>'+esc(C.NEGOCIO)+'</b><span>Panel de pedidos</span></div></div>'+
+   '<nav><a href="#/" class="'+(ruta!=="buscar"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><button id="salir" type="button">Salir</button></nav></div></div>';
+}
+const root=$("#root");
+let vistaGrupo="pend", filtroProd="";
+const F={nombre:"",tel:"",serv:"",prof:"",cat:"",pago:"",st:"",desde:"",hasta:""};
+
+function ruta(){ const h=location.hash.replace(/^#\/?/,""); const p=h.split("/"); return {r:p[0]||"",id:p[1]}; }
+function pintar(){
+  if(!ses){ return pintarLogin(); }
+  const R=ruta();
+  if(R.r==="pedido") return pintarFicha(+R.id);
+  if(R.r==="imprimir") return pintarImprimir(+R.id);
+  if(R.r==="buscar") return pintarBuscar();
+  return pintarLista();
+}
+function estado(){ return cargando?'<div class="empty">Cargando pedidos…</div>':(errorCarga?'<div class="empty" style="color:#B42318">'+esc(errorCarga)+'<br><br><button class="b" id="reint">Reintentar</button></div>':""); }
+function enlazarComun(){ const s=$("#salir"); if(s) s.onclick=salir; const r=$("#reint"); if(r) r.onclick=cargar; }
+
+function pintarLogin(){
+  root.innerHTML='<div class="card login"><div class="brand"><div class="logo">'+I.logo+'</div><div><b>'+esc(C.NEGOCIO)+'</b><span>Panel de pedidos</span></div></div>'+
+   '<div><label for="em">Correo</label><input id="em" type="email" autocomplete="username"></div><div><label for="pw">Contraseña</label><input id="pw" type="password" autocomplete="current-password"></div>'+
+   '<div class="err" id="le"></div><button class="b pri" id="ent" type="button">Entrar</button></div>';
+  const go=async()=>{ $("#le").textContent=""; try{ guardar(await tokenReq("password",{email:$("#em").value.trim(),password:$("#pw").value})); await cargar(); }catch(e){ $("#le").textContent=e.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":e.message; } };
+  $("#ent").onclick=go; $("#pw").onkeydown=e=>{ if(e.key==="Enter") go(); };
+}
+
+function pintarLista(){
+  const rev=pedidos.filter(p=>p.situacion==="rev").length, listo=pedidos.filter(p=>p.situacion==="listo").length, imp=pedidos.filter(p=>p.situacion==="imp").length, sin=pedidos.filter(p=>!p.pagado).length;
+  const pend=pedidos.filter(p=>p.situacion!=="ent"), hechos=pedidos.filter(p=>p.situacion==="ent");
+  let lista=(vistaGrupo==="pend"?pend:hechos).filter(p=>!filtroProd||p.producto===filtroProd);
+  const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]];
+  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha.</p></div>'+
+   '<div class="cnt"><div style="background:#FFF1CC;color:#7A4B00"><strong>'+rev+'</strong> por revisar</div><div style="background:#E3EAFD;color:#1E3FA8"><strong>'+listo+'</strong> por imprimir</div><div style="background:#DDF1F3;color:#0F5A66"><strong>'+imp+'</strong> por entregar</div><div style="background:#FDE7E4;color:#8A2A20"><strong>'+sin+'</strong> sin pagar</div></div></div>'+
+   '<div class="filters"><div class="seg"><button data-g="pend" aria-pressed="'+(vistaGrupo==="pend")+'">Pendientes ('+pend.length+')</button><button data-g="hechos" aria-pressed="'+(vistaGrupo==="hechos")+'">Hechos ('+hechos.length+')</button></div>'+
+   '<div class="seg">'+chips.map(c=>'<button data-c="'+c[0]+'" aria-pressed="'+(filtroProd===c[0])+'">'+c[1]+'</button>').join("")+'<button id="act" style="margin-left:8px">Actualizar</button></div></div>'+
+   '<div class="tbl">'+cab+estado()+(!cargando&&!errorCarga?(lista.length?lista.map(fila).join(""):'<div class="empty">No hay pedidos en este grupo con ese filtro.</div>'):"")+'</div></main>';
+  enlazarComun();
+  root.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ vistaGrupo=b.dataset.g; pintarLista(); });
+  root.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ filtroProd=b.dataset.c; pintarLista(); });
+  $("#act").onclick=cargar;
+}
+
+function pintarBuscar(){
+  const sel=(id,arr,v)=>'<select id="'+id+'"><option value="">Todos</option>'+arr.map(o=>'<option value="'+o[0]+'"'+(String(v)===String(o[0])?" selected":"")+'>'+o[1]+'</option>').join("")+'</select>';
+  const serv=["Planta 1","Planta 2","Planta 3","Urgencias","Quirófano","UCI","Otro servicio"].map(x=>[x,x]);
+  const prof=["TCAE","Celador/a","Enfermero/a","Médico/a","Administrativo/a","Otra"].map(x=>[x,x]);
+  root.innerHTML=barra("buscar")+'<main><div><h1>Buscar pedidos</h1><p class="sub">Combina los filtros que quieras. La lista se actualiza al escribir.</p></div>'+
+   '<section class="card"><div class="fg" style="flex:none">'+
+   '<div><label for="f-nombre">Nombre</label><input id="f-nombre" type="text" value="'+esc(F.nombre)+'"></div>'+
+   '<div><label for="f-tel">Móvil</label><input id="f-tel" type="text" value="'+esc(F.tel)+'"></div>'+
+   '<div><label for="f-serv">Servicio</label>'+sel("f-serv",serv,F.serv)+'</div>'+
+   '<div><label for="f-prof">Categoría profesional</label>'+sel("f-prof",prof,F.prof)+'</div>'+
+   '<div><label for="f-cat">Calendario</label>'+sel("f-cat",[["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]],F.cat)+'</div>'+
+   '<div><label for="f-pago">Pago</label>'+sel("f-pago",[["si","Pagado"],["no","Sin pagar"]],F.pago)+'</div>'+
+   '<div><label for="f-st">Situación</label>'+sel("f-st",ORDEN.map(k=>[k,SIT[k][0]]),F.st)+'</div>'+
+   '<div><label for="f-desde">Pedido desde</label><input id="f-desde" type="date" value="'+F.desde+'"></div>'+
+   '<div><label for="f-hasta">Pedido hasta</label><input id="f-hasta" type="date" value="'+F.hasta+'"></div></div>'+
+   '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px"><div id="cuenta"></div><button class="b" id="limpiar">Limpiar filtros</button></div></section>'+
+   '<div class="tbl" id="res"></div></main>';
+  enlazarComun();
+  const aplicar=()=>{
+    const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+    const tel=F.tel.replace(/\D/g,"");
+    const l=pedidos.filter(p=>{ const d=p.datos||{}; const dia=p.creado.slice(0,10);
+      return (!F.nombre||norm(d.nombre).includes(norm(F.nombre)))&&(!tel||String(d.movil||"").replace(/\D/g,"").includes(tel))&&(!F.serv||d.servicio===F.serv)&&(!F.prof||d.categoria===F.prof)&&
+        (!F.cat||p.producto===F.cat)&&(!F.pago||(F.pago==="si")===!!p.pagado)&&(!F.st||p.situacion===F.st)&&(!F.desde||dia>=F.desde)&&(!F.hasta||dia<=F.hasta); });
+    $("#cuenta").innerHTML='<strong style="font-size:18px">'+l.length+'</strong> pedido'+(l.length===1?"":"s");
+    $("#res").innerHTML=cab+estado()+(!cargando&&!errorCarga?(l.length?l.map(fila).join(""):'<div class="empty">Ningún pedido coincide con estos filtros.</div>'):"");
+    enlazarComun();
+  };
+  [["nombre","f-nombre"],["tel","f-tel"],["serv","f-serv"],["prof","f-prof"],["cat","f-cat"],["pago","f-pago"],["st","f-st"],["desde","f-desde"],["hasta","f-hasta"]].forEach(a=>{
+    const el=$("#"+a[1]); el.addEventListener("input",()=>{ F[a[0]]=el.value; aplicar(); }); el.addEventListener("change",()=>{ F[a[0]]=el.value; aplicar(); }); });
+  $("#limpiar").onclick=()=>{ Object.keys(F).forEach(k=>F[k]=""); pintarBuscar(); };
+  aplicar();
+}
+
+// ---------- Fotos firmadas ----------
+const cacheUrl={};
+async function urlsFirmadas(paths){
+  const faltan=paths.filter(p=>!cacheUrl[p]||cacheUrl[p].exp<Date.now());
+  if(faltan.length){
+    const r=await api("/storage/v1/object/sign/"+C.BUCKET,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:3600,paths:faltan})});
+    (await r.json()).forEach(x=>{ if(x.signedURL) cacheUrl[x.path]={url:BASE+"/storage/v1"+x.signedURL,exp:Date.now()+3300*1000}; });
+  }
+  return paths.map(p=>cacheUrl[p]?cacheUrl[p].url:"");
+}
+const archivo=ruta=>ruta.split("/").pop();
+const pppDe=(p,ar)=>{ const d=p.datos&&p.datos.disposicion; if(!d) return null; const f=d.fotos.find(x=>x.archivo===ar); return f?f.ppp:null; };
+
+// ---------- Ficha ----------
+function pintarFicha(num){
+  const p=pedidos.find(x=>x.numero===num);
+  if(!p){ root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+(estado()||'<div class="empty">No se encuentra el pedido '+num+'.</div>')+'</main>'; enlazarComun(); return; }
+  const d=p.datos||{}, pr=PRODUCTOS[p.producto]||{}, ok=p.fotos_ok||{};
+  const idx=ORDEN.indexOf(p.situacion);
+  const etq=(d.etiquetas||[]);
+  const fotosHTML=(p.fotos||[]).map((f,i)=>{ const a=archivo(f), ppp=pppDe(p,a);
+    return '<div class="ph"><img data-ruta="'+esc(f)+'" alt="Foto '+(i+1)+'"><div class="t"><span>'+esc(etq[i]||("Foto "+(i+1)))+'</span><small>'+(ppp?ppp+" ppp al imprimir"+(ppp<150?" · baja resolución":""):a)+'</small><a class="sm" data-abrir="'+esc(f)+'" href="#" style="color:#2F5BEA">Abrir original</a></div>'+
+     '<div style="display:flex;gap:6px"><button class="b ok" data-ap="'+esc(a)+'" aria-pressed="'+(ok[a]==="ok")+'">Aprobar</button><button class="b no" data-re="'+esc(a)+'" aria-pressed="'+(ok[a]==="no")+'">Rechazar</button></div></div>'; }).join("");
+  const dis=p.producto!=="12hojas"&&d.disposicion, plantilla=dis&&PLANTILLAS[d.disposicion.diseno];
+  root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+
+   '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h1>Pedido '+p.numero+' · '+esc(d.nombre)+'</h1>'+pPago(p)+pSit(p)+'<span class="sm">Código del cliente: <b>'+esc(d.codigo||"")+'</b></span></div>'+
+   '<div class="cols"><div class="col">'+
+   '<section class="card"><h2>Cliente</h2><div class="kv"><span>Nombre</span><span>'+esc(d.nombre)+'</span></div><div class="kv"><span>Servicio</span><span>'+esc(d.servicio)+'</span></div><div class="kv"><span>Categoría profesional</span><span>'+esc(d.categoria)+'</span></div><div class="kv"><span>Móvil</span><span>'+esc(d.movil)+'</span></div><div class="kv"><span>Fecha del pedido</span><span>'+fecha(p.creado)+'</span></div></section>'+
+   '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>'+
+   (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
+   '<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section></div>'+
+   '<div class="col"><section class="card"><h2>Pago</h2><div class="kv"><span>'+(p.pagado?"Pagado":"Sin pagar")+'</span><span>'+esc(pr.precio||"")+'</span></div><button class="b full" id="pago" style="margin-top:10px">'+(p.pagado?"Marcar como sin pagar":"Marcar como pagado")+'</button></section>'+
+   '<section class="card"><h2>Situación</h2><ol class="steps">'+["Pedido recibido","Fotos revisadas","Impreso","Entregado"].map((l,i)=>{ const hecho=i===0||idx>=i; return '<li class="'+(i===0||idx>=i?"done":"")+'"><span class="m">'+(hecho?"✓":i+1)+'</span><span>'+l+'</span></li>'; }).join("")+'</ol>'+
+   (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+SIGUIENTE[p.situacion]+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+'</section>'+
+   '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
+   (p.producto==="12hojas"?'<button class="b pri" disabled>Generar calendario</button><p class="sm">El calendario de 12 hojas se prepara en la etapa 4.</p>':
+    (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este diseño aún no tiene plantilla de impresión cargada.</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section></div></div></main>';
+  enlazarComun();
+  $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
+  const sig=$("#sig"); if(sig) sig.onclick=()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } guardarCambios(p,{situacion:ORDEN[idx+1]}); };
+  const at=$("#atras"); if(at) at.onclick=()=>guardarCambios(p,{situacion:ORDEN[idx-1]});
+  root.querySelectorAll("[data-ap],[data-re]").forEach(b=>b.onclick=()=>{ const a=b.dataset.ap||b.dataset.re, v=b.dataset.ap?"ok":"no"; const n=Object.assign({},p.fotos_ok||{}); if(n[a]===v) delete n[a]; else n[a]=v; guardarCambios(p,{fotos_ok:n}); });
+  const rutas=(p.fotos||[]).concat(d.montaje?[d.montaje]:[]);
+  urlsFirmadas(rutas).then(us=>{
+    root.querySelectorAll("img[data-ruta]").forEach(im=>{ im.src=us[rutas.indexOf(im.dataset.ruta)]; im.onclick=()=>zoom(im.src); });
+    const m=$("#montaje"); if(m){ m.src=us[rutas.indexOf(d.montaje)]; m.onclick=()=>zoom(m.src); }
+    root.querySelectorAll("[data-abrir]").forEach(a=>a.onclick=e=>{ e.preventDefault(); window.open(us[rutas.indexOf(a.dataset.abrir)],"_blank"); });
+  }).catch(e=>aviso("No se pudieron cargar las fotos: "+e.message));
+}
+function zoom(src){ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+src+'" alt="">'; z.onclick=()=>z.remove(); document.body.appendChild(z); }
+
+// ---------- Vista previa final e impresión ----------
+const WC=32, HC=45;
+let generado=null; // {num, canvas}
+function cargarImg(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error("No se pudo cargar "+src)); i.src=src; }); }
+async function componerFinal(p){
+  const d=p.datos.disposicion, pl=PLANTILLAS[d.diseno];
+  const [bi,mi]=await Promise.all([cargarImg(pl.base),cargarImg(pl.marco)]);
+  const W=bi.naturalWidth, H=Math.round(W*HC/WC), k=W/WC, z=d.zona_cm;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const g=cv.getContext("2d");
+  g.drawImage(bi,0,0,W,H);
+  const rutas=p.fotos, us=await urlsFirmadas(rutas);
+  for(const f of d.fotos){
+    const i=rutas.findIndex(r=>archivo(r)===f.archivo); if(i<0) throw new Error("Falta la foto "+f.archivo);
+    const blob=await (await fetch(us[i])).blob();
+    const bmp=await createImageBitmap(blob);
+    g.drawImage(bmp,(z.x+f.x)*k,(z.y+f.y)*k,f.w*k,f.h*k); if(bmp.close) bmp.close();
+  }
+  g.drawImage(mi,0,0,W,H);
+  return cv;
+}
+function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
+function descargar(blob,nombre){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
+async function pdfDe(cv){
+  const jpg=new Uint8Array(await (await aBlob(cv,"image/jpeg",.95)).arrayBuffer());
+  const enc=new TextEncoder(), parts=[], offs=[]; let pos=0;
+  const push=x=>{ const u=typeof x==="string"?enc.encode(x):x; parts.push(u); pos+=u.length; };
+  const wpt=(WC/2.54*72).toFixed(2), hpt=(HC/2.54*72).toFixed(2);
+  push("%PDF-1.4\n");
+  offs[1]=pos; push("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n");
+  offs[2]=pos; push("2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n");
+  offs[3]=pos; push("3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+wpt+" "+hpt+"]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>endobj\n");
+  offs[4]=pos; push("4 0 obj<</Type/XObject/Subtype/Image/Width "+cv.width+"/Height "+cv.height+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpg.length+">>stream\n"); push(jpg); push("\nendstream endobj\n");
+  const c="q "+wpt+" 0 0 "+hpt+" 0 0 cm /Im0 Do Q";
+  offs[5]=pos; push("5 0 obj<</Length "+c.length+">>stream\n"+c+"\nendstream endobj\n");
+  const xr=pos; let x="xref\n0 6\n0000000000 65535 f \n"; for(let i=1;i<=5;i++) x+=String(offs[i]).padStart(10,"0")+" 00000 n \n";
+  push(x+"trailer<</Size 6/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
+  return new Blob(parts,{type:"application/pdf"});
+}
+function pintarImprimir(num){
+  const p=pedidos.find(x=>x.numero===num);
+  if(!p||!p.datos||!p.datos.disposicion){ root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+(estado()||'<div class="empty">No se puede generar este pedido.</div>')+'</main>'; enlazarComun(); return; }
+  const d=p.datos, dis=d.disposicion, z=dis.zona_cm, area=z.w*z.h;
+  const filas=dis.fotos.map(f=>({n:f.archivo,a:Math.round(f.w*f.h/area*100),ppp:f.ppp}));
+  const baja=filas.filter(f=>f.ppp<150);
+  const rech=Object.keys(p.fotos_ok||{}).filter(k=>p.fotos_ok[k]==="no");
+  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Vista previa del calendario</h1><p class="sub">Compruébalo con calma. No se imprime nada hasta que lo confirmes.</p></div><a class="back" href="#/pedido/'+p.numero+'">'+I.back+'Volver a la ficha</a></div>'+
+   '<div class="big"><div><div id="estadoGen" class="empty" style="padding:60px 0">Preparando el calendario a máxima calidad…</div><canvas id="prev" style="display:none"></canvas><div class="sm" style="margin-top:8px">32 × 45 cm · 200 ppp · diseño '+esc(MODELOS[p.modelo]||p.modelo)+' · sin sangrado</div></div>'+
+   '<div class="col"><section class="card"><h2>Pedido '+p.numero+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>'+esc(PRODUCTOS[p.producto].nombre)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(MODELOS[p.modelo]||p.modelo)+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+'</span></div><div class="kv"><span>Fotos</span><span>'+dis.fotos.length+'</span></div></section>'+
+   '<section class="card"><h2>Calidad de cada foto al imprimir</h2><div class="q" style="font-size:12px;font-weight:700;color:#5B6472"><span>Foto</span><span>% zona</span><span>Resolución</span></div>'+filas.map(f=>'<div class="q"><span>'+esc(f.n)+'</span><span>'+f.a+' %</span><span style="'+(f.ppp<150?"color:#7A4B00;font-weight:700":"")+'">'+f.ppp+' ppp</span></div>').join("")+
+   (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de 150 ppp y puede verse pixelada. Pídele al cliente otra o acepta el resultado.</div>':"")+
+   (rech.length?'<div class="warn">⚠ Has rechazado '+rech.length+' foto'+(rech.length>1?"s":"")+' de este pedido ('+esc(rech.join(", "))+').</div>':"")+'</section>'+
+   '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado la vista previa y quiero imprimirla.</span></label>'+
+   '<button class="b pri" id="imprimir" disabled>'+I.print+'Imprimir</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">Descargar PNG</button><button class="b" id="dpdf" disabled style="flex:1">Descargar PDF</button></div>'+
+   '<p class="sm" style="margin:10px 0 0">Se abrirá el cuadro de impresión de este equipo. Después te preguntaré si lo marco como impreso.</p></section></div></div></main>';
+  enlazarComun();
+  const onList=()=>{ const ok=$("#rev").checked&&generado&&generado.num===num; ["imprimir","dpng","dpdf"].forEach(id=>$("#"+id).disabled=!ok); };
+  $("#rev").onchange=onList;
+  const mostrar=cv=>{ const v=$("#prev"); v.width=cv.width; v.height=cv.height; v.getContext("2d").drawImage(cv,0,0); v.style.display="block"; $("#estadoGen").style.display="none"; onList(); };
+  if(generado&&generado.num===num) mostrar(generado.canvas);
+  else componerFinal(p).then(cv=>{ generado={num,canvas:cv}; if(ruta().r==="imprimir"&&ruta().id==num) mostrar(cv); }).catch(e=>{ const s=$("#estadoGen"); if(s) { s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
+  $("#dpng").onclick=async()=>descargar(await aBlob(generado.canvas,"image/png"),"calendario_"+p.numero+".png");
+  $("#dpdf").onclick=async()=>descargar(await pdfDe(generado.canvas),"calendario_"+p.numero+".pdf");
+  $("#imprimir").onclick=async()=>{
+    const blob=await aBlob(generado.canvas,"image/png"), u=URL.createObjectURL(blob), w=window.open("","_blank");
+    if(!w){ aviso("El navegador ha bloqueado la ventana. Permite las ventanas emergentes para esta página."); return; }
+    w.document.write('<!doctype html><title>Pedido '+p.numero+'</title><style>@page{size:'+WC*10+'mm '+HC*10+'mm;margin:0}html,body{margin:0}img{display:block;width:'+WC*10+'mm;height:'+HC*10+'mm}</style><img src="'+u+'">');
+    w.document.close(); const im=w.document.querySelector("img"); im.onload=()=>{ w.focus(); w.print(); };
+    w.onafterprint=()=>setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Has impreso el pedido "+p.numero+"? Pulsa Aceptar para marcarlo como Impreso.")) guardarCambios(p,{situacion:"imp"}); },400);
+  };
+}
+
+window.addEventListener("hashchange",()=>{ pintar(); window.scrollTo(0,0); });
+if(ses) cargar(); else pintar();
+})();
+</script>
+</body>
+</html>
