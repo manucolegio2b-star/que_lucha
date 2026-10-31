@@ -346,6 +346,22 @@ async function pngA200(cv){
   const i=33; // tras la firma (8) y el bloque IHDR (25)
   return new Blob([u.subarray(0,i),ch,u.subarray(i)],{type:"image/png"});
 }
+// JPG con la resolución anotada a 200 ppp (Photoshop lo abre a 32 × 45 cm)
+async function jpgA200(cv){
+  const u=new Uint8Array(await (await aBlob(cv,"image/jpeg",.95)).arrayBuffer());
+  const jfif=[0xFF,0xE0,0,16,0x4A,0x46,0x49,0x46,0,1,1,1,0,200,0,200,0,0];
+  if(u[2]===0xFF&&u[3]===0xE0&&u[6]===0x4A){ const c=u.slice(); c[13]=1; c[14]=0; c[15]=200; c[16]=0; c[17]=200; return new Blob([c],{type:"image/jpeg"}); }
+  return new Blob([u.subarray(0,2),new Uint8Array(jfif),u.subarray(2)],{type:"image/jpeg"});
+}
+const IMPRESOR="http://127.0.0.1:47651";
+const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+async function estadoImpresor(){ const r=await fetch(IMPRESOR+"/estado",{cache:"no-store"}); return r.json(); }
+async function asegurarImpresor(){
+  try{ return await estadoImpresor(); }catch(e){}
+  const a=document.createElement("a"); a.href="qlimprimir:abrir"; document.body.appendChild(a); a.click(); a.remove();
+  for(let i=0;i<25;i++){ await esperar(1000); try{ return await estadoImpresor(); }catch(e){} }
+  throw new Error("No encuentro el impresor en este PC. Comprueba que has ejecutado instalar_enlace.py una vez y que el panel está abierto en el PC de la impresora.");
+}
 function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
 function descargar(blob,nombre){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
 async function pdfDe(cv){
@@ -378,16 +394,30 @@ function pintarImprimir(num){
    (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de 150 ppp y puede verse pixelada. Pídele al cliente otra o acepta el resultado.</div>':"")+
    (rech.length?'<div class="warn">⚠ Has rechazado '+rech.length+' foto'+(rech.length>1?"s":"")+' de este pedido ('+esc(rech.join(", "))+').</div>':"")+'</section>'+
    '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado la vista previa y quiero imprimirla.</span></label>'+
-   '<button class="b pri" id="imprimir" disabled>'+I.print+'Imprimir</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">Descargar PNG</button><button class="b" id="dpdf" disabled style="flex:1">Descargar PDF</button></div>'+
+   '<button class="b pri" id="imprimir" disabled>'+I.print+'Imprimir</button><button class="b pri" id="imprsra" disabled style="margin-top:8px">'+I.print+'Imprimir en la SRA3</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">Descargar PNG</button><button class="b" id="dpdf" disabled style="flex:1">Descargar PDF</button></div>'+
    '<p class="sm" style="margin:10px 0 0">Se abrirá el cuadro de impresión de este equipo. Después te preguntaré si lo marco como impreso.</p></section></div></div></main>';
   enlazarComun();
-  const onList=()=>{ const ok=$("#rev").checked&&generado&&generado.num===num; ["imprimir","dpng","dpdf"].forEach(id=>$("#"+id).disabled=!ok); };
+  const onList=()=>{ const ok=$("#rev").checked&&generado&&generado.num===num; ["imprimir","imprsra","dpng","dpdf"].forEach(id=>$("#"+id).disabled=!ok); };
   $("#rev").onchange=onList;
   const mostrar=cv=>{ const v=$("#prev"); v.width=cv.width; v.height=cv.height; v.getContext("2d").drawImage(cv,0,0); v.style.display="block"; $("#estadoGen").style.display="none"; onList(); };
   if(generado&&generado.num===num) mostrar(generado.canvas);
   else componerFinal(p).then(cv=>{ generado={num,canvas:cv}; if(ruta().r==="imprimir"&&ruta().id==num) mostrar(cv); }).catch(e=>{ const s=$("#estadoGen"); if(s) { s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
   $("#dpng").onclick=async()=>descargar(await pngA200(generado.canvas),"calendario_"+p.numero+".png");
   $("#dpdf").onclick=async()=>descargar(await pdfDe(generado.canvas),"calendario_"+p.numero+".pdf");
+  $("#imprsra").onclick=async()=>{
+    if(!confirm("Se enviará 1 copia del pedido "+p.numero+" a la impresora SRA3. ¿Continuar?")) return;
+    const bt=$("#imprsra"), txt=bt.innerHTML; bt.disabled=true; bt.textContent="Enviando a la impresora…";
+    try{
+      const st=await asegurarImpresor();
+      if(!st.predeterminada_ok) throw new Error("La impresora predeterminada de Windows es '"+st.predeterminada+"' y debe ser '"+st.impresora+"'. No se ha imprimido nada.");
+      const r=await fetch(IMPRESOR+"/imprimir?pedido="+p.numero,{method:"POST",headers:{"Content-Type":"application/octet-stream"},body:await jpgA200(generado.canvas)});
+      const j=await r.json().catch(()=>({ok:false,error:"Respuesta no válida del impresor."}));
+      if(!j.ok) throw new Error(j.error||"Error al imprimir.");
+      aviso("Enviado a la impresora. Mira en Command WorkStation que ha llegado el trabajo.");
+      setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Ha llegado el pedido "+p.numero+" a Command WorkStation? Pulsa Aceptar para marcarlo como Impreso.")) guardarCambios(p,{situacion:"imp"}); },600);
+    }catch(e){ alert(e.message&&/fetch|Failed|Network/i.test(e.message)?"No se pudo hablar con el impresor del PC.":e.message); }
+    bt.innerHTML=txt; onList();
+  };
   $("#imprimir").onclick=async()=>{
     const blob=await pngA200(generado.canvas), u=URL.createObjectURL(blob), w=window.open("","_blank");
     if(!w){ aviso("El navegador ha bloqueado la ventana. Permite las ventanas emergentes para esta página."); return; }
