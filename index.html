@@ -120,8 +120,7 @@ const C = window.CONFIG;
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const MES3 = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const MES_ID = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-const SERVICIOS = ["Planta 1","Planta 2","Planta 3","Urgencias","Quirófano","UCI","Otro servicio"];
-const CATEGORIAS = ["TCAE","Celador/a","Enfermero/a","Médico/a","Administrativo/a","Otra"];
+const MSG_QL = {codigo:"Ese código no es correcto. Revísalo.",usado:"Ese código ya se ha usado.",movil:"Con este móvil ya hay un pedido de este calendario.",agotado:"Se han agotado las unidades de este calendario."};
 
 const PRODUCTOS = {
   quelucha:{id:"quelucha",nombre:"Calendario Que Lucha!",precio:"1 €",badge:"Unidades limitadas",
@@ -161,7 +160,7 @@ const $$ = (s,r) => Array.from((r||document).querySelectorAll(s));
 // ---------- Estado ----------
 function nuevoEstado(){
   return {step:"producto", producto:null, variante:null, anio:C.ANIO_POR_DEFECTO,
-    datos:{nombre:"",servicio:"",categoria:"",movil:""}, fotos:[], slots:new Array(13).fill(null),
+    datos:{nombre:"",servicio:"",categoria:"",movil:"",acceso:""}, fotos:[], slots:new Array(13).fill(null),
     consent:true, enviado:null, errores:{}, montaje:null, disp:null};
 }
 let S = nuevoEstado();
@@ -388,15 +387,15 @@ function vConfig(){
 }
 function vDatos(){
   const d=S.datos, e=S.errores;
-  const opts=(arr,val)=>'<option value="">Elige…</option>'+arr.map(o=>'<option'+(o===val?" selected":"")+'>'+o+'</option>').join("");
   return cab("config",es12()?"Modelo":(prod().variantes?"Diseño":"Producto"))+
   '<div class="head"><h1>Tus datos</h1><p class="sub">Los necesitamos para preparar y entregarte tu pedido.</p></div>'+
   '<div><span class="pill">'+esc(tituloResumen())+'</span></div>'+
   '<div style="display:flex;flex-direction:column;gap:14px">'+
   '<div class="field"><label for="nombre">Nombre<span> (sin apellidos)</span></label><input id="nombre" type="text" autocomplete="given-name" maxlength="40" value="'+esc(d.nombre)+'" class="'+(e.nombre?"err":"")+'"><div class="errmsg">'+(e.nombre||"")+'</div></div>'+
-  '<div class="field"><label for="servicio">Servicio</label><select id="servicio" class="'+(e.servicio?"err":"")+'">'+opts(SERVICIOS,d.servicio)+'</select><div class="errmsg">'+(e.servicio||"")+'</div></div>'+
-  '<div class="field"><label for="categoria">Categoría profesional</label><select id="categoria" class="'+(e.categoria?"err":"")+'">'+opts(CATEGORIAS,d.categoria)+'</select><div class="errmsg">'+(e.categoria||"")+'</div></div>'+
+  '<div class="field"><label for="servicio">Servicio</label><input id="servicio" type="text" autocomplete="off" maxlength="60" value="'+esc(d.servicio)+'" class="'+(e.servicio?"err":"")+'"><div class="errmsg">'+(e.servicio||"")+'</div></div>'+
+  '<div class="field"><label for="categoria">Categoría profesional</label><input id="categoria" type="text" autocomplete="off" maxlength="60" value="'+esc(d.categoria)+'" class="'+(e.categoria?"err":"")+'"><div class="errmsg">'+(e.categoria||"")+'</div></div>'+
   '<div class="field"><label for="movil">Teléfono móvil<span> (para avisarte cuando esté listo)</span></label><input id="movil" type="tel" inputmode="tel" placeholder="6XX XXX XXX" autocomplete="tel" maxlength="20" value="'+esc(d.movil)+'" class="'+(e.movil?"err":"")+'"><div class="errmsg">'+(e.movil||"")+'</div></div>'+
+  (S.producto==="quelucha"?'<div class="field"><label for="acceso">Código de la lista de difusión<span> (te lo enviamos por WhatsApp al apuntarte)</span></label><input id="acceso" type="text" autocapitalize="characters" autocomplete="off" maxlength="4" style="text-transform:uppercase;letter-spacing:.25em" value="'+esc(d.acceso)+'" class="'+(e.acceso?"err":"")+'"><div class="errmsg">'+(e.acceso||"")+'</div></div>':"")+
   '<input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">'+
   '</div><p class="small">Solo pedimos el nombre de pila. Usamos estos datos únicamente para este pedido.</p>'+
   '<button type="button" class="btn" id="sigDatos">Siguiente: elegir fotos'+I.next+'</button>';
@@ -494,16 +493,29 @@ function bind(){
   if(S.step==="gracias"){ const o=$("#otro"); if(o) o.addEventListener("click",()=>{ liberar(); S=nuevoEstado(); history.replaceState({step:"producto"},""); render(); window.scrollTo(0,0); }); }
 }
 function bindDatos(){
-  const campos=["nombre","servicio","categoria","movil"];
+  const campos=["nombre","servicio","categoria","movil"].concat(S.producto==="quelucha"?["acceso"]:[]);
   campos.forEach(k=>{ const el=$("#"+k); el.addEventListener("input",()=>{ S.datos[k]=el.value; el.classList.remove("err"); }); el.addEventListener("change",()=>{ S.datos[k]=el.value; }); });
-  $("#sigDatos").addEventListener("click",()=>{
+  $("#sigDatos").addEventListener("click",async()=>{
     campos.forEach(k=>S.datos[k]=$("#"+k).value.trim());
+    if(S.datos.acceso!==undefined) S.datos.acceso=S.datos.acceso.toUpperCase();
     const e={}, d=S.datos;
     if(d.nombre.length<2) e.nombre="Escribe tu nombre.";
-    if(!d.servicio) e.servicio="Elige tu servicio.";
-    if(!d.categoria) e.categoria="Elige tu categoría.";
+    if(d.servicio.length<2) e.servicio="Escribe tu servicio.";
+    if(d.categoria.length<2) e.categoria="Escribe tu categoría profesional.";
     const tel=d.movil.replace(/[\s.\-()]/g,"").replace(/^(\+34|0034)/,"");
     if(!/^[6-9]\d{8}$/.test(tel)) e.movil="Escribe un móvil de 9 cifras.";
+    if(S.producto==="quelucha" && !/^[A-Z0-9]{4}$/.test(d.acceso||"")) e.acceso="Escribe el código de 4 letras o números.";
+    if(!Object.keys(e).length){
+      d.movil=tel;
+      if(S.producto==="quelucha"){
+        const b=$("#sigDatos"); b.disabled=true; b.textContent="Comprobando tu código…";
+        try{
+          const r=await http(C.SUPABASE_URL+"/rest/v1/rpc/ql_comprobar",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_codigo:d.acceso,p_movil:tel})});
+          const res=await r.json();
+          if(res!=="ok"){ if(res==="movil"||res==="agotado") e.movil=MSG_QL[res]; else e.acceso=MSG_QL[res]||"Código no válido."; }
+        }catch(err){ e.acceso="No se pudo comprobar el código. Revisa tu conexión e inténtalo de nuevo."; }
+      }
+    }
     S.errores=e;
     if(Object.keys(e).length){ render(); const f=$(".err"); if(f) f.focus(); return; }
     S.datos.movil=tel; go("fotos");
@@ -635,7 +647,7 @@ async function enviar(){
     pintar("Guardando tu pedido…",98);
     const v=variante();
     const fila={id:envio.id,producto:S.producto,modelo:v?v.id:null,anio:S.anio,
-      datos:{nombre:S.datos.nombre,servicio:S.datos.servicio,categoria:S.datos.categoria,movil:S.datos.movil,codigo:envio.codigo,n_fotos:total,
+      datos:{nombre:S.datos.nombre,servicio:S.datos.servicio,categoria:S.datos.categoria,movil:S.datos.movil,acceso:(S.producto==="quelucha"?S.datos.acceso:undefined),codigo:envio.codigo,n_fotos:total,
              etiquetas:lista.map(i=>i.etq), montaje:rutaMontaje,
              disposicion: es12()?null:{diseno:disenoAct()?variante().id:null,zona_cm:Z(),hueco_cm:HUECO,fotos:S.disp.lista[S.disp.idx].rects.map(q=>({archivo:String(q.i+1).padStart(2,"0")+".jpg",x:+q.x.toFixed(2),y:+q.y.toFixed(2),w:+q.w.toFixed(2),h:+q.h.toFixed(2),ppp:q.ppp}))}},
       fotos:rutas};
@@ -653,6 +665,8 @@ async function enviar(){
     S.step="gracias"; history.pushState({step:"gracias"},""); render(); window.scrollTo(0,0);
   }catch(err){
     console.error(err);
+    const ql=String(err&&err.message||"").match(/QL_(codigo|usado|movil|agotado)/);
+    if(ql){ pintar("No se ha podido enviar", 0, MSG_QL[ql[1]]+" Vuelve atrás y revisa tus datos."); return; }
     const offline = !navigator.onLine || /Failed to fetch|NetworkError|Load failed/i.test(String(err));
     pintar("No se ha podido enviar", 0, offline ? "Parece que no hay conexión. Revisa tu internet y vuelve a intentarlo. Lo que ya se subió no se pierde." : "Ha ocurrido un error al enviar. Inténtalo de nuevo; si sigue fallando, avísanos. ("+String(err.message||err).slice(0,120)+")");
   }

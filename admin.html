@@ -146,7 +146,7 @@ const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendar
 // ---------- Estructura ----------
 function barra(ruta){
   return '<div class="bar"><div><div class="brand"><div class="logo">'+I.logo+'</div><div><b>'+esc(C.NEGOCIO)+'</b><span>Panel de pedidos</span></div></div>'+
-   '<nav><a href="#/" class="'+(ruta!=="buscar"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><button id="salir" type="button">Salir</button></nav></div></div>';
+   '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="codigos"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/codigos" class="'+(ruta==="codigos"?"on":"")+'">Códigos</a><button id="salir" type="button">Salir</button></nav></div></div>';
 }
 const root=$("#root");
 let vistaGrupo="pend", filtroProd="";
@@ -159,6 +159,7 @@ function pintar(){
   if(R.r==="pedido") return pintarFicha(+R.id);
   if(R.r==="imprimir") return pintarImprimir(+R.id);
   if(R.r==="buscar") return pintarBuscar();
+  if(R.r==="codigos") return pintarCodigos();
   return pintarLista();
 }
 function estado(){ return cargando?'<div class="empty">Cargando pedidos…</div>':(errorCarga?'<div class="empty" style="color:#B42318">'+esc(errorCarga)+'<br><br><button class="b" id="reint">Reintentar</button></div>':""); }
@@ -190,14 +191,12 @@ function pintarLista(){
 
 function pintarBuscar(){
   const sel=(id,arr,v)=>'<select id="'+id+'"><option value="">Todos</option>'+arr.map(o=>'<option value="'+o[0]+'"'+(String(v)===String(o[0])?" selected":"")+'>'+o[1]+'</option>').join("")+'</select>';
-  const serv=["Planta 1","Planta 2","Planta 3","Urgencias","Quirófano","UCI","Otro servicio"].map(x=>[x,x]);
-  const prof=["TCAE","Celador/a","Enfermero/a","Médico/a","Administrativo/a","Otra"].map(x=>[x,x]);
   root.innerHTML=barra("buscar")+'<main><div><h1>Buscar pedidos</h1><p class="sub">Combina los filtros que quieras. La lista se actualiza al escribir.</p></div>'+
    '<section class="card"><div class="fg" style="flex:none">'+
    '<div><label for="f-nombre">Nombre</label><input id="f-nombre" type="text" value="'+esc(F.nombre)+'"></div>'+
    '<div><label for="f-tel">Móvil</label><input id="f-tel" type="text" value="'+esc(F.tel)+'"></div>'+
-   '<div><label for="f-serv">Servicio</label>'+sel("f-serv",serv,F.serv)+'</div>'+
-   '<div><label for="f-prof">Categoría profesional</label>'+sel("f-prof",prof,F.prof)+'</div>'+
+   '<div><label for="f-serv">Servicio</label><input id="f-serv" type="text" value="'+esc(F.serv)+'"></div>'+
+   '<div><label for="f-prof">Categoría profesional</label><input id="f-prof" type="text" value="'+esc(F.prof)+'"></div>'+
    '<div><label for="f-cat">Calendario</label>'+sel("f-cat",[["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]],F.cat)+'</div>'+
    '<div><label for="f-pago">Pago</label>'+sel("f-pago",[["si","Pagado"],["no","Sin pagar"]],F.pago)+'</div>'+
    '<div><label for="f-st">Situación</label>'+sel("f-st",ORDEN.map(k=>[k,SIT[k][0]]),F.st)+'</div>'+
@@ -210,7 +209,7 @@ function pintarBuscar(){
     const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
     const tel=F.tel.replace(/\D/g,"");
     const l=pedidos.filter(p=>{ const d=p.datos||{}; const dia=p.creado.slice(0,10);
-      return (!F.nombre||norm(d.nombre).includes(norm(F.nombre)))&&(!tel||String(d.movil||"").replace(/\D/g,"").includes(tel))&&(!F.serv||d.servicio===F.serv)&&(!F.prof||d.categoria===F.prof)&&
+      return (!F.nombre||norm(d.nombre).includes(norm(F.nombre)))&&(!tel||String(d.movil||"").replace(/\D/g,"").includes(tel))&&(!F.serv||norm(d.servicio).includes(norm(F.serv)))&&(!F.prof||norm(d.categoria).includes(norm(F.prof)))&&
         (!F.cat||p.producto===F.cat)&&(!F.pago||(F.pago==="si")===!!p.pagado)&&(!F.st||p.situacion===F.st)&&(!F.desde||dia>=F.desde)&&(!F.hasta||dia<=F.hasta); });
     $("#cuenta").innerHTML='<strong style="font-size:18px">'+l.length+'</strong> pedido'+(l.length===1?"":"s");
     $("#res").innerHTML=cab+estado()+(!cargando&&!errorCarga?(l.length?l.map(fila).join(""):'<div class="empty">Ningún pedido coincide con estos filtros.</div>'):"");
@@ -220,6 +219,41 @@ function pintarBuscar(){
     const el=$("#"+a[1]); el.addEventListener("input",()=>{ F[a[0]]=el.value; aplicar(); }); el.addEventListener("change",()=>{ F[a[0]]=el.value; aplicar(); }); });
   $("#limpiar").onclick=()=>{ Object.keys(F).forEach(k=>F[k]=""); pintarBuscar(); };
   aplicar();
+}
+
+// ---------- Códigos de Que Lucha! ----------
+const LIMITE_QL=30, ALFA="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+let codigos=[], errCod="";
+function nuevoCodigo(){ const b=new Uint32Array(4); crypto.getRandomValues(b); return Array.from(b,x=>ALFA[x%ALFA.length]).join(""); }
+async function cargarCodigos(){
+  errCod=""; try{ const r=await api("/rest/v1/codigos_quelucha?select=*&order=creado.desc&limit=500"); codigos=await r.json(); }
+  catch(e){ errCod=/404|PGRST205|codigos_quelucha/.test(e.message)?"Falta ejecutar supabase_codigos.sql en Supabase (una sola vez).":e.message; }
+  if(ruta().r==="codigos") pintarCodigos(true);
+}
+function pintarCodigos(sinCarga){
+  const hechos=pedidos.filter(p=>p.producto==="quelucha").length, libres=codigos.filter(c=>!c.usado);
+  root.innerHTML=barra("codigos")+'<main><div class="top"><div><h1>Códigos de Que Lucha!</h1><p class="sub">Envía un código a cada persona que se apunte a la lista de difusión. Cada código vale para un solo pedido.</p></div>'+
+   '<div class="cnt"><div style="background:#E3EAFD;color:#1E3FA8"><strong>'+hechos+' de '+LIMITE_QL+'</strong> pedidos hechos</div><div style="background:#FFF1CC;color:#7A4B00"><strong>'+libres.length+'</strong> códigos sin usar</div></div></div>'+
+   '<section class="card"><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div><label for="ncod">¿Cuántos códigos quieres crear?</label><input id="ncod" type="number" min="1" max="50" value="1" style="width:110px"></div><button class="b pri" id="gen" style="width:auto;padding:0 20px">Crear códigos</button></div></section>'+
+   (errCod?'<div class="empty" style="color:#B42318">'+esc(errCod)+'</div>':'')+
+   '<div class="tbl"><div class="tr th" style="grid-template-columns:110px 1fr 200px"><span>Código</span><span>Estado</span><span></span></div>'+
+   (codigos.length?codigos.map(c=>'<div class="tr" style="grid-template-columns:110px 1fr 200px;cursor:default"><span style="font-weight:700;font-size:18px;letter-spacing:.15em">'+esc(c.codigo)+'</span><span>'+(c.usado?pill("#DDF3E6","#14532D","Usado")+' <span class="sm">móvil '+esc(c.movil||"")+' · '+fecha(c.usado)+'</span>':pill("#FFF1CC","#7A4B00","Sin usar"))+'</span><span>'+(c.usado?"":'<button class="b" data-cp="'+c.codigo+'">Copiar</button> <button class="b" data-bo="'+c.codigo+'">Borrar</button>')+'</span></div>').join(""):'<div class="empty">Todavía no has creado ningún código.</div>')+'</div></main>';
+  enlazarComun();
+  $("#gen").onclick=async()=>{
+    const n=Math.max(1,Math.min(50,+$("#ncod").value||1)); $("#gen").disabled=true;
+    try{
+      let creados=0; for(let t=0;t<5&&creados<n;t++){
+        const filas=[]; const vistos=new Set(); while(filas.length<n-creados){ const c=nuevoCodigo(); if(!vistos.has(c)){ vistos.add(c); filas.push({codigo:c}); } }
+        const r=await api("/rest/v1/codigos_quelucha?on_conflict=codigo",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=ignore-duplicates,return=representation"},body:JSON.stringify(filas)});
+        creados+=(await r.json()).length;
+      }
+      aviso(n===1?"Código creado.":n+" códigos creados.");
+    }catch(e){ aviso("No se pudo crear: "+e.message); }
+    cargarCodigos();
+  };
+  root.querySelectorAll("[data-cp]").forEach(b=>b.onclick=async()=>{ try{ await navigator.clipboard.writeText(b.dataset.cp); aviso("Código "+b.dataset.cp+" copiado."); }catch(e){ aviso("Cópialo a mano: "+b.dataset.cp); } });
+  root.querySelectorAll("[data-bo]").forEach(b=>b.onclick=async()=>{ if(!confirm("¿Borrar el código "+b.dataset.bo+"?")) return; try{ await api("/rest/v1/codigos_quelucha?codigo=eq."+b.dataset.bo+"&usado=is.null",{method:"DELETE"}); }catch(e){ aviso("No se pudo borrar: "+e.message); } cargarCodigos(); });
+  if(!sinCarga) cargarCodigos();
 }
 
 // ---------- Fotos firmadas ----------
@@ -291,6 +325,10 @@ async function componerFinal(p){
     g.drawImage(bmp,(z.x+f.x)*k,(z.y+f.y)*k,f.w*k,f.h*k); if(bmp.close) bmp.close();
   }
   g.drawImage(mi,0,0,W,H);
+  // Datos de contacto en el lateral derecho, en vertical y en letra pequeña
+  const dd=p.datos, txt=["Pedido "+p.numero,dd.nombre,dd.servicio,dd.categoria,dd.movil].filter(Boolean).join("  ·  ");
+  g.save(); g.translate(W-0.6*k,(z.y+z.h/2)*k); g.rotate(Math.PI/2);
+  g.font=Math.round(8*200/72)+"px system-ui,Arial,sans-serif"; g.fillStyle="#333"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(txt,0,0); g.restore();
   return cv;
 }
 function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
