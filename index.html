@@ -207,9 +207,10 @@ function mesHTML(anio, m, opts){
 const ZONA_BASE = C.ZONA_FOTOS || {w:29.44, h:17.1};   // cm (se usa en los diseños que aún no tienen plantilla real)
 // Diseños con plantilla real. zona = rectángulo de fotos en cm sobre la hoja de 32 x 45. anios = años para los que hay plantilla.
 const DISENOS = {
+  quelucha:{producto:"quelucha", anios:[2027], base:"disenos/quelucha/base.jpg", marco:null, zona:{x:1.575,y:7.467,w:22.97,h:17.22}},
   nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}}
 };
-function disenoAct(){ const v=variante(); return (prod() && v && DISENOS[v.id] && DISENOS[v.id].producto===prod().id) ? DISENOS[v.id] : null; }
+function disenoAct(){ const v=variante(), k=v?v.id:(prod()?prod().id:null); return (prod() && k && DISENOS[k] && DISENOS[k].producto===prod().id) ? DISENOS[k] : null; }
 function Z(){ const d=disenoAct(); return d? d.zona : ZONA_BASE; }
 const _imgs={};
 function cargarImg(src){ if(!_imgs[src]) _imgs[src]=new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>{ delete _imgs[src]; rej(new Error("No se pudo cargar "+src)); }; i.src=src; }); return _imgs[src]; }
@@ -270,7 +271,7 @@ function asegurarDisp(){
 function rectRedondo(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function claveMontaje(){ return [prod().id,variante()?variante().id:"",S.anio,S.disp?S.disp.idx:0,claveFotos()].join("|"); }
 async function componerConDiseno(dis){
-  const [bi,mi]=await Promise.all([cargarImg(dis.base),cargarImg(dis.marco)]);
+  const [bi,mi]=await Promise.all([cargarImg(dis.base),dis.marco?cargarImg(dis.marco):null]);
   const W=bi.naturalWidth, H=Math.round(W*45/32), kx=W/32, z=dis.zona;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const g=cv.getContext("2d");
@@ -280,7 +281,7 @@ async function componerConDiseno(dis){
     g.drawImage(bmp,(z.x+q.x)*kx,(z.y+q.y)*kx,q.w*kx,q.h*kx);
     if(bmp.close) bmp.close();
   }
-  g.drawImage(mi,0,0,W,H);
+  if(mi) g.drawImage(mi,0,0,W,H);
   const blob=await aBlob(cv,.9); cv.width=cv.height=1;
   if(!blob) throw new Error("No se pudo crear el montaje");
   return blob;
@@ -351,7 +352,7 @@ function vProducto(){
   const mini12 = '<div class="thumb"><div style="position:relative;width:84px;height:120px"><div style="position:absolute;left:14px;top:0;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div style="position:absolute;left:7px;top:8px;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div class="mini" style="position:absolute;left:0;top:16px;width:66px;height:100px;padding:4px 5px 5px;gap:4px;background:#F7EFE6"><div style="height:8px;flex:none;background:radial-gradient(circle at 50% 50%,#6B7280 2px,transparent 2.6px) 0 0/12px 8px repeat-x"></div><div style="flex:1;border-radius:2px;background:linear-gradient(135deg,#F7D774,#F0A56F)"></div><div style="height:14px;background:#C9622E;border-radius:2px"></div></div></div></div>';
   const card=(pr,mini,extra)=>'<button type="button" class="card" data-prod="'+pr.id+'">'+mini+'<div class="info"><div class="t">'+pr.nombre+'</div><div class="d">'+pr.desc+'</div><div class="row"><span style="font-size:16px;font-weight:700;color:#2F5BEA">'+pr.precio+'</span>'+(extra||"")+'</div></div>'+I.chev+'</button>';
   return cab()+'<div class="head"><h1>¿Qué calendario quieres?</h1><p class="sub">Verás cómo queda antes de enviar nada.</p></div>'+
-    card(q,miniPoster("#F7EFE6","#C9B8A5"),'<span class="badge">'+q.badge+'</span>')+
+    card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
     card(p,miniPoster("#E9EDF4","#9AA7C0"))+card(d,mini12)+
     '<p class="small center" style="margin-top:auto">Podrás cambiar de producto en cualquier momento antes de confirmar.</p>';
 }
@@ -649,7 +650,7 @@ async function enviar(){
     const fila={id:envio.id,producto:S.producto,modelo:v?v.id:null,anio:S.anio,
       datos:{nombre:S.datos.nombre,servicio:S.datos.servicio,categoria:S.datos.categoria,movil:S.datos.movil,acceso:(S.producto==="quelucha"?S.datos.acceso:undefined),codigo:envio.codigo,n_fotos:total,
              etiquetas:lista.map(i=>i.etq), montaje:rutaMontaje,
-             disposicion: es12()?null:{diseno:disenoAct()?variante().id:null,zona_cm:Z(),hueco_cm:HUECO,fotos:S.disp.lista[S.disp.idx].rects.map(q=>({archivo:String(q.i+1).padStart(2,"0")+".jpg",x:+q.x.toFixed(2),y:+q.y.toFixed(2),w:+q.w.toFixed(2),h:+q.h.toFixed(2),ppp:q.ppp}))}},
+             disposicion: es12()?null:{diseno:disenoAct()?(variante()?variante().id:S.producto):null,zona_cm:Z(),hueco_cm:HUECO,fotos:S.disp.lista[S.disp.idx].rects.map(q=>({archivo:String(q.i+1).padStart(2,"0")+".jpg",x:+q.x.toFixed(2),y:+q.y.toFixed(2),w:+q.w.toFixed(2),h:+q.h.toFixed(2),ppp:q.ppp}))}},
       fotos:rutas};
     if(!envio.guardado){
       await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)});
