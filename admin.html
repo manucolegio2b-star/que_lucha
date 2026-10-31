@@ -13,11 +13,11 @@ button{font-family:inherit;cursor:pointer}
 .bar{background:#fff;border-bottom:1px solid #E5E8ED}
 .bar>div{max-width:1216px;margin:0 auto;padding:12px 32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:flex;align-items:center;gap:12px}
-.logo{width:36px;height:36px;border-radius:10px;background:#2F5BEA;display:flex;align-items:center;justify-content:center}
+.logo{width:36px;height:36px;border-radius:10px;background:#13A4AA;display:flex;align-items:center;justify-content:center}
 .brand b{display:block;font-size:15px;font-weight:600}.brand span{font-size:13px;color:#5B6472}
 nav{display:flex;gap:6px}
 nav a,nav button{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:600;color:#374151;background:transparent;border:0}
-nav a.on{background:#E3EAFD;color:#1E3FA8}
+nav a.on{background:#DDF1F3;color:#0B6970}
 main{max-width:1216px;margin:0 auto;padding:28px 32px 40px;display:flex;flex-direction:column;gap:20px}
 h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
 h2{margin:0 0 10px;font-size:16px}
@@ -27,7 +27,7 @@ h2{margin:0 0 10px;font-size:16px}
 .cnt div{border-radius:12px;padding:8px 14px;font-size:14px}.cnt strong{font-size:18px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{height:40px;padding:0 16px;border-radius:10px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151}
-.seg button[aria-pressed=true]{background:#2F5BEA;border-color:#2F5BEA;color:#fff}
+.seg button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
 .filters{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
 .tbl{background:#fff;border:1px solid #E5E8ED;border-radius:14px;overflow:hidden}
 .tr{display:grid;grid-template-columns:70px 1.3fr 1.6fr 60px 100px 110px 170px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #EEF0F3;font-size:14px}
@@ -49,14 +49,14 @@ a.tr:hover{background:#F4F7FF}
 .b{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151}
 .b.ok[aria-pressed=true]{background:#DDF3E6;border-color:#2E9E5B;color:#14532D}
 .b.no[aria-pressed=true]{background:#FDE7E4;border-color:#D4574A;color:#8A2A20}
-.b.pri{background:#2F5BEA;border-color:#2F5BEA;color:#fff;width:100%;height:48px;font-size:15px}
+.b.pri{background:#13A4AA;border-color:#13A4AA;color:#fff;width:100%;height:48px;font-size:15px}
 .b.pri[disabled]{background:#B8C0CC;border-color:#B8C0CC;cursor:not-allowed}
 .b.full{width:100%}
 .steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
 .steps li{display:flex;align-items:center;gap:10px;font-size:14px}
 .steps .m{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#E5E8ED;color:#5B6472}
-.steps .done .m{background:#2E9E5B;color:#fff}.steps .cur .m{background:#2F5BEA;color:#fff}.steps .cur{font-weight:700}
-.back{display:inline-flex;align-items:center;gap:6px;color:#2F5BEA;font-weight:600;font-size:14px;height:36px}
+.steps .done .m{background:#2E9E5B;color:#fff}.steps .cur .m{background:#13A4AA;color:#fff}.steps .cur{font-weight:700}
+.back{display:inline-flex;align-items:center;gap:6px;color:#0B7C82;font-weight:600;font-size:14px;height:36px}
 label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
 input,select{height:42px;border:1.5px solid #B8C0CC;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit;background:#fff;width:100%}
 .fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
@@ -264,6 +264,18 @@ function pintarCodigos(sinCarga){
 
 // ---------- Fotos firmadas ----------
 const cacheUrl={};
+async function borrarFotos(p){
+  const rutas=(p.fotos||[]).concat(p.datos&&p.datos.montaje?[p.datos.montaje]:[]);
+  try{
+    if(rutas.length){
+      const r=await api("/storage/v1/object/"+C.BUCKET,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({prefixes:rutas})});
+      const j=await r.json().catch(()=>[]);
+      if(Array.isArray(j)&&j.length<rutas.length) throw new Error("Solo se han borrado "+j.length+" de "+rutas.length+" archivos. Inténtalo de nuevo.");
+    }
+    await guardarCambios(p,{fotos:[],datos:Object.assign({},p.datos,{montaje:null,fotos_borradas:new Date().toISOString()})});
+    aviso("Fotos borradas.");
+  }catch(e){ aviso("No se pudieron borrar: "+e.message); pintar(); }
+}
 async function urlsFirmadas(paths){
   const faltan=paths.filter(p=>!cacheUrl[p]||cacheUrl[p].exp<Date.now());
   if(faltan.length){
@@ -283,9 +295,9 @@ function pintarFicha(num){
   const idx=ORDEN.indexOf(p.situacion);
   const etq=(d.etiquetas||[]);
   const fotosHTML=(p.fotos||[]).map((f,i)=>{ const a=archivo(f), ppp=pppDe(p,a);
-    return '<div class="ph"><img data-ruta="'+esc(f)+'" alt="Foto '+(i+1)+'"><div class="t"><span>'+esc(etq[i]||("Foto "+(i+1)))+'</span><small>'+(ppp?ppp+" ppp al imprimir"+(ppp<150?" · baja resolución":""):a)+'</small><a class="sm" data-abrir="'+esc(f)+'" href="#" style="color:#2F5BEA">Abrir original</a></div>'+
+    return '<div class="ph"><img data-ruta="'+esc(f)+'" alt="Foto '+(i+1)+'"><div class="t"><span>'+esc(etq[i]||("Foto "+(i+1)))+'</span><small>'+(ppp?ppp+" ppp al imprimir"+(ppp<150?" · baja resolución":""):a)+'</small><a class="sm" data-abrir="'+esc(f)+'" href="#" style="color:#0B7C82">Abrir original</a></div>'+
      '<div style="display:flex;gap:6px"><button class="b ok" data-ap="'+esc(a)+'" aria-pressed="'+(ok[a]==="ok")+'">Aprobar</button><button class="b no" data-re="'+esc(a)+'" aria-pressed="'+(ok[a]==="no")+'">Rechazar</button></div></div>'; }).join("");
-  const dis=p.producto!=="12hojas"&&d.disposicion, plantilla=dis&&PLANTILLAS[d.disposicion.diseno];
+  const dis=p.producto!=="12hojas"&&d.disposicion, plantilla=dis&&!d.fotos_borradas&&PLANTILLAS[d.disposicion.diseno];
   root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+
    '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h1>Pedido '+p.numero+' · '+esc(d.nombre)+'</h1>'+pPago(p)+pSit(p)+'<span class="sm">Código del cliente: <b>'+esc(d.codigo||"")+'</b></span></div>'+
    '<div class="cols"><div class="col">'+
@@ -295,13 +307,14 @@ function pintarFicha(num){
    '<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section></div>'+
    '<div class="col"><section class="card"><h2>Pago</h2><div class="kv"><span>'+(p.pagado?"Pagado":"Sin pagar")+'</span><span>'+esc(pr.precio||"")+'</span></div><button class="b full" id="pago" style="margin-top:10px">'+(p.pagado?"Marcar como sin pagar":"Marcar como pagado")+'</button></section>'+
    '<section class="card"><h2>Situación</h2><ol class="steps">'+["Pedido recibido","Fotos revisadas","Impreso","Entregado"].map((l,i)=>{ const hecho=i===0||idx>=i; return '<li class="'+(i===0||idx>=i?"done":"")+'"><span class="m">'+(hecho?"✓":i+1)+'</span><span>'+l+'</span></li>'; }).join("")+'</ol>'+
-   (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+SIGUIENTE[p.situacion]+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+'</section>'+
+   (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+SIGUIENTE[p.situacion]+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+(d.fotos_borradas?'<p class="sm" style="margin:10px 0 0">Fotos borradas el '+fecha(d.fotos_borradas)+'.</p>':((p.fotos||[]).length?'<button class="b full" id="borrarfotos" style="margin-top:8px">Borrar las fotos del cliente</button>':''))+'</section>'+
    '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
    (p.producto==="12hojas"?'<button class="b pri" disabled>Generar calendario</button><p class="sm">El calendario de 12 hojas se prepara en la etapa 4.</p>':
-    (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este diseño aún no tiene plantilla de impresión cargada.</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section></div></div></main>';
+    (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section></div></div></main>';
   enlazarComun();
   $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
-  const sig=$("#sig"); if(sig) sig.onclick=()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } guardarCambios(p,{situacion:ORDEN[idx+1]}); };
+  const sig=$("#sig"); if(sig) sig.onclick=async()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } await guardarCambios(p,{situacion:ORDEN[idx+1]}); if(ORDEN[idx+1]==="ent"&&(p.fotos||[]).length&&confirm("Pedido entregado. ¿Borrar ahora las fotos del cliente?")) await borrarFotos(p); };
+  const bf=$("#borrarfotos"); if(bf) bf.onclick=async()=>{ if(!confirm("¿Borrar las fotos de este cliente (originales y montaje)? No se puede deshacer y ya no podrás generar el calendario.")) return; bf.disabled=true; await borrarFotos(p); };
   const at=$("#atras"); if(at) at.onclick=()=>guardarCambios(p,{situacion:ORDEN[idx-1]});
   root.querySelectorAll("[data-ap],[data-re]").forEach(b=>b.onclick=()=>{ const a=b.dataset.ap||b.dataset.re, v=b.dataset.ap?"ok":"no"; const n=Object.assign({},p.fotos_ok||{}); if(n[a]===v) delete n[a]; else n[a]=v; guardarCambios(p,{fotos_ok:n}); });
   const rutas=(p.fotos||[]).concat(d.montaje?[d.montaje]:[]);
