@@ -120,7 +120,7 @@ const C = window.CONFIG;
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const MES3 = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const MES_ID = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-const MSG_QL = {codigo:"Ese código no es correcto. Revísalo.",usado:"Ese código ya se ha usado.",movil:"Con este móvil ya hay un pedido de este calendario.",agotado:"Se han agotado las unidades de este calendario."};
+const MSG_QL = {codigo:"Ese código no es correcto. Revísalo.",otromovil:"Ese código pertenece a otro móvil. Escribe el móvil con el que te apuntaste.",movil:"Con este móvil ya hay un pedido de este calendario.",agotado:"Se han agotado las unidades de este calendario."};
 
 const PRODUCTOS = {
   quelucha:{id:"quelucha",nombre:"Calendario Que Lucha!",precio:"1 €",badge:"Unidades limitadas",
@@ -665,7 +665,7 @@ async function enviar(){
     S.step="gracias"; history.pushState({step:"gracias"},""); render(); window.scrollTo(0,0);
   }catch(err){
     console.error(err);
-    const ql=String(err&&err.message||"").match(/QL_(codigo|usado|movil|agotado)/);
+    const ql=String(err&&err.message||"").match(/QL_(codigo|otromovil|movil|agotado)/);
     if(ql){ pintar("No se ha podido enviar", 0, MSG_QL[ql[1]]+" Vuelve atrás y revisa tus datos."); return; }
     const offline = !navigator.onLine || /Failed to fetch|NetworkError|Load failed/i.test(String(err));
     pintar("No se ha podido enviar", 0, offline ? "Parece que no hay conexión. Revisa tu internet y vuelve a intentarlo. Lo que ya se subió no se pierde." : "Ha ocurrido un error al enviar. Inténtalo de nuevo; si sigue fallando, avísanos. ("+String(err.message||err).slice(0,120)+")");
