@@ -336,6 +336,15 @@ async function componerFinal(p){
   g.font=Math.round(8*200/72)+"px system-ui,Arial,sans-serif"; g.fillStyle="#333"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(txt,0,0); g.restore();
   return cv;
 }
+// PNG con la resolución anotada (200 ppp = 7874 píxeles por metro) para que los programas lo abran a 32 × 45 cm
+async function pngA200(cv){
+  const u=new Uint8Array(await (await aBlob(cv,"image/png")).arrayBuffer());
+  const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; }
+  const crc=b=>{ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=t[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  const ch=new Uint8Array(21), v=new DataView(ch.buffer); v.setUint32(0,9); ch.set([112,72,89,115],4); v.setUint32(8,7874); v.setUint32(12,7874); ch[16]=1; v.setUint32(17,crc(ch.subarray(4,17)));
+  const i=33; // tras la firma (8) y el bloque IHDR (25)
+  return new Blob([u.subarray(0,i),ch,u.subarray(i)],{type:"image/png"});
+}
 function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
 function descargar(blob,nombre){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
 async function pdfDe(cv){
@@ -376,10 +385,10 @@ function pintarImprimir(num){
   const mostrar=cv=>{ const v=$("#prev"); v.width=cv.width; v.height=cv.height; v.getContext("2d").drawImage(cv,0,0); v.style.display="block"; $("#estadoGen").style.display="none"; onList(); };
   if(generado&&generado.num===num) mostrar(generado.canvas);
   else componerFinal(p).then(cv=>{ generado={num,canvas:cv}; if(ruta().r==="imprimir"&&ruta().id==num) mostrar(cv); }).catch(e=>{ const s=$("#estadoGen"); if(s) { s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
-  $("#dpng").onclick=async()=>descargar(await aBlob(generado.canvas,"image/png"),"calendario_"+p.numero+".png");
+  $("#dpng").onclick=async()=>descargar(await pngA200(generado.canvas),"calendario_"+p.numero+".png");
   $("#dpdf").onclick=async()=>descargar(await pdfDe(generado.canvas),"calendario_"+p.numero+".pdf");
   $("#imprimir").onclick=async()=>{
-    const blob=await aBlob(generado.canvas,"image/png"), u=URL.createObjectURL(blob), w=window.open("","_blank");
+    const blob=await pngA200(generado.canvas), u=URL.createObjectURL(blob), w=window.open("","_blank");
     if(!w){ aviso("El navegador ha bloqueado la ventana. Permite las ventanas emergentes para esta página."); return; }
     w.document.write('<!doctype html><title>Pedido '+p.numero+'</title><style>@page{size:'+WC*10+'mm '+HC*10+'mm;margin:0}html,body{margin:0}img{display:block;width:'+WC*10+'mm;height:'+HC*10+'mm}</style><img src="'+u+'">');
     w.document.close(); const im=w.document.querySelector("img"); im.onload=()=>{ w.focus(); w.print(); };
