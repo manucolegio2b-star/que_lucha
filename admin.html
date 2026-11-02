@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Panel de pedidos</title>
+<link rel="icon" type="image/png" href="logo/icono.png">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#F4F6F8;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -145,7 +146,7 @@ const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendar
 
 // ---------- Estructura ----------
 function barra(ruta){
-  return '<div class="bar"><div><div class="brand"><div class="logo">'+I.logo+'</div><div><b>'+esc(C.NEGOCIO)+'</b><span>Panel de pedidos</span></div></div>'+
+  return '<div class="bar"><div><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"><div><span>Panel de pedidos</span></div></div>'+
    '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="codigos"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/codigos" class="'+(ruta==="codigos"?"on":"")+'">Códigos</a><button id="salir" type="button">Salir</button></nav></div></div>';
 }
 const root=$("#root");
@@ -166,7 +167,7 @@ function estado(){ return cargando?'<div class="empty">Cargando pedidos…</div>
 function enlazarComun(){ const s=$("#salir"); if(s) s.onclick=salir; const r=$("#reint"); if(r) r.onclick=cargar; }
 
 function pintarLogin(){
-  root.innerHTML='<div class="card login"><div class="brand"><div class="logo">'+I.logo+'</div><div><b>'+esc(C.NEGOCIO)+'</b><span>Panel de pedidos</span></div></div>'+
+  root.innerHTML='<div class="card login"><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"><div><span>Panel de pedidos</span></div></div>'+
    '<div><label for="em">Correo</label><input id="em" type="email" autocomplete="username"></div><div><label for="pw">Contraseña</label><input id="pw" type="password" autocomplete="current-password"></div>'+
    '<div class="err" id="le"></div><button class="b pri" id="ent" type="button">Entrar</button></div>';
   const go=async()=>{ $("#le").textContent=""; try{ guardar(await tokenReq("password",{email:$("#em").value.trim(),password:$("#pw").value})); await cargar(); }catch(e){ $("#le").textContent=e.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":e.message; } };

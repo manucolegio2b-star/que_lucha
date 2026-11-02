@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tu calendario con fotos</title>
 <meta name="theme-color" content="#F4F6F8">
+<link rel="icon" type="image/png" href="logo/icono.png">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#F4F6F8;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
@@ -341,7 +342,7 @@ function hojaHTML(idx){ // idx 0 = portada, 1..12 = meses
 
 // ---------- Cabecera común ----------
 function cab(volverA, etiqueta){
-  return '<div class="top"><div class="brand"><div class="logo">'+I.logo+'</div><div>'+esc(C.NEGOCIO)+'</div></div>'+
+  return '<div class="top"><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></div>'+
     (volverA?'<button class="back" data-go="'+volverA+'" type="button">'+I.back+esc(etiqueta)+'</button>':'')+'</div>';
 }
 
@@ -461,7 +462,7 @@ function vPrevia(){
 }
 function vGracias(){
   const e=S.enviado;
-  let h='<div class="top"><div class="brand"><div class="logo">'+I.logo+'</div><div>'+esc(C.NEGOCIO)+'</div></div></div>';
+  let h='<div class="top"><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></div></div>';
   h+='<div class="center"><div class="ok">'+I.bigcheck+'</div><h1>¡Gracias, '+esc(e.nombre)+'!</h1>'+
      '<p class="sub" style="margin-top:8px">Hemos recibido tus '+e.nFotos+' foto'+(e.nFotos===1?"":"s")+' y el diseño que has confirmado. Lo revisaremos antes de imprimir.</p>'+
      '<p style="margin:14px 0 0;font-size:14px;color:#5B6472">Tu código de pedido</p><div style="font-size:30px;font-weight:800;letter-spacing:4px;color:#0B7C82">'+esc(e.codigo)+'</div></div>';
