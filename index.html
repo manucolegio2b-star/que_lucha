@@ -79,6 +79,7 @@ section{padding:44px 0 10px}
 .prod .foto{aspect-ratio:1/1;background:var(--ac-l);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .prod .foto img{width:100%;height:100%;object-fit:contain;padding:8px 0}
 .prod .foto.alto{aspect-ratio:3/4;background:#fff}
+.prod .foto.alto .etq{top:auto;bottom:10px}
 .prod .foto svg{width:64px;height:64px;stroke:var(--ac);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
 .prod .cuerpo{padding:14px 14px 16px;display:flex;flex-direction:column;flex:1}
 .prod h3{margin:0;font-size:18px;color:var(--navy)}
@@ -90,9 +91,8 @@ section{padding:44px 0 10px}
 
 /* Más que un regalo */
 .regalo{background:var(--ac-l);border-radius:24px;padding:30px 26px;margin-top:34px;text-align:center}
-.regalo p{max-width:520px;margin-left:auto;margin-right:auto}
 .regalo h2{margin:0;font-size:clamp(26px,5.5vw,36px)}
-.regalo p{margin:8px 0 0;font-size:17px;line-height:1.5}
+.regalo p{margin:8px auto 0;max-width:520px;font-size:17px;line-height:1.5}
 .gracias{display:inline-block;margin-top:16px;background:var(--ac);color:#fff;border-radius:14px 22px 16px 24px;padding:14px 24px;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:700;font-style:italic;font-size:20px;line-height:1.25;transform:rotate(-3deg)}
 
 /* Contacto y pie */
@@ -153,7 +153,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
       <div class="tit"><h2 class="display">Nuestros productos</h2><p>Detalles que emocionan, recuerdos que perduran.</p></div>
       <div class="rejilla">
         <article class="prod">
-          <div class="foto alto"><img src="disenos/quelucha/base.jpg" alt="Calendario de pared personalizado con tus fotos" loading="lazy"><span class="etq ok">Disponible</span></div>
+          <div class="foto alto"><img src="img/ejemplo-quelucha.jpg" alt="Ejemplo de calendario de pared con fotos del equipo" loading="lazy"><span class="etq ok">Disponible</span></div>
           <div class="cuerpo">
             <h3>Calendarios de pared</h3>
             <p>Cada mes, una razón para sonreír. Con tus propias fotos.</p>

@@ -209,6 +209,7 @@ const ZONA_BASE = C.ZONA_FOTOS || {w:29.44, h:17.1};   // cm (se usa en los dise
 // Diseños con plantilla real. zona = rectángulo de fotos en cm sobre la hoja de 32 x 45. anios = años para los que hay plantilla.
 const DISENOS = {
   quelucha:{producto:"quelucha", anios:[2027], base:"disenos/quelucha/base.jpg", marco:null, zona:{x:1.575,y:7.467,w:22.97,h:17.22}},
+  raton:{producto:"premium", anios:[2027], base:"disenos/raton/base.jpg", marco:"disenos/raton/marco.png", zona:{x:5.587,y:4.203,w:21.537,h:16.317}},
   nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}}
 };
 function disenoAct(){ const v=variante(), k=v?v.id:(prod()?prod().id:null); return (prod() && k && DISENOS[k] && DISENOS[k].producto===prod().id) ? DISENOS[k] : null; }
