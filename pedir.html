@@ -132,9 +132,9 @@ const PRODUCTOS = {
     desc:"El mismo póster collage en 3 diseños: ratón, nido y conejo. Cartulina 300 g, 32 × 45 cm.",
     intro:"Elige el diseño y el año. Los 12 meses van bajo tu collage, en una cartulina de 300 g de 32 × 45 cm.",
     corto:"Póster collage", max:6,
-    variantes:[{id:"raton",nombre:"Ratón",bg:"#E9EDF4",ac:"#5B6B8C",ln:"#9AA7C0"},
-               {id:"nido",nombre:"Nido",bg:"#F3EBDD",ac:"#8A6A3B",ln:"#CDBB9A"},
-               {id:"conejo",nombre:"Conejo",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"}]},
+    variantes:[{id:"raton",nombre:"Ratón",thumb:"disenos/raton/miniatura.jpg",bg:"#E9EDF4",ac:"#5B6B8C",ln:"#9AA7C0"},
+               {id:"nido",nombre:"Nido",thumb:"disenos/nido/miniatura.jpg",bg:"#F3EBDD",ac:"#8A6A3B",ln:"#CDBB9A"},
+               {id:"conejo",nombre:"Conejo",thumb:"disenos/conejo/miniatura.jpg",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"}]},
   "12hojas":{id:"12hojas",nombre:"Calendario de 12 hojas",precio:"12,50 €",
     desc:"Portada y una foto por mes. Cartulina 300 g, 32 × 45 cm, a dos caras, anillado y con colgador.",
     corto:"12 hojas", max:13,
@@ -356,7 +356,7 @@ function vProducto(){
   const card=(pr,mini,extra)=>'<button type="button" class="card" data-prod="'+pr.id+'">'+mini+'<div class="info"><div class="t">'+pr.nombre+'</div><div class="d">'+pr.desc+'</div><div class="row"><span style="font-size:16px;font-weight:700;color:#0B7C82">'+pr.precio+'</span>'+(extra||"")+'</div></div>'+I.chev+'</button>';
   return cab()+'<div class="head"><h1>¿Qué calendario quieres?</h1><p class="sub">Verás cómo queda antes de enviar nada.</p></div>'+
     card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
-    card(p,miniPoster("#E9EDF4","#9AA7C0"))+card(d,mini12)+
+    card(p,'<div class="thumb"><div style="position:relative;width:104px;height:112px"><img src="disenos/raton/miniatura.jpg" alt="" style="position:absolute;left:0;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(-9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/conejo/miniatura.jpg" alt="" style="position:absolute;left:44px;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/nido/miniatura.jpg" alt="Diseños del póster premium" style="position:absolute;left:23px;top:4px;width:58px;height:82px;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div></div>')+card(d,mini12)+
     '<p class="small center" style="margin-top:auto">Podrás cambiar de producto en cualquier momento antes de confirmar.</p>';
 }
 function aniosDisp(){ const d=disenoAct(); return d? d.anios : C.ANIOS; }
@@ -376,10 +376,11 @@ function vConfig(){
       const w=es12()?132:96, hh=es12()?186:134;
       let mini;
       if(es12()) mini='<div class="m" style="width:'+w+'px;height:'+hh+'px;background:'+v.bg+';padding:6px 7px 7px"><div style="height:8px;flex:none;background:radial-gradient(circle at 50% 50%,#6B7280 2px,transparent 2.6px) 0 0/12px 8px repeat-x"></div><div style="flex:1;border-radius:2px;background:'+v.grad+'"></div><div style="height:30px;flex:none;border-radius:2px;background:'+v.ac+';color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center">'+S.anio+'</div></div>';
+      else if(v.thumb) mini='<div class="m" style="width:'+w+'px;height:'+Math.round(w*45/32)+'px;padding:0;overflow:hidden;background:#fff"><img src="'+v.thumb+'" alt="Diseño '+esc(v.nombre)+'" width="'+w+'" height="'+Math.round(w*45/32)+'" style="width:100%;height:100%;display:block"></div>';
       else mini='<div class="m" style="width:'+w+'px;height:'+hh+'px;background:'+v.bg+'"><div style="height:44%;border-radius:2px;background:'+v.ac+';opacity:.75"></div><div style="flex:1;background:repeating-linear-gradient(to bottom,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 7px),repeating-linear-gradient(to right,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 12px)"></div></div>';
       h+='<button type="button" class="opt'+(sel?" sel":"")+'" data-var="'+v.id+'" aria-pressed="'+sel+'" aria-label="'+v.nombre+'">'+mini+'<span>'+v.nombre+'</span></button>';
     });
-    h+='</div><div class="small">'+(es12()?"Los dos modelos son iguales y cambian los colores. Miniaturas de ejemplo.":"Miniaturas de ejemplo: aquí irán tus 3 diseños.")+'</div></div>';
+    h+='</div><div class="small">'+(es12()?"Los dos modelos son iguales y cambian los colores. Miniaturas de ejemplo.":(p.variantes.every(v=>v.thumb)?"Los marcos se ven vacíos: ahí irán tus fotos.":"Miniaturas de ejemplo."))+'</div></div>';
   } else {
     const t=p.tema;
     h+='<div class="center" style="padding:6px 0"><div class="mini" style="width:140px;height:197px;margin:0 auto;background:'+t.bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 13px)"></div></div><div class="small" style="margin-top:8px">Un solo diseño. Miniatura de ejemplo.</div></div>';
