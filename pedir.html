@@ -109,6 +109,26 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 .toast{position:fixed;left:16px;right:16px;bottom:20px;max-width:440px;margin:0 auto;background:#111827;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;z-index:70}
 .center{text-align:center}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+/* Adaptación a pantallas grandes */
+@media(min-width:600px){#app{max-width:640px}}
+@media(min-width:900px){
+  #app[data-step=producto],#app[data-step=previa]{max-width:1040px}
+  #app[data-step=config],#app[data-step=datos],#app[data-step=fotos],#app[data-step=gracias]{max-width:600px}
+  #app{padding-top:24px;padding-bottom:40px}
+  .prods{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .prods .card{flex-direction:column;align-items:center;text-align:center;padding:20px 16px;justify-content:flex-start}
+  .prods .card .thumb{transform:scale(1.25);margin:14px 0 18px}
+  .prods .card .info{align-items:center}
+  .prods .card .row{justify-content:center}
+  .prods .card>svg:last-child{display:none}
+  .dos{display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:32px;align-items:start}
+  .dos .izq{position:sticky;top:16px;display:flex;flex-direction:column;gap:14px}
+  .dos .der{display:flex;flex-direction:column;gap:16px}
+}
+.prods{display:flex;flex-direction:column;gap:14px}
+@media(min-width:900px){.prods{display:grid}}
+.dos{display:flex;flex-direction:column;gap:14px}
+@media(min-width:900px){.dos{display:grid}}
 </style>
 </head>
 <body>
@@ -355,8 +375,8 @@ function vProducto(){
   const mini12 = '<div class="thumb"><div style="position:relative;width:84px;height:120px"><div style="position:absolute;left:14px;top:0;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div style="position:absolute;left:7px;top:8px;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div class="mini" style="position:absolute;left:0;top:16px;width:66px;height:100px;padding:4px 5px 5px;gap:4px;background:#F7EFE6"><div style="height:8px;flex:none;background:radial-gradient(circle at 50% 50%,#6B7280 2px,transparent 2.6px) 0 0/12px 8px repeat-x"></div><div style="flex:1;border-radius:2px;background:linear-gradient(135deg,#F7D774,#F0A56F)"></div><div style="height:14px;background:#C9622E;border-radius:2px"></div></div></div></div>';
   const card=(pr,mini,extra)=>'<button type="button" class="card" data-prod="'+pr.id+'">'+mini+'<div class="info"><div class="t">'+pr.nombre+'</div><div class="d">'+pr.desc+'</div><div class="row"><span style="font-size:16px;font-weight:700;color:#0B7C82">'+pr.precio+'</span>'+(extra||"")+'</div></div>'+I.chev+'</button>';
   return cab()+'<div class="head"><h1>¿Qué calendario quieres?</h1><p class="sub">Verás cómo queda antes de enviar nada.</p></div>'+
-    card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
-    card(p,'<div class="thumb"><div style="position:relative;width:104px;height:112px"><img src="disenos/raton/miniatura.jpg" alt="" style="position:absolute;left:0;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(-9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/conejo/miniatura.jpg" alt="" style="position:absolute;left:44px;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/nido/miniatura.jpg" alt="Diseños del póster premium" style="position:absolute;left:23px;top:4px;width:58px;height:82px;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div></div>')+card(d,mini12)+
+    '<div class="prods">'+card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
+    card(p,'<div class="thumb"><div style="position:relative;width:104px;height:112px"><img src="disenos/raton/miniatura.jpg" alt="" style="position:absolute;left:0;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(-9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/conejo/miniatura.jpg" alt="" style="position:absolute;left:44px;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/nido/miniatura.jpg" alt="Diseños del póster premium" style="position:absolute;left:23px;top:4px;width:58px;height:82px;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div></div>')+card(d,mini12)+'</div>'+
     '<p class="small center" style="margin-top:auto">Podrás cambiar de producto en cualquier momento antes de confirmar.</p>';
 }
 function aniosDisp(){ const d=disenoAct(); return d? d.anios : C.ANIOS; }
@@ -441,12 +461,14 @@ function vPrevia(){
     h+='<div class="hscroll">'; for(let i=0;i<13;i++) h+=hojaHTML(i); h+='</div>';
     h+='<div class="thumbs">'+S.slots.map((f,i)=>'<div><img src="'+f.preview+'" alt="">'+(i===0?"Port.":MES3[i-1])+'</div>').join("")+'</div>';
   } else {
+    h+='<div class="dos"><div class="izq">';
     const m=S.montaje;
     if(m && m.url) h+='<img id="posterImg" class="posterimg" src="'+m.url+'" alt="Vista previa de tu calendario" style="cursor:zoom-in"><p class="small center">Toca el póster para verlo más grande.</p>';
     else if(m && m.fallo) h+='<div class="bad">No se ha podido dibujar la vista previa, pero puedes enviar tus fotos y lo prepararemos nosotros.</div>';
     else h+='<div class="posterimg wait"><div class="spin"></div><div>Preparando tu calendario…</div></div>';
     const cur=asegurarDisp(), d=S.disp, pp={}; cur.rects.forEach(q=>pp[q.i]=q.ppp);
     if(d.lista.length>1) h+='<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-disp="-1" style="flex:1" aria-label="Disposición anterior">‹ Anterior</button><div style="flex:none;text-align:center;font-size:13px;color:#5B6472;line-height:1.2">Disposición<br><b style="color:#111827;font-size:15px">'+(d.idx+1)+' de '+d.lista.length+'</b></div><button type="button" class="btn2" data-disp="1" style="flex:1" aria-label="Disposición siguiente">Siguiente ›</button></div>';
+    h+='</div><div class="der">';
     const malas=S.fotos.map((f,i)=>i).filter(i=>pp[i]<150);
     h+='<div class="field"><label>Tus fotos <span>(toca la X para quitar una)</span></label><div class="thumbs" style="gap:10px">'+S.fotos.map((f,i)=>{
       const c=pp[i]>=200?"#1B7F4B":(pp[i]>=150?"#9A6700":"#C0392B");
@@ -461,6 +483,7 @@ function vPrevia(){
   h+='<div class="sum">'+filas.map(f=>'<div><span>'+f[0]+'</span><span>'+esc(f[1])+'</span></div>').join("")+'</div>';
   h+='<div style="margin-top:auto;display:flex;flex-direction:column;gap:12px"><label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>Acepto el uso de mis fotos para hacer el calendario y que se borren al terminar el pedido.</span></label>'+
      '<button type="button" class="btn" style="margin-top:0" id="enviar" '+((S.consent&&(es12()||S.montaje))?"":"disabled")+'>Confirmar y enviar '+n+' foto'+(n===1?"":"s")+'</button></div>';
+  if(!es12()) h+='</div></div>';
   return h;
 }
 function vGracias(){
@@ -477,6 +500,7 @@ function vGracias(){
 // ---------- Render + eventos ----------
 function render(){
   const app=$("#app"), vistas={producto:vProducto,config:vConfig,datos:vDatos,fotos:vFotos,previa:vPrevia,gracias:vGracias};
+  app.dataset.step = S.step;
   app.innerHTML = vistas[S.step]();
   bind();
 }

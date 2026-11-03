@@ -70,7 +70,18 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 .zoom{position:fixed;inset:0;background:rgba(17,24,39,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .zoom img{max-width:100%;max-height:100%;border-radius:6px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:70}
-@media(max-width:900px){.cols,.big{grid-template-columns:1fr}.tr{grid-template-columns:60px 1fr 1fr 90px;}.tr>:nth-child(4),.tr>:nth-child(5){display:none}main,.bar>div{padding-left:16px;padding-right:16px}}
+@media(max-width:900px){.cols,.big{grid-template-columns:minmax(0,1fr)}.cols>*,.big>*{min-width:0}main,.bar>div{padding-left:16px;padding-right:16px}}
+@media(max-width:760px){
+  .tr.th{display:none}
+  .tr{grid-template-columns:52px minmax(0,1fr) auto;column-gap:10px;row-gap:6px;align-items:start}
+  .tr>:nth-child(1){grid-column:1;grid-row:1 / span 2}
+  .tr>:nth-child(2){grid-column:2;grid-row:1;min-width:0}
+  .tr>:nth-child(3){grid-column:2;grid-row:2;min-width:0}
+  .tr>:nth-child(4),.tr>:nth-child(5){display:none}
+  .tr>:nth-child(6){grid-column:3;grid-row:1;justify-self:end}
+  .tr>:nth-child(7){grid-column:3;grid-row:2;justify-self:end}
+  .top{flex-direction:column;align-items:flex-start;gap:12px}
+}
 </style>
 </head>
 <body>
