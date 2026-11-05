@@ -25,7 +25,11 @@ h2{margin:0 0 10px;font-size:16px}
 .sub{margin:0;font-size:15px;color:#5B6472}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
 .cnt{display:flex;flex-wrap:wrap;gap:10px}
-.cnt div{border-radius:12px;padding:8px 14px;font-size:14px}.cnt strong{font-size:18px}
+.cnt button{border:2px solid transparent;border-radius:12px;padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer}.cnt button[aria-pressed=true]{border-color:currentColor;box-shadow:0 0 0 2px #fff inset}.cnt strong{font-size:18px}
+.busq{width:100%;height:46px;border:1.5px solid #D0D5DD;border-radius:12px;padding:0 14px;font-size:16px;font-family:inherit;background:#fff}
+.tr.sel{grid-template-columns:34px 70px 1.3fr 1.6fr 60px 100px 110px 170px;cursor:pointer}.tr.sel:not(.th):hover{background:#F9FAFB}
+.ck{display:flex;align-items:center}.ck input{width:20px;height:20px;accent-color:#13A4AA}
+.lote{position:sticky;bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#0C2B4B;color:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}.lote[hidden]{display:none}.lote .b{height:38px;padding:0 14px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{height:40px;padding:0 16px;border-radius:10px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151}
 .seg button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
@@ -82,6 +86,17 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
   .tr>:nth-child(7){grid-column:3;grid-row:2;justify-self:end}
   .top{flex-direction:column;align-items:flex-start;gap:12px}
 }
+@media(max-width:760px){
+  .tr.sel{grid-template-columns:30px 40px minmax(0,1fr) auto}
+  .tr.sel>:nth-child(1){grid-column:1;grid-row:1 / span 2}
+  .tr.sel>:nth-child(2){grid-column:2;grid-row:1 / span 2}
+  .tr.sel>:nth-child(3){grid-column:3;grid-row:1;min-width:0}
+  .tr.sel>:nth-child(4){display:block;grid-column:3;grid-row:2;min-width:0}
+  .tr.sel>:nth-child(5),.tr.sel>:nth-child(6){display:none}
+  .tr.sel>:nth-child(7){grid-column:4;grid-row:2;justify-self:end}
+  .tr.sel>:nth-child(8){grid-column:4;grid-row:1;justify-self:end}
+  .cnt button{flex:1 1 40%}
+}
 </style>
 </head>
 <body>
@@ -97,7 +112,7 @@ const PRODUCTOS={quelucha:{n:1,nombre:"Calendario Que Lucha!",corto:"Que Lucha!"
   premium:{n:2,nombre:"Calendario Póster Premium",corto:"Póster Premium",precio:"3 €",tam:"Cartulina 300 g · 32 × 45 cm"},
   "12hojas":{n:3,nombre:"Calendario de 12 hojas",corto:"12 hojas",precio:"12,50 €",tam:"Cartulina 300 g · 32 × 45 cm · 7 hojas a dos caras"}};
 const MODELOS={raton:"Ratón",nido:"Nido",conejo:"Conejo",modelo1:"Modelo 1",modelo2:"Modelo 2"};
-const SIT={rev:["Por revisar fotos","#FFF1CC","#7A4B00"],listo:["Listo para imprimir","#E3EAFD","#1E3FA8"],imp:["Impreso","#DDF1F3","#0F5A66"],ent:["Entregado","#DDF3E6","#14532D"]};
+const SIT={rev:["Por revisar fotos","#FFF1CC","#7A4B00"],listo:["Listo para imprimir","#E3EAFD","#1E3FA8"],imp:["Impreso","#EDE7FB","#4C2A9A"],ent:["Entregado","#DDF3E6","#14532D"]};
 const ORDEN=["rev","listo","imp","ent"];
 const SIGUIENTE={rev:"Marcar fotos como revisadas",listo:"Marcar como impreso",imp:"Marcar como entregado"};
 // Plantillas a resolución de impresión (200 ppp) para el archivo final
@@ -146,14 +161,20 @@ const pill=(bg,fg,t)=>'<span class="pill" style="background:'+bg+';color:'+fg+'"
 const pPago=p=>p.pagado?pill("#DDF3E6","#14532D","Pagado"):pill("#FFF1CC","#7A4B00","Sin pagar");
 const pSit=p=>{ const s=SIT[p.situacion]||SIT.rev; return pill(s[1],s[2],s[0]); };
 const nFotos=p=>(p.datos&&p.datos.n_fotos)||(p.fotos||[]).length;
-function fila(p){
+const DIAS_ESTANCADO=3;
+const dias=p=>Math.floor((Date.now()-new Date(p.creado).getTime())/864e5);
+const estancado=p=>p.situacion!=="ent"&&dias(p)>=DIAS_ESTANCADO;
+let marcados=new Set();
+function fila(p,conCk){
   const d=p.datos||{};
-  return '<a class="tr" href="#/pedido/'+p.numero+'"><span style="font-weight:700">'+p.numero+'</span>'+
+  const ini=conCk?'<div class="tr sel" data-n="'+p.numero+'" tabindex="0"><span class="ck"><input type="checkbox"'+(marcados.has(p.numero)?" checked":"")+' aria-label="Seleccionar pedido '+p.numero+'"></span>':'<a class="tr" href="#/pedido/'+p.numero+'">';
+  return ini+'<span style="font-weight:700">'+p.numero+'</span>'+
    '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div></span>'+
    '<span><div style="font-weight:600">'+(PRODUCTOS[p.producto]?PRODUCTOS[p.producto].n+" · "+PRODUCTOS[p.producto].corto:esc(p.producto))+'</div><div class="sm">'+esc(detalle(p))+'</div></span>'+
-   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+'</span></a>';
+   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
 }
 const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendario</span><span>Fotos</span><span>Fecha</span><span>Pago</span><span>Situación</span></div>';
+const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><input type="checkbox" id="todos" aria-label="Seleccionar todos"></span>');
 
 // ---------- Estructura ----------
 function barra(ruta){
@@ -185,20 +206,72 @@ function pintarLogin(){
   $("#ent").onclick=go; $("#pw").onkeydown=e=>{ if(e.key==="Enter") go(); };
 }
 
+let filtroEst="", busq="";
+const predEst={rev:p=>p.situacion==="rev",listo:p=>p.situacion==="listo",imp:p=>p.situacion==="imp",sin:p=>!p.pagado,estancado:estancado};
+const normT=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function listaVisible(){
+  const q=normT(busq.trim()).replace(/^#/,"");
+  let l;
+  if(filtroEst) l=pedidos.filter(predEst[filtroEst]);
+  else if(q) l=pedidos.slice();
+  else l=pedidos.filter(p=>vistaGrupo==="pend"?p.situacion!=="ent":p.situacion==="ent");
+  if(filtroProd) l=l.filter(p=>p.producto===filtroProd);
+  if(q) l=l.filter(p=>{ const d=p.datos||{}; return String(p.numero).includes(q)||normT(d.nombre).includes(q)||normT(d.servicio).includes(q)||normT(d.categoria).includes(q); });
+  return l;
+}
+function pintarTabla(){
+  const l=listaVisible();
+  const vis=new Set(l.map(p=>p.numero)); marcados=new Set([...marcados].filter(n=>vis.has(n)));
+  $("#tbl").innerHTML=(l.length&&!cargando&&!errorCarga?cabSel:cab)+estado()+(!cargando&&!errorCarga?(l.length?l.map(p=>fila(p,true)).join(""):'<div class="empty">No hay pedidos con ese filtro.</div>'):"");
+  const nota=$("#nota"); if(nota) nota.textContent=filtroEst||busq.trim()?(l.length+" pedido"+(l.length===1?"":"s")+(busq.trim()&&!filtroEst?" · buscando en todos los pedidos":"")):"";
+  enlazarComun(); pintarLote();
+  const todos=$("#todos"); if(todos){ todos.checked=l.length>0&&l.every(p=>marcados.has(p.numero)); todos.onchange=()=>{ marcados=todos.checked?new Set(l.map(p=>p.numero)):new Set(); pintarTabla(); }; }
+}
+function pintarLote(){
+  const b=$("#lote"); if(!b) return;
+  const n=marcados.size; b.hidden=!n;
+  if(n) b.innerHTML='<strong>'+n+' seleccionado'+(n===1?"":"s")+'</strong><button class="b" data-l="rev">Fotos revisadas</button><button class="b" data-l="listo">Impreso</button><button class="b" data-l="imp">Entregado</button><button class="b" data-l="pago">Pagado</button><button class="b" data-l="no">Quitar selección</button>';
+  b.querySelectorAll("[data-l]").forEach(x=>x.onclick=()=>lote(x.dataset.l));
+}
+async function lote(acc){
+  if(acc==="no"){ marcados=new Set(); return pintarTabla(); }
+  const def={rev:["listo",p=>p.situacion==="rev","revisadas (listos para imprimir)"],listo:["imp",p=>p.situacion==="listo","impresos"],imp:["ent",p=>p.situacion==="imp","entregados"]};
+  let cambios,filtro,txt;
+  if(acc==="pago"){ cambios={pagado:true}; filtro=p=>!p.pagado; txt="pagados"; }
+  else { cambios={situacion:def[acc][0]}; filtro=def[acc][1]; txt=def[acc][2]; }
+  const sel=pedidos.filter(p=>marcados.has(p.numero)&&filtro(p));
+  if(!sel.length){ aviso("Ninguno de los seleccionados necesita ese cambio."); return; }
+  const omit=marcados.size-sel.length;
+  if(!confirm("¿Marcar "+sel.length+" pedido"+(sel.length===1?"":"s")+" como "+txt+"?"+(omit?"\n("+omit+" de los seleccionados no se tocan porque no están en el paso anterior.)":""))) return;
+  try{ await api("/rest/v1/pedidos?id=in.("+sel.map(p=>p.id).join(",")+")",{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(cambios)}); sel.forEach(p=>Object.assign(p,cambios)); aviso(sel.length+" pedido"+(sel.length===1?"":"s")+" actualizado"+(sel.length===1?"":"s")+"."); marcados=new Set(); }
+  catch(e){ aviso("No se pudo guardar: "+e.message); await cargar(); return; }
+  pintarLista();
+}
 function pintarLista(){
-  const rev=pedidos.filter(p=>p.situacion==="rev").length, listo=pedidos.filter(p=>p.situacion==="listo").length, imp=pedidos.filter(p=>p.situacion==="imp").length, sin=pedidos.filter(p=>!p.pagado).length;
+  const c=k=>pedidos.filter(predEst[k]).length;
   const pend=pedidos.filter(p=>p.situacion!=="ent"), hechos=pedidos.filter(p=>p.situacion==="ent");
-  let lista=(vistaGrupo==="pend"?pend:hechos).filter(p=>!filtroProd||p.producto===filtroProd);
   const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]];
-  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha.</p></div>'+
-   '<div class="cnt"><div style="background:#FFF1CC;color:#7A4B00"><strong>'+rev+'</strong> por revisar</div><div style="background:#E3EAFD;color:#1E3FA8"><strong>'+listo+'</strong> por imprimir</div><div style="background:#DDF1F3;color:#0F5A66"><strong>'+imp+'</strong> por entregar</div><div style="background:#FDE7E4;color:#8A2A20"><strong>'+sin+'</strong> sin pagar</div></div></div>'+
-   '<div class="filters"><div class="seg"><button data-g="pend" aria-pressed="'+(vistaGrupo==="pend")+'">Pendientes ('+pend.length+')</button><button data-g="hechos" aria-pressed="'+(vistaGrupo==="hechos")+'">Hechos ('+hechos.length+')</button></div>'+
-   '<div class="seg">'+chips.map(c=>'<button data-c="'+c[0]+'" aria-pressed="'+(filtroProd===c[0])+'">'+c[1]+'</button>').join("")+'<button id="act" style="margin-left:8px">Actualizar</button></div></div>'+
-   '<div class="tbl">'+cab+estado()+(!cargando&&!errorCarga?(lista.length?lista.map(fila).join(""):'<div class="empty">No hay pedidos en este grupo con ese filtro.</div>'):"")+'</div></main>';
-  enlazarComun();
-  root.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ vistaGrupo=b.dataset.g; pintarLista(); });
+  const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
+  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha. Pulsa un contador para filtrar.</p></div>'+
+   '<div class="cnt">'+tarj.map(t=>'<button type="button" data-e="'+t[0]+'" aria-pressed="'+(filtroEst===t[0])+'" style="background:'+t[1]+';color:'+t[2]+'"><strong>'+c(t[0])+'</strong> '+t[3]+'</button>').join("")+'</div></div>'+
+   '<input class="busq" id="busq" type="search" placeholder="🔍 Buscar por nº, cliente o servicio…" value="'+esc(busq)+'" autocomplete="off" aria-label="Buscar pedidos">'+
+   '<div class="filters"><div class="seg"'+(filtroEst?' style="opacity:.45"':'')+'><button data-g="pend" aria-pressed="'+(vistaGrupo==="pend")+'">Pendientes ('+pend.length+')</button><button data-g="hechos" aria-pressed="'+(vistaGrupo==="hechos")+'">Hechos ('+hechos.length+')</button></div>'+
+   '<div class="seg">'+chips.map(x=>'<button data-c="'+x[0]+'" aria-pressed="'+(filtroProd===x[0])+'">'+x[1]+'</button>').join("")+'<button id="act" style="margin-left:8px">Actualizar</button></div></div>'+
+   '<p class="sm" id="nota" style="margin:0"></p><div class="tbl" id="tbl"></div><div class="lote" id="lote" hidden></div></main>';
+  root.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{ filtroEst=filtroEst===b.dataset.e?"":b.dataset.e; marcados=new Set(); pintarLista(); });
+  root.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ vistaGrupo=b.dataset.g; filtroEst=""; marcados=new Set(); pintarLista(); });
   root.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ filtroProd=b.dataset.c; pintarLista(); });
   $("#act").onclick=cargar;
+  $("#busq").oninput=e=>{ busq=e.target.value; pintarTabla(); };
+  const t=$("#tbl");
+  t.onclick=e=>{
+    const fila=e.target.closest(".tr.sel:not(.th)"); if(!fila) return;
+    const n=+fila.dataset.n;
+    if(e.target.closest(".ck")){ const cb=fila.querySelector("input"); if(e.target!==cb) cb.checked=!cb.checked; cb.checked?marcados.add(n):marcados.delete(n); const todos=$("#todos"); if(todos) todos.checked=listaVisible().every(p=>marcados.has(p.numero)); pintarLote(); return; }
+    location.hash="#/pedido/"+n;
+  };
+  t.onkeydown=e=>{ if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("sel")) location.hash="#/pedido/"+e.target.dataset.n; };
+  pintarTabla();
 }
 
 function pintarBuscar(){
