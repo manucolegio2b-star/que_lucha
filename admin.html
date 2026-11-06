@@ -27,7 +27,8 @@ h2{margin:0 0 10px;font-size:16px}
 .cnt{display:flex;flex-wrap:wrap;gap:10px}
 .cnt button{border:2px solid transparent;border-radius:12px;padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer}.cnt button[aria-pressed=true]{border-color:currentColor;box-shadow:0 0 0 2px #fff inset}.cnt strong{font-size:18px}
 .busq{width:100%;height:46px;border:1.5px solid #D0D5DD;border-radius:12px;padding:0 14px;font-size:16px;font-family:inherit;background:#fff}
-.tr.sel{grid-template-columns:34px 70px 1.3fr 1.6fr 60px 100px 110px 170px;cursor:pointer}.tr.sel:not(.th):hover{background:#F9FAFB}
+.tr.sel{grid-template-columns:34px 56px 1.3fr 1.5fr 50px 92px 100px 165px 84px;cursor:pointer}
+.acc{display:flex;flex-direction:column;gap:6px}.acc button{height:30px;padding:0 8px;border-radius:8px;border:1.5px solid #D0D5DD;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit}.acc button.del{color:#B42318;border-color:#E8B4AE}.tr.sel:not(.th):hover{background:#F9FAFB}
 .ck{display:flex;align-items:center}.ck input{width:20px;height:20px;accent-color:#13A4AA}
 .lote{position:sticky;bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#0C2B4B;color:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}.lote[hidden]{display:none}.lote .b{height:38px;padding:0 14px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -96,6 +97,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
   .tr.sel>:nth-child(5),.tr.sel>:nth-child(6){display:none}
   .tr.sel>:nth-child(7){grid-column:4;grid-row:2;justify-self:end}
   .tr.sel>:nth-child(8){grid-column:4;grid-row:1;justify-self:end}
+  .tr.sel>:nth-child(9){grid-column:3 / span 2;grid-row:3;justify-self:end}.acc{flex-direction:row}.acc button{height:34px;padding:0 14px}
   .cnt button{flex:1 1 40%}
 }
 </style>
@@ -179,12 +181,12 @@ function fila(p,conCk){
   const d=p.datos||{};
   const ini=conCk?'<div class="tr sel" data-n="'+p.numero+'" tabindex="0"><span class="ck"><input type="checkbox"'+(marcados.has(p.numero)?" checked":"")+' aria-label="Seleccionar pedido '+p.numero+'"></span>':'<a class="tr" href="#/pedido/'+p.numero+'">';
   return ini+'<span style="font-weight:700">'+p.numero+'</span>'+
-   '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div></span>'+
+   '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div>'+(d.movil?'<div class="sm" style="white-space:nowrap">📞 '+esc(d.movil)+'</div>':'')+'</span>'+
    '<span><div style="font-weight:600">'+(PRODUCTOS[p.producto]?PRODUCTOS[p.producto].n+" · "+PRODUCTOS[p.producto].corto:esc(p.producto))+'</div><div class="sm">'+esc(detalle(p))+'</div></span>'+
-   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(sinLista(p)?'<div class="sm" style="color:#7A4B00;font-weight:700;margin-top:3px">📱 Sin confirmar en la lista</div>':'')+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
+   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(sinLista(p)?'<div class="sm" style="color:#7A4B00;font-weight:700;margin-top:3px">📱 Sin confirmar en la lista</div>':'')+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'<span class="acc"><button type="button" data-an="'+p.numero+'">'+(p.anulado?'Recuperar':'Anular')+'</button><button type="button" class="del" data-bo="'+p.numero+'">Borrar</button></span></div>':'</a>');
 }
 const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendario</span><span>Fotos</span><span>Fecha</span><span>Pago</span><span>Situación</span></div>';
-const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><input type="checkbox" id="todos" aria-label="Seleccionar todos"></span>');
+const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><input type="checkbox" id="todos" aria-label="Seleccionar todos"></span>').replace('<span>Situación</span></div>','<span>Situación</span><span></span></div>');
 
 // ---------- Estructura ----------
 function barra(ruta){
@@ -271,12 +273,15 @@ async function anularPedidos(sel,an){
   try{ await api("/rest/v1/pedidos?id=in.("+sel.map(p=>p.id).join(",")+")",{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({anulado:v})}); sel.forEach(p=>p.anulado=v); aviso(sel.length+" pedido"+(sel.length===1?"":"s")+(an?" anulado":" recuperado")+(sel.length===1?"":"s")+"."); return true; }
   catch(e){ aviso("No se pudo guardar: "+e.message+(/anulado/.test(e.message)?" (falta ejecutar supabase_lista.sql)":"")); return false; }
 }
-async function borrarPedidos(sel){
+async function borrarPedidos(sel,rapido){
   if(!sel.length) return false;
   const nums=sel.map(p=>p.numero).join(", ");
+  if(rapido){ if(!confirm("¿BORRAR DEL TODO el pedido "+nums+" de "+((sel[0].datos||{}).nombre||"")+", con sus fotos? No se puede deshacer.\n\nSi es un pedido real cancelado, mejor usa Anular.")) return false; }
+  else {
   const t=prompt((sel.length===1?"Vas a BORRAR DEL TODO el pedido "+nums:"Vas a BORRAR DEL TODO "+sel.length+" pedidos ("+nums+")")+", con sus fotos. No se puede deshacer.\n\nSi es un pedido real cancelado, mejor usa Anular.\n\nPara confirmar, escribe "+(sel.length===1?"el número del pedido ("+sel[0].numero+")":"BORRAR")+":");
   if(t==null) return false;
   if(sel.length===1?t.trim()!==String(sel[0].numero):t.trim().toUpperCase()!=="BORRAR"){ aviso("No coincide. No se ha borrado nada."); return false; }
+  }
   try{
     const rutas=[].concat(...sel.map(p=>(p.fotos||[]).concat(p.datos&&p.datos.montaje?[p.datos.montaje]:[])));
     for(let i=0;i<rutas.length;i+=500) await api("/storage/v1/object/"+C.BUCKET,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({prefixes:rutas.slice(i,i+500)})});
@@ -307,6 +312,11 @@ function pintarLista(){
   t.onclick=e=>{
     const fila=e.target.closest(".tr.sel:not(.th)"); if(!fila) return;
     const n=+fila.dataset.n;
+    const ba=e.target.closest("[data-an]"), bb=e.target.closest("[data-bo]");
+    if(ba||bb){ const p=pedidos.find(x=>x.numero===n); if(!p) return;
+      if(ba){ (async()=>{ if(!p.anulado&&!confirm("¿Anular el pedido "+n+" de "+((p.datos||{}).nombre||"")+"? Dejará de contar para el límite y su móvil podrá volver a pedir. Se puede deshacer.")) return; await anularPedidos([p],!p.anulado); marcados.delete(n); pintarLista(); })(); }
+      else (async()=>{ if(await borrarPedidos([p],true)){ marcados.delete(n); pintarLista(); } })();
+      return; }
     if(e.target.closest(".ck")){ const cb=fila.querySelector("input"); if(e.target!==cb) cb.checked=!cb.checked; cb.checked?marcados.add(n):marcados.delete(n); const todos=$("#todos"); if(todos) todos.checked=listaVisible().every(p=>marcados.has(p.numero)); pintarLote(); return; }
     location.hash="#/pedido/"+n;
   };
@@ -456,15 +466,13 @@ function pintarFicha(num){
    '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
    (p.producto==="12hojas"?'<button class="b pri" disabled>Generar calendario</button><p class="sm">El calendario de 12 hojas se prepara en la etapa 4.</p>':
     (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section>'+
-   '<section class="card"><h2>Anular o borrar</h2>'+(p.anulado?'<p class="sm" style="margin:0 0 10px">Anulado el '+fecha(p.anulado)+'. No cuenta para el límite y su móvil puede volver a pedir.</p><button class="b full" id="anular">Recuperar pedido</button>':'<p class="sm" style="margin:0 0 10px"><b>Anular</b>: para pedidos reales cancelados. Se guarda y se puede deshacer.<br><b>Borrar</b>: para pruebas. Se borra con sus fotos y no se puede deshacer.</p><button class="b full" id="anular">Anular pedido</button>')+'<button class="b full" id="borrar" style="margin-top:8px;color:#B42318;border-color:#E8B4AE">Borrar del todo</button></section></div></div></main>';
+   '</div></div></main>';
   enlazarComun();
   $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
   const el=$("#enlista"); if(el) el.onclick=()=>marcarLista(apuDe(p),true);
   const sig=$("#sig"); if(sig) sig.onclick=async()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } await guardarCambios(p,{situacion:ORDEN[idx+1]}); if(ORDEN[idx+1]==="ent"&&(p.fotos||[]).length&&confirm("Pedido entregado. ¿Borrar ahora las fotos del cliente?")) await borrarFotos(p); };
   const bf=$("#borrarfotos"); if(bf) bf.onclick=async()=>{ if(!confirm("¿Borrar las fotos de este cliente (originales y montaje)? No se puede deshacer y ya no podrás generar el calendario.")) return; bf.disabled=true; await borrarFotos(p); };
   const at=$("#atras"); if(at) at.onclick=()=>guardarCambios(p,{situacion:ORDEN[idx-1]});
-  $("#anular").onclick=async()=>{ if(!p.anulado&&!confirm("¿Anular el pedido "+p.numero+"? Dejará de contar para el límite y su móvil podrá volver a pedir. Se puede deshacer.")) return; await anularPedidos([p],!p.anulado); pintar(); };
-  $("#borrar").onclick=async()=>{ if(await borrarPedidos([p])) location.hash="#/"; };
   root.querySelectorAll("[data-ap],[data-re]").forEach(b=>b.onclick=()=>{ const a=b.dataset.ap||b.dataset.re, v=b.dataset.ap?"ok":"no"; const n=Object.assign({},p.fotos_ok||{}); if(n[a]===v) delete n[a]; else n[a]=v; guardarCambios(p,{fotos_ok:n}); });
   const rutas=(p.fotos||[]).concat(d.montaje?[d.montaje]:[]);
   urlsFirmadas(rutas).then(us=>{
