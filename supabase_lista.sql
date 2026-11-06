@@ -115,6 +115,7 @@ begin
   if r <> 'ok' then raise exception 'QL_%', r; end if;
   return new;
 end $$;
+revoke all on function public.antes_pedido() from public, anon, authenticated;
 drop trigger if exists antes_pedido on public.pedidos;
 create trigger antes_pedido before insert on public.pedidos
   for each row execute function public.antes_pedido();
