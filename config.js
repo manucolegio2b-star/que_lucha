@@ -4,7 +4,7 @@ window.CONFIG = {
   SUPABASE_KEY: "sb_publishable_izR84OwN7WPC_R7qs6Phhg_IJF6nLIV",
   NEGOCIO: "¡Qué lucha!!",   // <- cambia aquí el nombre que sale arriba
   BUCKET: "fotos",
-  WHATSAPP: "34627627627",   // número con prefijo de país, sin + ni espacios (el de tu plantilla; confírmalo)
+  WHATSAPP: "34684712841",   // número con prefijo de país, sin + ni espacios
   // Mensaje que el cliente te envía por WhatsApp al apuntarse a la lista ¡Qué lucha!.
   // {nombre} y {codigo} se cambian solos por sus datos.
   WA_APUNTARSE: "Hola, soy {nombre}. Autorizo a ¡Qué lucha!! a añadirme a su lista de difusión de WhatsApp. Mi código es {codigo}.",
