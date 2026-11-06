@@ -74,6 +74,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 .zoom{position:fixed;inset:0;background:rgba(17,24,39,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .zoom img{max-width:100%;max-height:100%;border-radius:6px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:70}
+@media(max-width:560px){nav{flex-wrap:wrap;gap:2px;width:100%;justify-content:space-between}nav a,nav button{padding:0 9px}}
 @media(max-width:900px){.cols,.big{grid-template-columns:minmax(0,1fr)}.cols>*,.big>*{min-width:0}main,.bar>div{padding-left:16px;padding-right:16px}}
 @media(max-width:760px){
   .tr.th{display:none}
@@ -142,10 +143,18 @@ async function api(path,opts,reintento){
 
 // ---------- Datos ----------
 let pedidos=[], cargando=false, errorCarga="";
+let apuntados=[], errApu="";
+async function cargarApuntados(){
+  errApu=""; try{ apuntados=await (await api("/rest/v1/apuntados?select=*&order=creado.desc&limit=5000")).json(); }
+  catch(e){ apuntados=[]; errApu=/404|PGRST205|apuntados/.test(e.message)?"Falta ejecutar supabase_lista.sql en Supabase (una sola vez).":e.message; }
+}
+const apuDe=p=>{ const c=p.datos&&p.datos.acceso; return c?apuntados.find(a=>a.codigo===c):null; };
+const porAnadir=()=>apuntados.filter(a=>!a.en_lista).length;
 async function cargar(){
   cargando=true; errorCarga=""; pintar();
   try{ const r=await api("/rest/v1/pedidos?select=*&order=creado.desc&limit=2000"); pedidos=await r.json(); }
   catch(e){ errorCarga=e.message; }
+  await cargarApuntados();
   cargando=false; pintar();
 }
 async function guardarCambios(p,cambios){
@@ -164,7 +173,7 @@ const nFotos=p=>(p.datos&&p.datos.n_fotos)||(p.fotos||[]).length;
 const DIAS_ESTANCADO=3;
 const dias=p=>Math.floor((Date.now()-new Date(p.creado).getTime())/864e5);
 const estancado=p=>p.situacion!=="ent"&&dias(p)>=DIAS_ESTANCADO;
-const sinWA=p=>!!(p.datos&&p.datos.via_wa)&&!p.wa_ok;
+const sinLista=p=>{ const a=apuDe(p); return !!a&&!a.en_lista; };
 let marcados=new Set();
 function fila(p,conCk){
   const d=p.datos||{};
@@ -172,7 +181,7 @@ function fila(p,conCk){
   return ini+'<span style="font-weight:700">'+p.numero+'</span>'+
    '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div></span>'+
    '<span><div style="font-weight:600">'+(PRODUCTOS[p.producto]?PRODUCTOS[p.producto].n+" · "+PRODUCTOS[p.producto].corto:esc(p.producto))+'</div><div class="sm">'+esc(detalle(p))+'</div></span>'+
-   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(sinWA(p)?'<div class="sm" style="color:#7A4B00;font-weight:700;margin-top:3px">📱 Falta su WhatsApp</div>':'')+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
+   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(sinLista(p)?'<div class="sm" style="color:#7A4B00;font-weight:700;margin-top:3px">📱 Sin confirmar en la lista</div>':'')+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
 }
 const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendario</span><span>Fotos</span><span>Fecha</span><span>Pago</span><span>Situación</span></div>';
 const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><input type="checkbox" id="todos" aria-label="Seleccionar todos"></span>');
@@ -180,7 +189,7 @@ const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><i
 // ---------- Estructura ----------
 function barra(ruta){
   return '<div class="bar"><div><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"><div><span>Panel de pedidos</span></div></div>'+
-   '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="ajustes"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/ajustes" class="'+(ruta==="ajustes"?"on":"")+'">Ajustes</a><button id="salir" type="button">Salir</button></nav></div></div>';
+   '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="ajustes"&&ruta!=="lista"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/lista" class="'+(ruta==="lista"?"on":"")+'">Lista'+(porAnadir()?' <span class="pill" style="background:#FFF1CC;color:#7A4B00;margin-left:6px;padding:2px 8px">'+porAnadir()+'</span>':'')+'</a><a href="#/ajustes" class="'+(ruta==="ajustes"?"on":"")+'">Ajustes</a><button id="salir" type="button">Salir</button></nav></div></div>';
 }
 const root=$("#root");
 let vistaGrupo="pend", filtroProd="";
@@ -194,6 +203,7 @@ function pintar(){
   if(R.r==="imprimir") return pintarImprimir(+R.id);
   if(R.r==="buscar") return pintarBuscar();
   if(R.r==="ajustes") return pintarAjustes();
+  if(R.r==="lista") return pintarApuntados();
   return pintarLista();
 }
 function estado(){ return cargando?'<div class="empty">Cargando pedidos…</div>':(errorCarga?'<div class="empty" style="color:#B42318">'+esc(errorCarga)+'<br><br><button class="b" id="reint">Reintentar</button></div>':""); }
@@ -208,7 +218,7 @@ function pintarLogin(){
 }
 
 let filtroEst="", busq="";
-const predEst={rev:p=>p.situacion==="rev",listo:p=>p.situacion==="listo",imp:p=>p.situacion==="imp",sin:p=>!p.pagado,estancado:estancado,sinwa:sinWA};
+const predEst={rev:p=>p.situacion==="rev",listo:p=>p.situacion==="listo",imp:p=>p.situacion==="imp",sin:p=>!p.pagado,estancado:estancado,sinlista:sinLista};
 const normT=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
 function listaVisible(){
   const q=normT(busq.trim()).replace(/^#/,"");
@@ -217,7 +227,7 @@ function listaVisible(){
   else if(q) l=pedidos.slice();
   else l=pedidos.filter(p=>vistaGrupo==="pend"?p.situacion!=="ent":p.situacion==="ent");
   if(filtroProd) l=l.filter(p=>p.producto===filtroProd);
-  if(q) l=l.filter(p=>{ const d=p.datos||{}; return String(p.numero).includes(q)||normT(d.nombre).includes(q)||normT(d.servicio).includes(q)||normT(d.categoria).includes(q)||normT(d.codigo).includes(q); });
+  if(q) l=l.filter(p=>{ const d=p.datos||{}; return String(p.numero).includes(q)||normT(d.nombre).includes(q)||normT(d.servicio).includes(q)||normT(d.categoria).includes(q)||normT(d.codigo).includes(q)||normT(d.acceso).includes(q); });
   return l;
 }
 function pintarTabla(){
@@ -252,7 +262,7 @@ function pintarLista(){
   const c=k=>pedidos.filter(predEst[k]).length;
   const pend=pedidos.filter(p=>p.situacion!=="ent"), hechos=pedidos.filter(p=>p.situacion==="ent");
   const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]];
-  const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sinwa","#DCF5E6","#14532D","sin WhatsApp"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
+  const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sinlista","#DCF5E6","#14532D","sin confirmar en la lista"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
   root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha. Pulsa un contador para filtrar.</p></div>'+
    '<div class="cnt">'+tarj.map(t=>'<button type="button" data-e="'+t[0]+'" aria-pressed="'+(filtroEst===t[0])+'" style="background:'+t[1]+';color:'+t[2]+'"><strong>'+c(t[0])+'</strong> '+t[3]+'</button>').join("")+'</div></div>'+
    '<input class="busq" id="busq" type="search" placeholder="🔍 Buscar por nº, código, cliente o servicio…" value="'+esc(busq)+'" autocomplete="off" aria-label="Buscar pedidos">'+
@@ -310,8 +320,8 @@ function pintarBuscar(){
 // ---------- Ajustes ----------
 let ajustes={}, ajCargados=false, errAj="";
 async function cargarAjustes(){
-  errAj=""; try{ const l=await (await api("/rest/v1/ajustes?select=clave,valor")).json(); ajustes={}; l.forEach(a=>ajustes[a.clave]=a.valor); ajCargados=true; if(!("unico_quelucha" in ajustes)) errAj="Falta ejecutar supabase_whatsapp.sql en Supabase (una sola vez)."; }
-  catch(e){ errAj=/404|PGRST205|ajustes/.test(e.message)?"Falta ejecutar supabase_whatsapp.sql en Supabase (una sola vez).":e.message; }
+  errAj=""; try{ const l=await (await api("/rest/v1/ajustes?select=clave,valor")).json(); ajustes={}; l.forEach(a=>ajustes[a.clave]=a.valor); ajCargados=true; if(!("codigo_quelucha" in ajustes)) errAj="Falta ejecutar supabase_lista.sql en Supabase (una sola vez)."; }
+  catch(e){ errAj=/404|PGRST205|ajustes/.test(e.message)?"Falta ejecutar supabase_lista.sql en Supabase (una sola vez).":e.message; }
   if(ruta().r==="ajustes") pintarAjustes(true);
 }
 async function guardarAjuste(clave,valor,txt){
@@ -321,16 +331,50 @@ async function guardarAjuste(clave,valor,txt){
 }
 function pintarAjustes(sinCarga){
   const lim=("limite_quelucha" in ajustes)?ajustes.limite_quelucha:null, hechos=pedidos.filter(p=>p.producto==="quelucha").length;
-  root.innerHTML=barra("ajustes")+'<main><div><h1>Ajustes</h1><p class="sub">Cada pedido recibe un código único. El cliente te lo envía por WhatsApp al terminar y tú lo confirmas en su ficha.</p></div>'+
+  root.innerHTML=barra("ajustes")+'<main><div><h1>Ajustes</h1><p class="sub">Cambios de la web de pedidos.</p></div>'+
    (errAj?'<div class="empty" style="color:#B42318">'+esc(errAj)+'</div>':'')+
-   '<section class="card"><h2>Un pedido por teléfono</h2><p class="sm" style="margin:0 0 10px">Marca los productos en los que cada móvil solo puede hacer un pedido.</p>'+
-   Object.keys(PRODUCTOS).map(k=>'<label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer"><input type="checkbox" data-unico="'+k+'"'+(ajustes["unico_"+k]===1?" checked":"")+(ajCargados?"":" disabled")+' style="width:22px;height:22px;accent-color:#13A4AA">'+esc(PRODUCTOS[k].nombre)+'</label>').join("")+'</section>'+
+   '<section class="card"><h2>Productos "Que lucha"</h2><p class="sm" style="margin:0 0 10px">Los productos marcados solo los pueden pedir los apuntados a la lista, con su código, y un pedido por móvil.</p>'+
+   Object.keys(PRODUCTOS).map(k=>'<label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer"><input type="checkbox" data-codigo="'+k+'"'+(ajustes["codigo_"+k]===1?" checked":"")+(ajCargados?"":" disabled")+' style="width:22px;height:22px;accent-color:#13A4AA">'+esc(PRODUCTOS[k].nombre)+'</label>').join("")+'</section>'+
    '<section class="card"><h2>Unidades a la venta de Que Lucha!</h2><p class="sm" style="margin:0 0 10px">'+hechos+(lim==null?' pedidos hechos (sin límite).':' de '+lim+' pedidos hechos.')+' Puedes cambiarlo cuando quieras.</p><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div><label for="lim">Límite de pedidos</label><input id="lim" type="number" min="0" value="'+(lim==null?"":lim)+'" placeholder="Sin límite" style="width:130px"></div><button class="b pri" id="glim" style="width:auto;padding:0 20px">Guardar límite</button><button class="b" id="sinlim">Quitar el límite</button></div></section></main>';
   enlazarComun();
-  root.querySelectorAll("[data-unico]").forEach(c=>c.onchange=()=>{ const k=c.dataset.unico; guardarAjuste("unico_"+k,c.checked?1:0,PRODUCTOS[k].nombre+": "+(c.checked?"un pedido por teléfono.":"sin límite por teléfono.")); });
+  root.querySelectorAll("[data-codigo]").forEach(c=>c.onchange=()=>{ const k=c.dataset.codigo; guardarAjuste("codigo_"+k,c.checked?1:0,PRODUCTOS[k].nombre+": "+(c.checked?"producto Que lucha (pide código).":"cualquiera puede pedirlo.")); });
   $("#glim").onclick=()=>{ const t=$("#lim").value.trim(); if(t===""||!(+t>=0)){ aviso("Escribe un número, o pulsa Quitar el límite."); return; } const v=Math.floor(+t); guardarAjuste("limite_quelucha",v,"Límite guardado: "+v+" pedidos."); };
   $("#sinlim").onclick=()=>{ if(confirm("¿Quitar el límite? Se podrán hacer pedidos sin tope.")) guardarAjuste("limite_quelucha",null,"Límite quitado."); };
   if(!sinCarga) cargarAjustes();
+}
+
+// ---------- Lista ¡Qué lucha! ----------
+let filtroApu="pend", busqApu="";
+const chatDe=m=>"https://wa.me/34"+String(m||"").replace(/\D/g,"").slice(-9);
+async function marcarLista(a,si){
+  const v=si?new Date().toISOString():null;
+  try{ await api("/rest/v1/apuntados?codigo=eq."+encodeURIComponent(a.codigo),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({en_lista:v})}); a.en_lista=v; aviso(si?a.nombre+" marcado como añadido a la lista.":"Quitada la marca de "+a.nombre+"."); }
+  catch(e){ aviso("No se pudo guardar: "+e.message); }
+  pintar();
+}
+function pintarApuntados(){
+  const q=normT(busqApu.trim()).replace(/\s/g,"");
+  const l=apuntados.filter(a=>filtroApu==="pend"?!a.en_lista:(filtroApu==="si"?!!a.en_lista:true))
+    .filter(a=>!q||normT(a.nombre).includes(q)||normT(a.codigo).includes(q)||String(a.movil).includes(q)||normT(a.servicio).includes(q));
+  const nP=porAnadir();
+  root.innerHTML=barra("lista")+'<main><div><h1>Lista ¡Qué lucha!</h1><p class="sub">Cuando te llegue su WhatsApp de autorización, añádelo a tu lista de difusión y pulsa <b>Añadido</b>.</p></div>'+
+   (errApu?'<div class="empty" style="color:#B42318">'+esc(errApu)+'</div>':'')+
+   '<input class="busq" id="busqa" type="search" placeholder="🔍 Buscar por nombre, código, móvil o servicio…" value="'+esc(busqApu)+'" autocomplete="off" aria-label="Buscar apuntados">'+
+   '<div class="filters"><div class="seg"><button data-fa="pend" aria-pressed="'+(filtroApu==="pend")+'">Por añadir ('+nP+')</button><button data-fa="si" aria-pressed="'+(filtroApu==="si")+'">En la lista ('+(apuntados.length-nP)+')</button><button data-fa="todos" aria-pressed="'+(filtroApu==="todos")+'">Todos ('+apuntados.length+')</button></div></div>'+
+   '<div style="display:flex;flex-direction:column;gap:10px">'+(l.length?l.map(a=>{
+     const np=pedidos.filter(p=>p.datos&&p.datos.acceso===a.codigo).length;
+     return '<section class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:14px 18px"><div style="flex:1 1 220px;min-width:0"><div style="font-weight:700;font-size:16px">'+esc(a.nombre)+' <span style="letter-spacing:.15em;color:#0B7C82;margin-left:6px">'+esc(a.codigo)+'</span></div><div class="sm">'+esc(a.servicio)+' · '+esc(a.categoria)+'</div><div class="sm">Móvil '+esc(a.movil)+' · apuntado el '+fecha(a.creado)+' · '+np+' pedido'+(np===1?"":"s")+'</div></div>'+
+       '<div>'+(a.en_lista?pill("#DDF3E6","#14532D","En la lista desde el "+fecha(a.en_lista)):pill("#FFF1CC","#7A4B00","Por añadir"))+'</div>'+
+       '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="'+chatDe(a.movil)+'">Abrir su chat</a>'+(a.en_lista?'<button class="b" data-no="'+esc(a.codigo)+'">Quitar marca</button>':'<button class="b ok" aria-pressed="true" data-si="'+esc(a.codigo)+'">✓ Añadido</button>')+'<button class="b" data-del="'+esc(a.codigo)+'">Borrar</button></div></section>';
+   }).join(""):'<div class="empty">'+(apuntados.length?"Nadie con ese filtro.":"Todavía no se ha apuntado nadie.")+'</div>')+'</div></main>';
+  enlazarComun();
+  root.querySelectorAll("[data-fa]").forEach(b=>b.onclick=()=>{ filtroApu=b.dataset.fa; pintarApuntados(); });
+  const bq=$("#busqa"); bq.oninput=e=>{ busqApu=e.target.value; pintarApuntados(); const n=$("#busqa"); n.focus(); n.setSelectionRange(n.value.length,n.value.length); };
+  const por=c=>apuntados.find(a=>a.codigo===c);
+  root.querySelectorAll("[data-si]").forEach(b=>b.onclick=()=>marcarLista(por(b.dataset.si),true));
+  root.querySelectorAll("[data-no]").forEach(b=>b.onclick=()=>marcarLista(por(b.dataset.no),false));
+  root.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ const a=por(b.dataset.del); if(!confirm("¿Borrar a "+a.nombre+" ("+a.codigo+") de la lista? Su código dejará de servir y podrá volver a apuntarse. Sus pedidos no se tocan.")) return;
+    try{ await api("/rest/v1/apuntados?codigo=eq."+encodeURIComponent(a.codigo),{method:"DELETE"}); apuntados=apuntados.filter(x=>x!==a); aviso("Borrado."); }catch(e){ aviso("No se pudo borrar: "+e.message); } pintar(); });
 }
 
 // ---------- Fotos firmadas ----------
@@ -370,10 +414,10 @@ function pintarFicha(num){
      '<div style="display:flex;gap:6px"><button class="b ok" data-ap="'+esc(a)+'" aria-pressed="'+(ok[a]==="ok")+'">Aprobar</button><button class="b no" data-re="'+esc(a)+'" aria-pressed="'+(ok[a]==="no")+'">Rechazar</button></div></div>'; }).join("");
   const dis=p.producto!=="12hojas"&&d.disposicion, plantilla=dis&&!d.fotos_borradas&&PLANTILLAS[d.disposicion.diseno];
   root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+
-   '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h1>Pedido '+p.numero+' · '+esc(d.nombre)+'</h1>'+pPago(p)+pSit(p)+'<span class="sm">Código del cliente: <b>'+esc(d.codigo||"")+'</b></span></div>'+
+   '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h1>Pedido '+p.numero+' · '+esc(d.nombre)+'</h1>'+pPago(p)+pSit(p)+'<span class="sm">Código del pedido: <b>'+esc(d.codigo||"")+'</b></span></div>'+
    '<div class="cols"><div class="col">'+
    '<section class="card"><h2>Cliente</h2><div class="kv"><span>Nombre</span><span>'+esc(d.nombre)+'</span></div><div class="kv"><span>Servicio</span><span>'+esc(d.servicio)+'</span></div><div class="kv"><span>Categoría profesional</span><span>'+esc(d.categoria)+'</span></div><div class="kv"><span>Móvil</span><span>'+esc(d.movil)+'</span></div>'+(d.acceso?'<div class="kv"><span>Código lista de difusión</span><span style="font-weight:700;letter-spacing:.15em">'+esc(d.acceso)+'</span></div>':'')+'<div class="kv"><span>Fecha del pedido</span><span>'+fecha(p.creado)+'</span></div>'+
-   (d.via_wa?'<div class="kv"><span>WhatsApp</span><span>'+(p.wa_ok?pill("#DDF3E6","#14532D","Recibido el "+fecha(p.wa_ok)):pill("#FFF1CC","#7A4B00","Pendiente"))+'</span></div><p class="sm" style="margin:8px 0">'+(p.wa_ok?'':'Cuando te llegue su WhatsApp con el código <b>'+esc(d.codigo||"")+'</b>, comprueba que el número coincide y confírmalo.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b'+(p.wa_ok?'':' ok" aria-pressed="true')+'" id="waok">'+(p.wa_ok?'Quitar confirmación':'✓ WhatsApp recibido')+'</button>'+(d.movil?'<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/34'+esc(String(d.movil).replace(/\D/g,"").slice(-9))+'">Abrir su chat</a>':'')+'</div>':'')+'</section>'+
+   (apuDe(p)?(a=>'<div class="kv"><span>Lista ¡Qué lucha!</span><span>'+(a.en_lista?pill("#DDF3E6","#14532D","En la lista"):pill("#FFF1CC","#7A4B00","Sin confirmar"))+'</span></div>'+(a.en_lista?'':'<p class="sm" style="margin:8px 0">Todavía no lo has marcado como añadido a tu lista de difusión. Comprueba que te ha enviado su WhatsApp de autorización.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b ok" aria-pressed="true" id="enlista">✓ Añadido a la lista</button><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="'+chatDe(a.movil)+'">Abrir su chat</a></div>'))(apuDe(p)):'')+'</section>'+
    '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>'+
    (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
    '<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section></div>'+
@@ -385,7 +429,7 @@ function pintarFicha(num){
     (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section></div></div></main>';
   enlazarComun();
   $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
-  const wo=$("#waok"); if(wo) wo.onclick=()=>guardarCambios(p,{wa_ok:p.wa_ok?null:new Date().toISOString()});
+  const el=$("#enlista"); if(el) el.onclick=()=>marcarLista(apuDe(p),true);
   const sig=$("#sig"); if(sig) sig.onclick=async()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } await guardarCambios(p,{situacion:ORDEN[idx+1]}); if(ORDEN[idx+1]==="ent"&&(p.fotos||[]).length&&confirm("Pedido entregado. ¿Borrar ahora las fotos del cliente?")) await borrarFotos(p); };
   const bf=$("#borrarfotos"); if(bf) bf.onclick=async()=>{ if(!confirm("¿Borrar las fotos de este cliente (originales y montaje)? No se puede deshacer y ya no podrás generar el calendario.")) return; bf.disabled=true; await borrarFotos(p); };
   const at=$("#atras"); if(at) at.onclick=()=>guardarCambios(p,{situacion:ORDEN[idx-1]});
