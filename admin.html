@@ -164,6 +164,7 @@ const nFotos=p=>(p.datos&&p.datos.n_fotos)||(p.fotos||[]).length;
 const DIAS_ESTANCADO=3;
 const dias=p=>Math.floor((Date.now()-new Date(p.creado).getTime())/864e5);
 const estancado=p=>p.situacion!=="ent"&&dias(p)>=DIAS_ESTANCADO;
+const sinWA=p=>!!(p.datos&&p.datos.via_wa)&&!p.wa_ok;
 let marcados=new Set();
 function fila(p,conCk){
   const d=p.datos||{};
@@ -171,7 +172,7 @@ function fila(p,conCk){
   return ini+'<span style="font-weight:700">'+p.numero+'</span>'+
    '<span><div style="font-weight:600">'+esc(d.nombre)+'</div><div class="sm">'+esc(d.servicio)+' · '+esc(d.categoria)+'</div></span>'+
    '<span><div style="font-weight:600">'+(PRODUCTOS[p.producto]?PRODUCTOS[p.producto].n+" · "+PRODUCTOS[p.producto].corto:esc(p.producto))+'</div><div class="sm">'+esc(detalle(p))+'</div></span>'+
-   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
+   '<span>'+nFotos(p)+'</span><span>'+fecha(p.creado)+'</span><span>'+pPago(p)+'</span><span>'+pSit(p)+(sinWA(p)?'<div class="sm" style="color:#7A4B00;font-weight:700;margin-top:3px">📱 Falta su WhatsApp</div>':'')+(estancado(p)?'<div class="sm" style="color:#B42318;font-weight:700;margin-top:3px">⏳ '+dias(p)+' días parado</div>':'')+'</span>'+(conCk?'</div>':'</a>');
 }
 const cab='<div class="tr th"><span>Nº</span><span>Cliente</span><span>Calendario</span><span>Fotos</span><span>Fecha</span><span>Pago</span><span>Situación</span></div>';
 const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><input type="checkbox" id="todos" aria-label="Seleccionar todos"></span>');
@@ -179,7 +180,7 @@ const cabSel=cab.replace('class="tr th">','class="tr th sel"><span class="ck"><i
 // ---------- Estructura ----------
 function barra(ruta){
   return '<div class="bar"><div><div class="brand"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"><div><span>Panel de pedidos</span></div></div>'+
-   '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="codigos"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/codigos" class="'+(ruta==="codigos"?"on":"")+'">Códigos</a><button id="salir" type="button">Salir</button></nav></div></div>';
+   '<nav><a href="#/" class="'+(ruta!=="buscar"&&ruta!=="ajustes"?"on":"")+'">Pedidos</a><a href="#/buscar" class="'+(ruta==="buscar"?"on":"")+'">Buscar</a><a href="#/ajustes" class="'+(ruta==="ajustes"?"on":"")+'">Ajustes</a><button id="salir" type="button">Salir</button></nav></div></div>';
 }
 const root=$("#root");
 let vistaGrupo="pend", filtroProd="";
@@ -192,7 +193,7 @@ function pintar(){
   if(R.r==="pedido") return pintarFicha(+R.id);
   if(R.r==="imprimir") return pintarImprimir(+R.id);
   if(R.r==="buscar") return pintarBuscar();
-  if(R.r==="codigos") return pintarCodigos();
+  if(R.r==="ajustes") return pintarAjustes();
   return pintarLista();
 }
 function estado(){ return cargando?'<div class="empty">Cargando pedidos…</div>':(errorCarga?'<div class="empty" style="color:#B42318">'+esc(errorCarga)+'<br><br><button class="b" id="reint">Reintentar</button></div>':""); }
@@ -207,7 +208,7 @@ function pintarLogin(){
 }
 
 let filtroEst="", busq="";
-const predEst={rev:p=>p.situacion==="rev",listo:p=>p.situacion==="listo",imp:p=>p.situacion==="imp",sin:p=>!p.pagado,estancado:estancado};
+const predEst={rev:p=>p.situacion==="rev",listo:p=>p.situacion==="listo",imp:p=>p.situacion==="imp",sin:p=>!p.pagado,estancado:estancado,sinwa:sinWA};
 const normT=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
 function listaVisible(){
   const q=normT(busq.trim()).replace(/^#/,"");
@@ -216,7 +217,7 @@ function listaVisible(){
   else if(q) l=pedidos.slice();
   else l=pedidos.filter(p=>vistaGrupo==="pend"?p.situacion!=="ent":p.situacion==="ent");
   if(filtroProd) l=l.filter(p=>p.producto===filtroProd);
-  if(q) l=l.filter(p=>{ const d=p.datos||{}; return String(p.numero).includes(q)||normT(d.nombre).includes(q)||normT(d.servicio).includes(q)||normT(d.categoria).includes(q); });
+  if(q) l=l.filter(p=>{ const d=p.datos||{}; return String(p.numero).includes(q)||normT(d.nombre).includes(q)||normT(d.servicio).includes(q)||normT(d.categoria).includes(q)||normT(d.codigo).includes(q); });
   return l;
 }
 function pintarTabla(){
@@ -251,10 +252,10 @@ function pintarLista(){
   const c=k=>pedidos.filter(predEst[k]).length;
   const pend=pedidos.filter(p=>p.situacion!=="ent"), hechos=pedidos.filter(p=>p.situacion==="ent");
   const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]];
-  const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
+  const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sinwa","#DCF5E6","#14532D","sin WhatsApp"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
   root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha. Pulsa un contador para filtrar.</p></div>'+
    '<div class="cnt">'+tarj.map(t=>'<button type="button" data-e="'+t[0]+'" aria-pressed="'+(filtroEst===t[0])+'" style="background:'+t[1]+';color:'+t[2]+'"><strong>'+c(t[0])+'</strong> '+t[3]+'</button>').join("")+'</div></div>'+
-   '<input class="busq" id="busq" type="search" placeholder="🔍 Buscar por nº, cliente o servicio…" value="'+esc(busq)+'" autocomplete="off" aria-label="Buscar pedidos">'+
+   '<input class="busq" id="busq" type="search" placeholder="🔍 Buscar por nº, código, cliente o servicio…" value="'+esc(busq)+'" autocomplete="off" aria-label="Buscar pedidos">'+
    '<div class="filters"><div class="seg"'+(filtroEst?' style="opacity:.45"':'')+'><button data-g="pend" aria-pressed="'+(vistaGrupo==="pend")+'">Pendientes ('+pend.length+')</button><button data-g="hechos" aria-pressed="'+(vistaGrupo==="hechos")+'">Hechos ('+hechos.length+')</button></div>'+
    '<div class="seg">'+chips.map(x=>'<button data-c="'+x[0]+'" aria-pressed="'+(filtroProd===x[0])+'">'+x[1]+'</button>').join("")+'<button id="act" style="margin-left:8px">Actualizar</button></div></div>'+
    '<p class="sm" id="nota" style="margin:0"></p><div class="tbl" id="tbl"></div><div class="lote" id="lote" hidden></div></main>';
@@ -306,45 +307,30 @@ function pintarBuscar(){
   aplicar();
 }
 
-// ---------- Códigos de Que Lucha! ----------
-let limiteQL=30; const ALFA="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-let codigos=[], errCod="";
-function nuevoCodigo(){ const b=new Uint32Array(4); crypto.getRandomValues(b); return Array.from(b,x=>ALFA[x%ALFA.length]).join(""); }
-async function cargarCodigos(){
-  errCod=""; try{ const r=await api("/rest/v1/codigos_quelucha?select=*&order=creado.desc&limit=500"); codigos=await r.json();
-    const a=await (await api("/rest/v1/ajustes?clave=eq.limite_quelucha&select=valor")).json(); if(a.length) limiteQL=a[0].valor; else errCod="Falta ejecutar supabase_limite.sql en Supabase (una sola vez)."; }
-  catch(e){ errCod=/404|PGRST205|codigos_quelucha/.test(e.message)?"Falta ejecutar supabase_codigos.sql en Supabase (una sola vez).":e.message; }
-  if(ruta().r==="codigos") pintarCodigos(true);
+// ---------- Ajustes ----------
+let ajustes={}, ajCargados=false, errAj="";
+async function cargarAjustes(){
+  errAj=""; try{ const l=await (await api("/rest/v1/ajustes?select=clave,valor")).json(); ajustes={}; l.forEach(a=>ajustes[a.clave]=a.valor); ajCargados=true; if(!("unico_quelucha" in ajustes)) errAj="Falta ejecutar supabase_whatsapp.sql en Supabase (una sola vez)."; }
+  catch(e){ errAj=/404|PGRST205|ajustes/.test(e.message)?"Falta ejecutar supabase_whatsapp.sql en Supabase (una sola vez).":e.message; }
+  if(ruta().r==="ajustes") pintarAjustes(true);
 }
-function pintarCodigos(sinCarga){
-  const hechos=pedidos.filter(p=>p.producto==="quelucha").length, libres=codigos.filter(c=>!c.usado);
-  root.innerHTML=barra("codigos")+'<main><div class="top"><div><h1>Códigos de Que Lucha!</h1><p class="sub">Envía un código a cada persona que se apunte a la lista de difusión. Cada código es permanente: se liga al primer móvil que lo usa.</p></div>'+
-   '<div class="cnt"><div style="background:#E3EAFD;color:#1E3FA8"><strong>'+hechos+(limiteQL==null?'</strong> pedidos (sin límite)':' de '+limiteQL+'</strong> pedidos hechos')+'</div><div style="background:#FFF1CC;color:#7A4B00"><strong>'+libres.length+'</strong> códigos sin usar</div></div></div>'+
-   '<section class="card"><h2>Unidades a la venta</h2><p class="sm" style="margin:0 0 10px">Número máximo de pedidos de Que Lucha!. Un pedido por móvil. Puedes cambiarlo cuando quieras.</p><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div><label for="lim">Límite de pedidos</label><input id="lim" type="number" min="0" value="'+(limiteQL==null?"":limiteQL)+'" placeholder="Sin límite" style="width:130px"></div><button class="b pri" id="glim" style="width:auto;padding:0 20px">Guardar límite</button><button class="b" id="sinlim">Quitar el límite</button></div></section>'+
-   '<section class="card"><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div><label for="ncod">¿Cuántos códigos quieres crear?</label><input id="ncod" type="number" min="1" max="50" value="1" style="width:110px"></div><button class="b pri" id="gen" style="width:auto;padding:0 20px">Crear códigos</button></div></section>'+
-   (errCod?'<div class="empty" style="color:#B42318">'+esc(errCod)+'</div>':'')+
-   '<div class="tbl"><div class="tr th" style="grid-template-columns:110px 1fr 270px"><span>Código</span><span>Estado</span><span></span></div>'+
-   (codigos.length?codigos.map(c=>{ const np=pedidos.filter(x=>x.datos&&x.datos.acceso===c.codigo).length; return '<div class="tr" style="grid-template-columns:110px 1fr 270px;cursor:default"><span style="font-weight:700;font-size:18px;letter-spacing:.15em">'+esc(c.codigo)+'</span><span>'+(c.usado?pill("#DDF3E6","#14532D","En uso")+' <span class="sm">móvil '+esc(c.movil||"")+' · '+np+' pedido'+(np===1?"":"s")+'</span>':pill("#FFF1CC","#7A4B00","Sin usar"))+'</span><span><button class="b" data-cp="'+c.codigo+'">Copiar</button> '+(c.usado?'<button class="b" data-so="'+c.codigo+'">Soltar móvil</button>':'<button class="b" data-bo="'+c.codigo+'">Borrar</button>')+'</span></div>'; }).join(""):'<div class="empty">Todavía no has creado ningún código.</div>')+'</div></main>';
+async function guardarAjuste(clave,valor,txt){
+  try{ await api("/rest/v1/ajustes?on_conflict=clave",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({clave,valor})}); ajustes[clave]=valor; aviso(txt); }
+  catch(e){ aviso("No se pudo guardar: "+e.message); }
+  pintarAjustes(true);
+}
+function pintarAjustes(sinCarga){
+  const lim=("limite_quelucha" in ajustes)?ajustes.limite_quelucha:null, hechos=pedidos.filter(p=>p.producto==="quelucha").length;
+  root.innerHTML=barra("ajustes")+'<main><div><h1>Ajustes</h1><p class="sub">Cada pedido recibe un código único. El cliente te lo envía por WhatsApp al terminar y tú lo confirmas en su ficha.</p></div>'+
+   (errAj?'<div class="empty" style="color:#B42318">'+esc(errAj)+'</div>':'')+
+   '<section class="card"><h2>Un pedido por teléfono</h2><p class="sm" style="margin:0 0 10px">Marca los productos en los que cada móvil solo puede hacer un pedido.</p>'+
+   Object.keys(PRODUCTOS).map(k=>'<label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer"><input type="checkbox" data-unico="'+k+'"'+(ajustes["unico_"+k]===1?" checked":"")+(ajCargados?"":" disabled")+' style="width:22px;height:22px;accent-color:#13A4AA">'+esc(PRODUCTOS[k].nombre)+'</label>').join("")+'</section>'+
+   '<section class="card"><h2>Unidades a la venta de Que Lucha!</h2><p class="sm" style="margin:0 0 10px">'+hechos+(lim==null?' pedidos hechos (sin límite).':' de '+lim+' pedidos hechos.')+' Puedes cambiarlo cuando quieras.</p><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div><label for="lim">Límite de pedidos</label><input id="lim" type="number" min="0" value="'+(lim==null?"":lim)+'" placeholder="Sin límite" style="width:130px"></div><button class="b pri" id="glim" style="width:auto;padding:0 20px">Guardar límite</button><button class="b" id="sinlim">Quitar el límite</button></div></section></main>';
   enlazarComun();
-  const guardarLim=async v=>{ try{ await api("/rest/v1/ajustes?on_conflict=clave",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({clave:"limite_quelucha",valor:v})}); limiteQL=v; aviso(v==null?"Límite quitado.":"Límite guardado: "+v+" pedidos."); }catch(e){ aviso("No se pudo guardar: "+e.message); } pintarCodigos(true); };
-  $("#glim").onclick=()=>{ const t=$("#lim").value.trim(); if(t===""||!(+t>=0)){ aviso("Escribe un número, o pulsa Quitar el límite."); return; } guardarLim(Math.floor(+t)); };
-  $("#sinlim").onclick=()=>{ if(confirm("¿Quitar el límite? Se podrán hacer pedidos sin tope.")) guardarLim(null); };
-  $("#gen").onclick=async()=>{
-    const n=Math.max(1,Math.min(50,+$("#ncod").value||1)); $("#gen").disabled=true;
-    try{
-      let creados=0; for(let t=0;t<5&&creados<n;t++){
-        const filas=[]; const vistos=new Set(); while(filas.length<n-creados){ const c=nuevoCodigo(); if(!vistos.has(c)){ vistos.add(c); filas.push({codigo:c}); } }
-        const r=await api("/rest/v1/codigos_quelucha?on_conflict=codigo",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=ignore-duplicates,return=representation"},body:JSON.stringify(filas)});
-        creados+=(await r.json()).length;
-      }
-      aviso(n===1?"Código creado.":n+" códigos creados.");
-    }catch(e){ aviso("No se pudo crear: "+e.message); }
-    cargarCodigos();
-  };
-  root.querySelectorAll("[data-cp]").forEach(b=>b.onclick=async()=>{ try{ await navigator.clipboard.writeText(b.dataset.cp); aviso("Código "+b.dataset.cp+" copiado."); }catch(e){ aviso("Cópialo a mano: "+b.dataset.cp); } });
-  root.querySelectorAll("[data-so]").forEach(b=>b.onclick=async()=>{ if(!confirm("¿Soltar el móvil del código "+b.dataset.so+"? Se ligará al siguiente móvil que lo use. Sus pedidos anteriores no se tocan.")) return; try{ await api("/rest/v1/codigos_quelucha?codigo=eq."+b.dataset.so,{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({movil:null,usado:null})}); }catch(e){ aviso("No se pudo soltar: "+e.message); } cargarCodigos(); });
-  root.querySelectorAll("[data-bo]").forEach(b=>b.onclick=async()=>{ if(!confirm("¿Borrar el código "+b.dataset.bo+"?")) return; try{ await api("/rest/v1/codigos_quelucha?codigo=eq."+b.dataset.bo+"&usado=is.null",{method:"DELETE"}); }catch(e){ aviso("No se pudo borrar: "+e.message); } cargarCodigos(); });
-  if(!sinCarga) cargarCodigos();
+  root.querySelectorAll("[data-unico]").forEach(c=>c.onchange=()=>{ const k=c.dataset.unico; guardarAjuste("unico_"+k,c.checked?1:0,PRODUCTOS[k].nombre+": "+(c.checked?"un pedido por teléfono.":"sin límite por teléfono.")); });
+  $("#glim").onclick=()=>{ const t=$("#lim").value.trim(); if(t===""||!(+t>=0)){ aviso("Escribe un número, o pulsa Quitar el límite."); return; } const v=Math.floor(+t); guardarAjuste("limite_quelucha",v,"Límite guardado: "+v+" pedidos."); };
+  $("#sinlim").onclick=()=>{ if(confirm("¿Quitar el límite? Se podrán hacer pedidos sin tope.")) guardarAjuste("limite_quelucha",null,"Límite quitado."); };
+  if(!sinCarga) cargarAjustes();
 }
 
 // ---------- Fotos firmadas ----------
@@ -386,7 +372,8 @@ function pintarFicha(num){
   root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+
    '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h1>Pedido '+p.numero+' · '+esc(d.nombre)+'</h1>'+pPago(p)+pSit(p)+'<span class="sm">Código del cliente: <b>'+esc(d.codigo||"")+'</b></span></div>'+
    '<div class="cols"><div class="col">'+
-   '<section class="card"><h2>Cliente</h2><div class="kv"><span>Nombre</span><span>'+esc(d.nombre)+'</span></div><div class="kv"><span>Servicio</span><span>'+esc(d.servicio)+'</span></div><div class="kv"><span>Categoría profesional</span><span>'+esc(d.categoria)+'</span></div><div class="kv"><span>Móvil</span><span>'+esc(d.movil)+'</span></div>'+(d.acceso?'<div class="kv"><span>Código lista de difusión</span><span style="font-weight:700;letter-spacing:.15em">'+esc(d.acceso)+'</span></div>':'')+'<div class="kv"><span>Fecha del pedido</span><span>'+fecha(p.creado)+'</span></div></section>'+
+   '<section class="card"><h2>Cliente</h2><div class="kv"><span>Nombre</span><span>'+esc(d.nombre)+'</span></div><div class="kv"><span>Servicio</span><span>'+esc(d.servicio)+'</span></div><div class="kv"><span>Categoría profesional</span><span>'+esc(d.categoria)+'</span></div><div class="kv"><span>Móvil</span><span>'+esc(d.movil)+'</span></div>'+(d.acceso?'<div class="kv"><span>Código lista de difusión</span><span style="font-weight:700;letter-spacing:.15em">'+esc(d.acceso)+'</span></div>':'')+'<div class="kv"><span>Fecha del pedido</span><span>'+fecha(p.creado)+'</span></div>'+
+   (d.via_wa?'<div class="kv"><span>WhatsApp</span><span>'+(p.wa_ok?pill("#DDF3E6","#14532D","Recibido el "+fecha(p.wa_ok)):pill("#FFF1CC","#7A4B00","Pendiente"))+'</span></div><p class="sm" style="margin:8px 0">'+(p.wa_ok?'':'Cuando te llegue su WhatsApp con el código <b>'+esc(d.codigo||"")+'</b>, comprueba que el número coincide y confírmalo.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b'+(p.wa_ok?'':' ok" aria-pressed="true')+'" id="waok">'+(p.wa_ok?'Quitar confirmación':'✓ WhatsApp recibido')+'</button>'+(d.movil?'<a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/34'+esc(String(d.movil).replace(/\D/g,"").slice(-9))+'">Abrir su chat</a>':'')+'</div>':'')+'</section>'+
    '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>'+
    (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
    '<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section></div>'+
@@ -398,6 +385,7 @@ function pintarFicha(num){
     (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section></div></div></main>';
   enlazarComun();
   $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
+  const wo=$("#waok"); if(wo) wo.onclick=()=>guardarCambios(p,{wa_ok:p.wa_ok?null:new Date().toISOString()});
   const sig=$("#sig"); if(sig) sig.onclick=async()=>{ if(p.situacion==="rev"){ const todas=(p.fotos||[]).every(f=>(p.fotos_ok||{})[archivo(f)]==="ok"); if(!todas&&!confirm("Hay fotos sin aprobar o rechazadas. ¿Marcar igualmente como revisadas?")) return; } await guardarCambios(p,{situacion:ORDEN[idx+1]}); if(ORDEN[idx+1]==="ent"&&(p.fotos||[]).length&&confirm("Pedido entregado. ¿Borrar ahora las fotos del cliente?")) await borrarFotos(p); };
   const bf=$("#borrarfotos"); if(bf) bf.onclick=async()=>{ if(!confirm("¿Borrar las fotos de este cliente (originales y montaje)? No se puede deshacer y ya no podrás generar el calendario.")) return; bf.disabled=true; await borrarFotos(p); };
   const at=$("#atras"); if(at) at.onclick=()=>guardarCambios(p,{situacion:ORDEN[idx-1]});
