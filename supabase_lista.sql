@@ -5,12 +5,16 @@
 --  * Los productos "Que lucha" (se marcan en el panel, Ajustes) piden ese código y
 --    solo admiten un pedido por móvil.
 --  * El límite de unidades de Que Lucha! se sigue cambiando desde el panel.
+--  * Los pedidos anulados desde el panel no cuentan para el límite ni para "un pedido por móvil".
 
 -- 1) Quitar los sistemas anteriores
 drop trigger if exists ql_antes_pedido on public.pedidos;
 drop function if exists public.ql_antes_pedido();
 drop function if exists public.ql_comprobar(text, text);
 drop function if exists public.comprobar_pedido(text, text);
+
+-- 1b) Fecha en que se anula un pedido desde el panel (vacío = pedido activo)
+alter table public.pedidos add column if not exists anulado timestamptz;
 
 -- 2) Personas apuntadas a la lista
 create table if not exists public.apuntados (
@@ -88,14 +92,14 @@ declare
   r record;
 begin
   select valor into lim from ajustes where clave = 'limite_' || p_producto;
-  if lim is not null and (select count(*) from pedidos where producto = p_producto) >= lim then
+  if lim is not null and (select count(*) from pedidos where producto = p_producto and anulado is null) >= lim then
     return 'agotado';
   end if;
   if coalesce((select valor from ajustes where clave = 'codigo_' || p_producto), 0) = 1 then
     select * into r from apuntados where codigo = c;
     if not found then return 'codigo'; end if;
     if r.movil <> m then return 'otromovil'; end if;
-    if exists (select 1 from pedidos where producto = p_producto
+    if exists (select 1 from pedidos where producto = p_producto and anulado is null
                and right(regexp_replace(coalesce(datos->>'movil',''),'\D','','g'), 9) = m) then
       return 'movil';
     end if;
@@ -113,6 +117,7 @@ begin
   perform pg_advisory_xact_lock(7001);
   r := public.comprobar_pedido(new.producto, new.datos->>'movil', new.datos->>'acceso');
   if r <> 'ok' then raise exception 'QL_%', r; end if;
+  new.anulado := null;
   return new;
 end $$;
 revoke all on function public.antes_pedido() from public, anon, authenticated;
