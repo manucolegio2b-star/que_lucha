@@ -102,7 +102,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 </head>
 <body>
 <div id="root"></div>
-<script src="config.js"></script>
+<script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script>
 (function(){
 "use strict";
