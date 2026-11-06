@@ -69,7 +69,7 @@ const EMAIL=()=>C.EMAIL_CONTACTO?'<a href="mailto:'+esc(C.EMAIL_CONTACTO)+'">'+e
 function primeraCapa(){
   return '<div class="legal"><b>Información básica sobre Protección de Datos</b><ul>'+
    '<li><strong>Responsable:</strong> ¡Qué lucha!! '+RAZON()+'</li>'+
-   '<li><strong>Finalidad:</strong> Gestionar la entrega de tu código de descuento personalizado y el envío posterior de promociones exclusivas a través de WhatsApp.</li>'+
+   '<li><strong>Finalidad:</strong> Gestionar la entrega de tu código personal para pedir los productos ¡Qué lucha!! y el envío posterior de promociones exclusivas a través de WhatsApp.</li>'+
    '<li><strong>Legitimación:</strong> Consentimiento explícito del interesado al marcar la casilla.</li>'+
    '<li><strong>Destinatarios:</strong> Tus datos no se cederán a terceros excepto por obligación legal o soporte técnico del servicio.</li>'+
    '<li><strong>Derechos:</strong> Puedes acceder, rectificar, limitar y suprimir tus datos, así como darte de baja en cualquier momento enviando la palabra BAJA por WhatsApp o escribiendo a nuestro correo de contacto.</li></ul></div>';
@@ -77,11 +77,11 @@ function primeraCapa(){
 function segundaCapa(){
   return '<h2>TÉRMINOS Y POLÍTICA DE PRIVACIDAD DEL SERVICIO DE NOVEDADES Y OFERTAS POR WHATSAPP</h2>'+
    '<h3>1. RESPONSABLE DEL TRATAMIENTO DE DATOS</h3><p>El responsable del tratamiento de los datos recogidos a través de este formulario es ¡Qué lucha!! (en adelante, "EL TITULAR"), con domicilio en España. Correo electrónico de contacto para protección de datos: '+EMAIL()+'.</p>'+
-   '<h3>2. FINALIDAD Y USO DE LOS DATOS</h3><p>Al completar el formulario con tu Nombre y Número de Teléfono y aceptar estas condiciones, autorizas expresamente a EL TITULAR a:</p><p>a) Generar un código de descuento único y personalizado asignado a tu registro.</p><p>b) Enviarte comunicaciones comerciales, cupones de descuento, novedades y ofertas exclusivas a través de la aplicación de mensajería instantánea WhatsApp.</p>'+
+   '<h3>2. FINALIDAD Y USO DE LOS DATOS</h3><p>Al completar el formulario con tu Nombre, Servicio, Categoría profesional y Número de Teléfono y aceptar estas condiciones, autorizas expresamente a EL TITULAR a:</p><p>a) Generar un código personal único asignado a tu registro, que te permite pedir los productos ¡Qué lucha!!.</p><p>b) Enviarte comunicaciones comerciales, cupones de descuento, novedades y ofertas exclusivas a través de la aplicación de mensajería instantánea WhatsApp.</p>'+
    '<h3>3. LEGITIMACIÓN</h3><p>La base legal para el tratamiento de tus datos es el consentimiento inequívoco y explícito que otorgas al marcar la casilla de verificación en el formulario de registro de la página web.</p>'+
    '<h3>4. DERECHO DE CANCELACIÓN Y BAJA (OPT-OUT)</h3><p>El usuario puede revocar su consentimiento y darse de baja de la lista de difusión en cualquier momento de forma gratuita e inmediata. Para dejar de recibir comunicaciones por WhatsApp, basta con responder a cualquiera de nuestros mensajes con la palabra "BAJA". De forma alternativa, puede solicitar la supresión de sus datos enviando un correo electrónico a '+EMAIL()+'.</p>'+
    '<h3>5. CONSERVACIÓN DE LOS DATOS</h3><p>Los datos personales proporcionados se conservarán mientras el usuario no solicite su supresión o revocación del consentimiento, o hasta que finalice el canal comercial de comunicaciones de EL TITULAR.</p>'+
-   '<h3>6. CONDICIONES DE LOS CÓDIGOS DE DESCUENTO</h3><p>- Cada código de descuento generado es personal, alfanumérico, aleatorio y de un único uso por usuario/pedido en la tienda online.</p><p>- Los códigos no son canjeables por dinero en efectivo ni acumulables a otras promociones vigentes salvo que se especifique lo contrario.</p>';
+   '<h3>6. CONDICIONES DEL CÓDIGO PERSONAL</h3><p>- Cada código generado es personal, alfanumérico y aleatorio, y solo sirve junto con el número de teléfono con el que te registraste.</p><p>- Con tu código puedes hacer un pedido de cada producto ¡Qué lucha!! en la tienda online.</p><p>- El código no es canjeable por dinero en efectivo.</p>';
 }
 function abrirLegal(){
   const m=document.createElement("div"); m.className="modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","Política de Privacidad y Condiciones del Servicio");
@@ -109,7 +109,7 @@ function vForm(){
    f("movil","Teléfono móvil","(el de tu WhatsApp)","tel",'inputmode="tel" placeholder="6XX XXX XXX" autocomplete="tel" maxlength="20"')+
    '<input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true"></div>'+
    (aviso?'<div class="bad">'+aviso+'</div>':'')+
-   '<label class="consent"><input type="checkbox" id="consent"'+(consent?" checked":"")+'><span>He leído y acepto la <a href="#" id="verLegal">Política de Privacidad y Condiciones del Servicio</a> y doy mi consentimiento explícito para recibir ofertas comerciales y códigos de descuento a través de mi número de WhatsApp.</span></label>'+primeraCapa()+''+
+   '<label class="consent"><input type="checkbox" id="consent"'+(consent?" checked":"")+'><span>He leído y acepto la <a href="#" id="verLegal">Política de Privacidad y Condiciones del Servicio</a> y doy mi consentimiento explícito para recibir ofertas comerciales y mi código personal a través de mi número de WhatsApp.</span></label>'+primeraCapa()+''+
    '<button type="button" class="btn" id="ir"'+(consent?"":" disabled")+'>'+ICO_WA+'Apuntarme</button>';
 }
 function vHecho(){
