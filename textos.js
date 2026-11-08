@@ -14,6 +14,8 @@ const DISENOS={
     precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.jpg", baseFull:"disenos/cojin_jubilacion/base_full.jpg",
+    // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
+    mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
     campos:[
       {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40, formas:true},
       {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36, formas:true},
@@ -169,5 +171,14 @@ function dibujar(cv,d,textos,img,px,formas){
   return avisos;
 }
 
-window.QLTextos={DISENOS,FORMAS,cargar,cargarFuentes,dibujar,ajustar};
+// Pone el diseño (canvas ya dibujado) sobre la foto del cojín, con sus sombras
+function cargarMockup(d){ return d.mockup?cargarImagen(d.mockup.src):Promise.resolve(null); }
+function dibujarMockup(cv,d,diseno,foto){
+  const mk=d.mockup; cv.width=mk.w; cv.height=mk.h;
+  const g=cv.getContext("2d"); g.drawImage(foto,0,0,mk.w,mk.h);
+  const k=1000/diseno.width, m=mk.m;
+  g.save(); g.globalCompositeOperation="multiply"; g.setTransform(m[0]*k,m[1]*k,m[2]*k,m[3]*k,m[4],m[5]);
+  g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0); g.restore();
+}
+window.QLTextos={DISENOS,FORMAS,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
 })();
