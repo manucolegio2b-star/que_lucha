@@ -196,7 +196,9 @@ function dibujarMockup(cv,d,diseno,foto){
   const g=cv.getContext("2d"); g.drawImage(foto,0,0,mk.w,mk.h);
   const k=1000/diseno.width, m=mk.m;
   g.save(); g.globalCompositeOperation="multiply"; g.setTransform(m[0]*k,m[1]*k,m[2]*k,m[3]*k,m[4],m[5]);
-  g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0); g.restore();
+  g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0);
+  // El cojín de la foto es gris claro: se mezcla con el diseño normal para no oscurecer los colores
+  g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
 }
 window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
 })();
