@@ -21,7 +21,7 @@ h2{margin:0;font-size:18px}
 .cols{display:flex;flex-direction:column;gap:18px}
 .prev{position:relative;background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(17,24,39,.08)}
 .prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4}
-.vista{position:absolute;top:18px;right:18px;z-index:2;display:flex;background:rgba(255,255,255,.92);border-radius:999px;padding:3px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.vista{display:flex;width:max-content;margin:0 0 8px auto;background:#EEF1F4;border-radius:999px;padding:3px}
 .vista button{border:0;background:none;min-height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;color:#374151;cursor:pointer}
 .vista button[aria-pressed=true]{background:#13A4AA;color:#fff}
 .prev .cargando{position:absolute;inset:10px;display:flex;align-items:center;justify-content:center;color:#5B6472;font-size:15px}
@@ -48,6 +48,8 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .formas{display:flex;flex-wrap:wrap;gap:6px}
 .formas button{min-height:38px;padding:0 12px;border-radius:999px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151;cursor:pointer}
 .formas button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
+.pronto{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#13A4AA,#0B7C82);color:#fff;border-radius:12px;padding:12px 14px;font-size:15.5px;font-weight:700;line-height:1.35;box-shadow:0 3px 10px rgba(11,124,130,.25)}
+.pronto .ic{font-size:22px;flex:none}
 .pjs{display:flex;gap:10px;flex-wrap:wrap}
 .pjs button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;border-radius:12px;border:2px solid #E5E8ED;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#374151;width:96px}
 .pjs button img{width:80px;height:80px;border-radius:8px;display:block}
@@ -115,7 +117,7 @@ function vDiseno(){
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
-    '<div class="form">'+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>').join("")+'</div>'+(D.proximamente?'<p class="small">'+esc(D.proximamente)+'</p>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
+    '<div class="form">'+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>').join("")+'</div>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
 }

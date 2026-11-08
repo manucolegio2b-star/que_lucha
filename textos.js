@@ -21,7 +21,7 @@ const DISENOS={
       {id:"jubilada_morena", nombre:"Jubilada morena", base:"disenos/cojin_jubilacion/jubilada_morena.webp", baseFull:"disenos/cojin_jubilacion/jubilada_morena_full.png", mini:"disenos/cojin_jubilacion/mini_jubilada_morena.jpg"},
       {id:"jubilada_rubia", nombre:"Jubilada rubia", base:"disenos/cojin_jubilacion/jubilada_rubia.webp", baseFull:"disenos/cojin_jubilacion/jubilada_rubia_full.png", mini:"disenos/cojin_jubilacion/mini_jubilada_rubia.jpg"}
     ],
-    proximamente:"Este diseño es de quirófano. Próximamente, más personajes y diseños de otros servicios.",
+    proximamente:"Próximamente, más personajes y diseños de otros servicios.",
     logo:{src:"logo/rotulo_grande.png", der:968, abajo:972, w:150},   // logo ¡Qué lucha!! abajo a la derecha (unidades)
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
     mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
@@ -33,8 +33,8 @@ const DISENOS={
       {id:"cartel", etiqueta:"Texto del cartel amarillo", def:"Tus compañeros de celadores de quirófano", max:60, varias:true}
     ],
     zonas:[
-      {campo:"t1", estilo:"azul",  cx:506, cy:108, w:640, h:138, ang:0,    max:64, min:24, lineas:3, alto:1.0,  pegar:"abajo",  rayos:true},
-      {campo:"t2", estilo:"rojo",  cx:506, cy:294, w:760, h:188, ang:0,    max:124,min:30, lineas:3, alto:0.98, pegar:"arriba", subrayado:true},
+      {campo:"t1", estilo:"azul",  cx:506, cy:99, w:640, h:132, ang:0,    max:64, min:24, lineas:3, alto:1.0,  pegar:"abajo",  rayos:true},
+      {campo:"t2", estilo:"rojo",  cx:506, cy:266, w:760, h:164, ang:0,    max:124,min:30, lineas:3, alto:0.98, pegar:"arriba", subrayado:true},
       {campo:"pizarra", estilo:"mano", cx:785, cy:572, w:200, h:262, ang:-4.5, max:50, min:15, lineas:10, alto:1.04, color:"#1F2433", raya:true},
       {campo:"cartel",  estilo:"mano", cx:792, cy:797, w:258, h:68,  ang:-5,   max:42, min:14, lineas:3,  alto:0.98, color:"#1F2433", corazon:{w:150,s:26}}
     ]
