@@ -15,6 +15,7 @@ const DISENOS={
     precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.webp", baseFull:"disenos/cojin_jubilacion/base_full.png",   // fondo transparente
+    logo:{src:"logo/rotulo.png", der:968, abajo:972, w:150},   // logo ¡Qué lucha!! abajo a la derecha (unidades)
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
     mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
     campos:[
@@ -42,7 +43,10 @@ function cargarFuentes(){
 function cargarImagen(src){
   return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; });
 }
-function cargar(d,full){ return Promise.all([cargarFuentes(),cargarImagen(full?d.baseFull:d.base)]).then(r=>r[1]); }
+function cargar(d,full){
+  const logo=d.logo&&!d.logoImg?cargarImagen(d.logo.src).then(i=>{ d.logoImg=i; }).catch(()=>{}):null;
+  return Promise.all([cargarFuentes(),cargarImagen(full?d.baseFull:d.base),logo]).then(r=>r[1]);
+}
 
 const FAM={azul:"QL Titulo",rojo:"QL Destacado",mano:"QL Mano"};
 // Formas que el cliente puede elegir para los títulos.
@@ -170,6 +174,7 @@ function dibujar(cv,d,textos,img,px,formas,transparente){
     }
     g.restore();
   });
+  if(d.logo&&d.logoImg){ const L=d.logo, w=L.w*u, h=w*d.logoImg.naturalHeight/d.logoImg.naturalWidth; g.imageSmoothingQuality="high"; g.drawImage(d.logoImg,L.der*u-w,L.abajo*u-h,w,h); }
   return avisos;
 }
 

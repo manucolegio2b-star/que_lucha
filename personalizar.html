@@ -88,7 +88,7 @@ if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
 const l=deLista()||{};
 const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), formas:Object.assign({},...D.campos.filter(c=>c.formas).map(c=>({[c.id]:"recto"}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
-  consent:false, E:{}, avisos:{}, img:null, foto:null, vista:"cojin", enviado:null, aviso:""};
+  consent:false, E:{}, avisos:{}, img:null, foto:null, vista:"cojin", enviado:null, aviso:"", paso:"diseno", resumen:null};
 const plano=document.createElement("canvas");
 
 let pendiente=null;
@@ -101,18 +101,27 @@ function repintar(){
   });
 }
 
-function vForm(){
+function vForm(){ return S.paso==="datos"?vDatos():vDiseno(); }
+function vDiseno(){
   const campo=c=>{ const v=S.textos[c.id]||"";
     return '<div class="field"><label for="t_'+c.id+'">'+esc(c.etiqueta)+'<span id="n_'+c.id+'">'+v.length+'/'+c.max+'</span></label>'+
       (c.varias?'<textarea id="t_'+c.id+'" maxlength="'+c.max+'" rows="'+(c.id==="pizarra"?4:2)+'">'+esc(v)+'</textarea>':'<input id="t_'+c.id+'" type="text" maxlength="'+c.max+'" autocomplete="off" value="'+esc(v)+'">')+
       (c.formas?'<div class="formas" role="group" aria-label="Forma del texto">'+Object.keys(T.FORMAS).map(f=>'<button type="button" data-forma="'+c.id+'" data-f="'+f+'" aria-pressed="'+(S.formas[c.id]===f)+'">'+esc(T.FORMAS[f].n)+'</button>').join("")+'</div>':'')+
       '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda?'<p class="small">'+esc(c.ayuda)+'</p>':'')+'</div>'; };
-  const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
     '<div class="form"><section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
-    '<section class="card"><h2>Tus datos</h2>'+
+    (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
+    '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
+}
+function vDatos(){
+  const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
+  return '<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><button type="button" class="back" id="volver" style="background:none;border:0;cursor:pointer">'+ICO_BACK+'Cambiar textos</button></div>'+
+    '<div class="head"><h1>Tus datos</h1><p class="sub">Último paso: dinos quién eres para preparar tu pedido.</p></div>'+
+    '<div class="form" style="max-width:560px;width:100%;margin:0 auto">'+
+    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>'+esc(D.nombre)+'</strong>'+(D.precio?'<span class="price" style="font-size:17px">'+esc(D.precio)+'</span>':'')+'<button type="button" class="link" id="volver2">Cambiar textos</button></div></section>'+
+    '<section class="card">'+
       dat("nombre","Nombre","(sin apellidos)","text",'autocomplete="given-name" maxlength="40"')+
       dat("servicio","Servicio","","text",'autocomplete="off" maxlength="60"')+
       dat("categoria","Categoría profesional","","text",'autocomplete="off" maxlength="60"')+
@@ -120,7 +129,7 @@ function vForm(){
       '<input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true"></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>He revisado la vista previa y los textos, y quiero hacer el pedido.</span></label>'+
-    '<button type="button" class="btn" id="enviar"'+(S.consent?"":" disabled")+'>Confirmar y enviar</button></div></div>';
+    '<button type="button" class="btn" id="enviar"'+(S.consent?"":" disabled")+'>Confirmar y enviar</button></div>';
 }
 function vGracias(){
   const e=S.enviado;
@@ -132,16 +141,35 @@ function vGracias(){
 function render(){
   if(S.enviado){ $("#app").innerHTML=vGracias(); return; }
   $("#app").innerHTML=vForm();
+  if(S.paso==="datos"){
+    ["nombre","servicio","categoria","movil"].forEach(k=>{ const f=$("#d_"+k); f.addEventListener("input",()=>{ S.datos[k]=f.value; f.classList.remove("err"); }); });
+    const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!S.consent; });
+    $("#enviar").addEventListener("click",enviar);
+    const atras=()=>history.back(); $("#volver").addEventListener("click",atras); $("#volver2").addEventListener("click",atras);
+    return;
+  }
   D.campos.forEach(c=>{ const f=$("#t_"+c.id); f.addEventListener("input",()=>{ S.textos[c.id]=f.value; $("#n_"+c.id).textContent=f.value.length+"/"+c.max; repintar(); }); });
-  ["nombre","servicio","categoria","movil"].forEach(k=>{ const f=$("#d_"+k); f.addEventListener("input",()=>{ S.datos[k]=f.value; f.classList.remove("err"); }); });
   $("#ejemplo").addEventListener("click",()=>{ D.campos.forEach(c=>S.textos[c.id]=c.def); Object.keys(S.formas).forEach(k=>S.formas[k]="recto"); render(); });
   document.querySelectorAll("[data-forma]").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.forma; S.formas[k]=b.dataset.f;
     document.querySelectorAll('[data-forma="'+k+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
-  const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!S.consent; });
-  $("#enviar").addEventListener("click",enviar);
   document.querySelectorAll("[data-vista]").forEach(b=>b.addEventListener("click",()=>{ S.vista=b.dataset.vista; document.querySelectorAll("[data-vista]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  $("#pedir").addEventListener("click",irADatos);
   repintar();
 }
+// Paso 1 -> paso 2: comprueba los textos y prepara la miniatura del resumen
+function irADatos(){
+  if(!S.img) return;
+  S.aviso="";
+  const pl=document.createElement("canvas"); S.avisos=T.dibujar(pl,D,S.textos,S.img,1000,S.formas,!!S.foto);
+  if(!D.campos.some(c=>(S.textos[c.id]||"").trim())) S.aviso="Escribe al menos un texto.";
+  else if(Object.keys(S.avisos).length) S.aviso="Hay algún texto demasiado largo. Acórtalo para que se lea bien.";
+  if(S.aviso){ render(); const b=document.querySelector(".bad"); if(b) b.scrollIntoView({block:"center"}); return; }
+  let url;
+  if(S.foto){ const mc=document.createElement("canvas"); T.dibujarMockup(mc,D,pl,S.foto); const r=document.createElement("canvas"); r.width=300; r.height=Math.round(300*mc.height/mc.width); r.getContext("2d").drawImage(mc,0,0,r.width,r.height); url=r.toDataURL("image/jpeg",.85); }
+  else { const r=document.createElement("canvas"); r.width=r.height=300; r.getContext("2d").drawImage(pl,0,0,300,300); url=r.toDataURL("image/jpeg",.85); }
+  S.resumen=url; S.paso="datos"; S.E={}; history.pushState({paso:"datos"},""); render(); window.scrollTo(0,0);
+}
+window.addEventListener("popstate",()=>{ if(S.enviado) return; if(S.paso==="datos"){ S.paso="diseno"; S.aviso=""; render(); window.scrollTo(0,0); } });
 
 function codigoPedido(){ const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=new Uint8Array(4); crypto.getRandomValues(r); r.forEach(x=>s+=a[x%a.length]); return s; }
 async function http(url,opts){ const r=await fetch(url,opts); if(!r.ok){ let t=""; try{t=await r.text();}catch(e){} throw new Error("HTTP "+r.status+" "+t.slice(0,200)); } return r; }
