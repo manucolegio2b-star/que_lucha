@@ -13,7 +13,7 @@
 <style>
 :root{--ac:#13A4AA;--ac-d:#0B7C82;--ac-l:#DDF1F3;--navy:#0C2B4B;--txt:#1B2B3A;--mute:#5B6B7A}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:76px}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
 body{margin:0;color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#E9F7F8 0,#F7FCFC 520px,#fff 900px);-webkit-text-size-adjust:100%}
 img{max-width:100%;display:block}
 a{color:inherit}
@@ -23,6 +23,10 @@ a{color:inherit}
 
 /* Cabecera */
 header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);box-shadow:0 1px 0 rgba(12,43,75,.08)}
+.aviso-wa{display:block;background:var(--ac);color:#fff;text-align:center;text-decoration:none;font-weight:700;font-size:14.5px;line-height:1.3;padding:8px 14px}
+.aviso-wa:hover{background:var(--ac-d)}
+.aviso-wa u{text-underline-offset:3px;white-space:nowrap}
+@media(max-width:560px){.aviso-wa{font-size:13px;padding:7px 10px}}
 header .wrap{display:flex;align-items:center;justify-content:space-between;min-height:64px}
 .marca{display:flex;align-items:center;gap:10px;text-decoration:none}
 .marca img:first-child{height:40px;width:auto}.marca img:last-child{height:34px;width:auto}
@@ -119,6 +123,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
 <body>
 
 <header>
+  <a class="aviso-wa" href="apuntarse.html">📲 Apúntate a nuestra lista de difusión de WhatsApp y tendrás ventajas y descuentos · <u>Apuntarme</u></a>
   <div class="wrap">
     <a class="marca" href="#inicio" aria-label="¡Qué lucha!! · Inicio"><img src="logo/hexagono.png" alt=""><img src="logo/rotulo.png" alt="¡Qué lucha!!"></a>
     <button class="burger" id="burger" aria-label="Abrir el menú" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
