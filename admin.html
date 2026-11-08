@@ -105,6 +105,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 <body>
 <div id="root"></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
+<script src="textos.js"></script>
 <script>
 (function(){
 "use strict";
@@ -113,8 +114,13 @@ const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const PRODUCTOS={quelucha:{n:1,nombre:"Calendario Que Lucha!",corto:"Que Lucha!",precio:"1 €",tam:"Cartulina 300 g · 32 × 45 cm"},
   premium:{n:2,nombre:"Calendario Póster Premium",corto:"Póster Premium",precio:"3 €",tam:"Cartulina 300 g · 32 × 45 cm"},
-  "12hojas":{n:3,nombre:"Calendario de 12 hojas",corto:"12 hojas",precio:"12,50 €",tam:"Cartulina 300 g · 32 × 45 cm · 7 hojas a dos caras"}};
+  "12hojas":{n:3,nombre:"Calendario de 12 hojas",corto:"12 hojas",precio:"12,50 €",tam:"Cartulina 300 g · 32 × 45 cm · 7 hojas a dos caras"},
+  cojin:{n:4,nombre:"Cojín personalizado",corto:"Cojín",precio:"",tam:"Impresión 29 × 29 cm · 200 ppp"}};
+// Diseños con texto (textos.js): cojines, etc.
+const TXD=(window.QLTextos&&QLTextos.DISENOS)||{};
+const esTexto=p=>!!TXD[p.modelo]&&TXD[p.modelo].producto===p.producto;
 const MODELOS={raton:"Ratón",nido:"Nido",conejo:"Conejo",modelo1:"Modelo 1",modelo2:"Modelo 2"};
+Object.values((window.QLTextos&&QLTextos.DISENOS)||{}).forEach(d=>{ MODELOS[d.id]=d.corto; });
 const SIT={rev:["Por revisar fotos","#FFF1CC","#7A4B00"],listo:["Listo para imprimir","#E3EAFD","#1E3FA8"],imp:["Impreso","#EDE7FB","#4C2A9A"],ent:["Entregado","#DDF3E6","#14532D"]};
 const ORDEN=["rev","listo","imp","ent"];
 const SIGUIENTE={rev:"Marcar fotos como revisadas",listo:"Marcar como impreso",imp:"Marcar como entregado"};
@@ -167,10 +173,10 @@ async function guardarCambios(p,cambios){
 }
 function aviso(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),4500); }
 const fecha=s=>new Date(s).toLocaleDateString("es-ES");
-const detalle=p=>(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+" · "+p.anio;
+const detalle=p=>(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+(p.anio?" · "+p.anio:"");
 const pill=(bg,fg,t)=>'<span class="pill" style="background:'+bg+';color:'+fg+'">'+t+'</span>';
 const pPago=p=>p.pagado?pill("#DDF3E6","#14532D","Pagado"):pill("#FFF1CC","#7A4B00","Sin pagar");
-const pSit=p=>{ if(p.anulado) return pill("#E5E7EB","#374151","Anulado"); const s=SIT[p.situacion]||SIT.rev; return pill(s[1],s[2],s[0]); };
+const pSit=p=>{ if(p.anulado) return pill("#E5E7EB","#374151","Anulado"); const s=SIT[p.situacion]||SIT.rev; return pill(s[1],s[2],(esTexto(p)&&p.situacion==="rev")?"Por revisar":s[0]); };
 const nFotos=p=>(p.datos&&p.datos.n_fotos)||(p.fotos||[]).length;
 const DIAS_ESTANCADO=3;
 const dias=p=>Math.floor((Date.now()-new Date(p.creado).getTime())/864e5);
@@ -295,7 +301,7 @@ async function borrarPedidos(sel,rapido){
 function pintarLista(){
   const c=k=>pedidos.filter(predEst[k]).length;
   const pend=pedidos.filter(p=>!p.anulado&&p.situacion!=="ent"), hechos=pedidos.filter(p=>!p.anulado&&p.situacion==="ent"), anul=pedidos.filter(p=>p.anulado);
-  const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"]];
+  const chips=[["","Todos"],["quelucha","Que Lucha!"],["premium","Póster Premium"],["12hojas","12 hojas"],["cojin","Cojín"]];
   const tarj=[["rev","#FFF1CC","#7A4B00","por revisar"],["listo","#E3EAFD","#1E3FA8","por imprimir"],["imp","#EDE7FB","#4C2A9A","por entregar"],["sinlista","#DCF5E6","#14532D","sin confirmar en la lista"],["sin","#FDE7E4","#8A2A20","sin pagar"],["estancado","#FFE3D0","#9A3A00","parados +"+DIAS_ESTANCADO+" días"]];
   root.innerHTML=barra("")+'<main><div class="top"><div><h1>Pedidos</h1><p class="sub">Pulsa un pedido para abrir su ficha. Pulsa un contador para filtrar.</p></div>'+
    '<div class="cnt">'+tarj.map(t=>'<button type="button" data-e="'+t[0]+'" aria-pressed="'+(filtroEst===t[0])+'" style="background:'+t[1]+';color:'+t[2]+'"><strong>'+c(t[0])+'</strong> '+t[3]+'</button>').join("")+'</div></div>'+
@@ -457,15 +463,18 @@ function pintarFicha(num){
    '<div class="cols"><div class="col">'+
    '<section class="card"><h2>Cliente</h2><div class="kv"><span>Nombre</span><span>'+esc(d.nombre)+'</span></div><div class="kv"><span>Servicio</span><span>'+esc(d.servicio)+'</span></div><div class="kv"><span>Categoría profesional</span><span>'+esc(d.categoria)+'</span></div><div class="kv"><span>Móvil</span><span>'+esc(d.movil)+'</span></div>'+(d.acceso?'<div class="kv"><span>Código lista de difusión</span><span style="font-weight:700;letter-spacing:.15em">'+esc(d.acceso)+'</span></div>':'')+'<div class="kv"><span>Fecha del pedido</span><span>'+fecha(p.creado)+'</span></div>'+
    (apuDe(p)?(a=>'<div class="kv"><span>Lista ¡Qué lucha!</span><span>'+(a.en_lista?pill("#DDF3E6","#14532D","En la lista"):pill("#FFF1CC","#7A4B00","Sin confirmar"))+'</span></div>'+(a.en_lista?'':'<p class="sm" style="margin:8px 0">Todavía no lo has marcado como añadido a tu lista de difusión. Comprueba que te ha enviado su WhatsApp de autorización.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b ok" aria-pressed="true" id="enlista">✓ Añadido a la lista</button><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="'+chatDe(a.movil)+'">Abrir su chat</a></div>'))(apuDe(p)):'')+'</section>'+
-   '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>'+
+   (esTexto(p)?'<section class="card"><h2>Pedido</h2><div class="kv"><span>Producto</span><span>'+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(TXD[p.modelo].nombre)+'</span></div><div class="kv"><span>Tamaño</span><span>'+esc(pr.tam||"")+'</span></div>'+(TXD[p.modelo].precio?'<div class="kv"><span>Precio</span><span>'+esc(TXD[p.modelo].precio)+'</span></div>':'')+'</section>'+
+     '<section class="card"><h2>Textos del cliente</h2>'+TXD[p.modelo].campos.map(c=>'<div class="kv" style="align-items:flex-start"><span>'+esc(c.etiqueta)+'</span><span style="white-space:pre-line;text-align:right">'+(esc((d.textos||{})[c.id])||'<i class="sm">(vacío)</i>')+'</span></div>').join("")+'</section>':
+   '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>')+
    (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
-   '<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section></div>'+
+   (esTexto(p)?'':'<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section>')+'</div>'+
    '<div class="col"><section class="card"><h2>Pago</h2><div class="kv"><span>'+(p.pagado?"Pagado":"Sin pagar")+'</span><span>'+esc(pr.precio||"")+'</span></div><button class="b full" id="pago" style="margin-top:10px">'+(p.pagado?"Marcar como sin pagar":"Marcar como pagado")+'</button></section>'+
-   '<section class="card"><h2>Situación</h2><ol class="steps">'+["Pedido recibido","Fotos revisadas","Impreso","Entregado"].map((l,i)=>{ const hecho=i===0||idx>=i; return '<li class="'+(i===0||idx>=i?"done":"")+'"><span class="m">'+(hecho?"✓":i+1)+'</span><span>'+l+'</span></li>'; }).join("")+'</ol>'+
-   (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+SIGUIENTE[p.situacion]+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+(d.fotos_borradas?'<p class="sm" style="margin:10px 0 0">Fotos borradas el '+fecha(d.fotos_borradas)+'.</p>':((p.fotos||[]).length?'<button class="b full" id="borrarfotos" style="margin-top:8px">Borrar las fotos del cliente</button>':''))+'</section>'+
+   '<section class="card"><h2>Situación</h2><ol class="steps">'+["Pedido recibido",esTexto(p)?"Revisado":"Fotos revisadas","Impreso","Entregado"].map((l,i)=>{ const hecho=i===0||idx>=i; return '<li class="'+(i===0||idx>=i?"done":"")+'"><span class="m">'+(hecho?"✓":i+1)+'</span><span>'+l+'</span></li>'; }).join("")+'</ol>'+
+   (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+(esTexto(p)&&p.situacion==="rev"?"Marcar como revisado":SIGUIENTE[p.situacion])+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+(d.fotos_borradas?'<p class="sm" style="margin:10px 0 0">Fotos borradas el '+fecha(d.fotos_borradas)+'.</p>':((p.fotos||[]).length?'<button class="b full" id="borrarfotos" style="margin-top:8px">Borrar las fotos del cliente</button>':''))+'</section>'+
+   (esTexto(p)?'<section class="card"><h2>'+esc(pr.corto||"Diseño")+'</h2><p class="sm" style="margin:0 0 12px">Revisa los textos y genera el archivo de impresión ('+esc(pr.tam||"")+').</p><a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar archivo</a></section>':
    '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
    (p.producto==="12hojas"?'<button class="b pri" disabled>Generar calendario</button><p class="sm">El calendario de 12 hojas se prepara en la etapa 4.</p>':
-    (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section>'+
+    (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section>')+
    '</div></div></main>';
   enlazarComun();
   $("#pago").onclick=()=>guardarCambios(p,{pagado:!p.pagado});
@@ -534,11 +543,12 @@ async function asegurarImpresor(){
 }
 function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
 function descargar(blob,nombre){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
-async function pdfDe(cv){
+async function pdfDe(cv,wc,hc){
+  wc=wc||WC; hc=hc||HC;
   const jpg=new Uint8Array(await (await aBlob(cv,"image/jpeg",.95)).arrayBuffer());
   const enc=new TextEncoder(), parts=[], offs=[]; let pos=0;
   const push=x=>{ const u=typeof x==="string"?enc.encode(x):x; parts.push(u); pos+=u.length; };
-  const wpt=(WC/2.54*72).toFixed(2), hpt=(HC/2.54*72).toFixed(2);
+  const wpt=(wc/2.54*72).toFixed(2), hpt=(hc/2.54*72).toFixed(2);
   push("%PDF-1.4\n");
   offs[1]=pos; push("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n");
   offs[2]=pos; push("2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n");
@@ -550,8 +560,42 @@ async function pdfDe(cv){
   push(x+"trailer<</Size 6/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
   return new Blob(parts,{type:"application/pdf"});
 }
+function ventanaImprimir(p,blob,wc,hc){
+  const u=URL.createObjectURL(blob), w=window.open("","_blank");
+  if(!w){ aviso("El navegador ha bloqueado la ventana. Permite las ventanas emergentes para esta página."); return; }
+  w.document.write('<!doctype html><title>Pedido '+p.numero+'</title><style>@page{size:'+wc*10+'mm '+hc*10+'mm;margin:0}html,body{margin:0}img{display:block;width:'+wc*10+'mm;height:'+hc*10+'mm}</style><img src="'+u+'">');
+  w.document.close(); const im=w.document.querySelector("img"); im.onload=()=>{ w.focus(); w.print(); };
+  w.onafterprint=()=>setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Has impreso el pedido "+p.numero+"? Pulsa Aceptar para marcarlo como Impreso.")) guardarCambios(p,{situacion:"imp"}); },400);
+}
+// Archivo de impresión de los diseños con texto (cojines…), a 200 ppp
+async function componerTexto(p){
+  const dz=TXD[p.modelo], img=await QLTextos.cargar(dz,true), px=Math.round(dz.cm/2.54*200), cv=document.createElement("canvas");
+  const avisos=QLTextos.dibujar(cv,dz,(p.datos||{}).textos||{},img,px);
+  return {cv,avisos};
+}
+function pintarImprimirTexto(p){
+  const d=p.datos||{}, dz=TXD[p.modelo], pr=PRODUCTOS[p.producto]||{}, num=p.numero;
+  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Vista previa · '+esc(dz.nombre)+'</h1><p class="sub">Compruébalo con calma. No se imprime nada hasta que lo confirmes.</p></div><a class="back" href="#/pedido/'+num+'">'+I.back+'Volver a la ficha</a></div>'+
+   '<div class="big"><div><div id="estadoGen" class="empty" style="padding:60px 0">Preparando el archivo a máxima calidad…</div><canvas id="prev" style="display:none;width:100%;max-width:640px;height:auto"></canvas><div class="sm" style="margin-top:8px">'+dz.cm+' × '+dz.cm+' cm · 200 ppp</div></div>'+
+   '<div class="col"><section class="card"><h2>Pedido '+num+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>'+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(dz.nombre)+'</span></div><div id="avisoTx"></div></section>'+
+   '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado la vista previa y quiero imprimirla.</span></label>'+
+   '<button class="b pri" id="imprimir" disabled>'+I.print+'Imprimir</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">Descargar PNG</button><button class="b" id="dpdf" disabled style="flex:1">Descargar PDF</button></div>'+
+   '<p class="sm" style="margin:10px 0 0">Se abrirá el cuadro de impresión de este equipo. Después te preguntaré si lo marco como impreso.</p></section></div></div></main>';
+  enlazarComun();
+  let gen=null;
+  const onList=()=>{ const ok=$("#rev").checked&&!!gen; ["imprimir","dpng","dpdf"].forEach(k=>$("#"+k).disabled=!ok); };
+  $("#rev").onchange=onList;
+  componerTexto(p).then(r=>{ if(ruta().r!=="imprimir"||+ruta().id!==num) return; gen=r.cv; const v=$("#prev"); v.width=gen.width; v.height=gen.height; v.getContext("2d").drawImage(gen,0,0); v.style.display="block"; $("#estadoGen").style.display="none";
+    const av=Object.keys(r.avisos); if(av.length) $("#avisoTx").innerHTML='<div class="warn">⚠ Algún texto es muy largo y la letra queda pequeña ('+esc(av.map(k=>(dz.campos.find(c=>c.id===k)||{}).etiqueta||k).join(", "))+').</div>'; onList(); })
+   .catch(e=>{ const s=$("#estadoGen"); if(s){ s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
+  const nom=(p.producto||"diseno")+"_"+num;
+  $("#dpng").onclick=async()=>descargar(await pngA200(gen),nom+".png");
+  $("#dpdf").onclick=async()=>descargar(await pdfDe(gen,dz.cm,dz.cm),nom+".pdf");
+  $("#imprimir").onclick=async()=>ventanaImprimir(p,await pngA200(gen),dz.cm,dz.cm);
+}
 function pintarImprimir(num){
   const p=pedidos.find(x=>x.numero===num);
+  if(p&&esTexto(p)) return pintarImprimirTexto(p);
   if(!p||!p.datos||!p.datos.disposicion){ root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+(estado()||'<div class="empty">No se puede generar este pedido.</div>')+'</main>'; enlazarComun(); return; }
   const d=p.datos, dis=d.disposicion, z=dis.zona_cm, area=z.w*z.h;
   const filas=dis.fotos.map(f=>({n:f.archivo,a:Math.round(f.w*f.h/area*100),ppp:f.ppp}));

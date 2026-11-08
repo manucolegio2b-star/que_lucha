@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Personaliza tu cojín · ¡Qué lucha!!</title>
+<meta name="theme-color" content="#F4F6F8">
+<link rel="icon" type="image/png" href="logo/icono.png">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F4F6F8;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+a,button,textarea{font-family:inherit}
+#app{max-width:1040px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:16px 20px 32px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.brand{display:flex;align-items:center;gap:10px}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:#0B7C82;font-weight:600;font-size:15px;text-decoration:none}
+h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
+h2{margin:0;font-size:18px}
+.sub{margin:0;font-size:15px;line-height:1.45;color:#5B6472}
+.head{display:flex;flex-direction:column;gap:6px}
+.cols{display:flex;flex-direction:column;gap:18px}
+.prev{position:relative;background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(17,24,39,.08)}
+.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4;aspect-ratio:1/1}
+.prev .cargando{position:absolute;inset:10px;display:flex;align-items:center;justify-content:center;color:#5B6472;font-size:15px}
+.form{display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.field label span{font-weight:400;color:#5B6472}
+input[type=text],input[type=tel],textarea{border:1.5px solid #B8C0CC;border-radius:12px;padding:0 14px;font-size:16px;color:#111827;background:#fff;width:100%}
+input[type=text],input[type=tel]{height:48px}
+textarea{padding:12px 14px;line-height:1.4;resize:vertical;min-height:96px}
+input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
+.errmsg{font-size:13px;color:#C0392B}
+.small{margin:0;font-size:13px;line-height:1.4;color:#5B6472}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.price{font-size:20px;font-weight:800;color:#0B7C82}
+.chip{font-size:13px;background:#E6F6F6;color:#0B7C82;border-radius:999px;padding:4px 10px;font-weight:600}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+.consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:#13A4AA}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:14px;background:#13A4AA;color:#fff;font-size:17px;font-weight:600;border:0;width:100%;cursor:pointer;text-decoration:none}
+.btn[disabled]{background:#B8C0CC;cursor:not-allowed}
+.btn2{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff;border:1.5px solid #13A4AA;color:#0B7C82;font-size:15px;font-weight:600;width:100%;cursor:pointer;text-decoration:none}
+.link{background:none;border:0;color:#0B7C82;font-weight:600;font-size:14px;padding:6px 0;cursor:pointer;text-align:left}
+.bad{background:#FFF5F4;border:1.5px solid #E8B4AE;color:#8A2A20;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.4}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.over{position:fixed;inset:0;background:rgba(244,246,248,.97);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.over .bar{width:100%;max-width:340px;height:10px;border-radius:5px;background:#E5E8ED;overflow:hidden}.over .bar i{display:block;height:100%;background:#13A4AA;transition:width .3s}
+.center{text-align:center}
+.ok{width:72px;height:72px;border-radius:50%;background:#DCF5E6;display:flex;align-items:center;justify-content:center;margin:8px auto 4px}
+.codigo{font-size:30px;font-weight:800;letter-spacing:4px;color:#0B7C82}
+@media(max-width:899px){
+  .cols>.prev{position:sticky;top:0;z-index:5;padding:6px;border-radius:0 0 14px 14px;margin:0 -20px;box-shadow:0 4px 12px rgba(17,24,39,.12)}
+  .prev canvas{width:auto;max-width:100%;max-height:38vh;max-height:38dvh;margin:0 auto}
+}
+@media(min-width:900px){
+  .cols{flex-direction:row;align-items:flex-start}
+  .cols>.prev{flex:0 0 52%;position:sticky;top:16px}
+  .cols>.form{flex:1;min-width:0}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
+<script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
+<script src="textos.js"></script>
+<script>
+(function(){
+"use strict";
+const C=window.CONFIG, T=window.QLTextos;
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+const ICO_BACK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+const CHECK='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const cab='<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><a class="back" href="pedir.html">'+ICO_BACK+'Productos</a></div>';
+
+const id=new URLSearchParams(location.search).get("d")||"jubilacion";
+const D=T.DISENOS[id];
+if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'; return; }
+
+function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
+const l=deLista()||{};
+const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
+  consent:false, E:{}, avisos:{}, img:null, enviado:null, aviso:""};
+
+let pendiente=null;
+function repintar(){
+  if(pendiente) return;
+  pendiente=requestAnimationFrame(()=>{ pendiente=null; const cv=$("#cv"); if(!cv||!S.img) return;
+    S.avisos=T.dibujar(cv,D,S.textos,S.img,1000);
+    D.campos.forEach(c=>{ const m=$("#av_"+c.id); if(m) m.textContent=S.avisos[c.id]?"Es demasiado largo y la letra quedaría muy pequeña. Acórtalo un poco.":""; const f=$("#t_"+c.id); if(f) f.classList.toggle("err",!!S.avisos[c.id]); });
+  });
+}
+
+function vForm(){
+  const campo=c=>{ const v=S.textos[c.id]||"";
+    return '<div class="field"><label for="t_'+c.id+'">'+esc(c.etiqueta)+'<span id="n_'+c.id+'">'+v.length+'/'+c.max+'</span></label>'+
+      (c.varias?'<textarea id="t_'+c.id+'" maxlength="'+c.max+'" rows="'+(c.id==="pizarra"?4:2)+'">'+esc(v)+'</textarea>':'<input id="t_'+c.id+'" type="text" maxlength="'+c.max+'" autocomplete="off" value="'+esc(v)+'">')+
+      '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda?'<p class="small">'+esc(c.ayuda)+'</p>':'')+'</div>'; };
+  const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
+  return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
+    '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'<span class="chip">Impresión '+D.cm+' × '+D.cm+' cm</span></div></div>'+
+    '<div class="cols"><div class="prev"><canvas id="cv" width="1000" height="1000" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
+    '<div class="form"><section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
+    '<section class="card"><h2>Tus datos</h2>'+
+      dat("nombre","Nombre","(sin apellidos)","text",'autocomplete="given-name" maxlength="40"')+
+      dat("servicio","Servicio","","text",'autocomplete="off" maxlength="60"')+
+      dat("categoria","Categoría profesional","","text",'autocomplete="off" maxlength="60"')+
+      dat("movil","Teléfono móvil","(para avisarte cuando esté listo)","tel",'inputmode="tel" placeholder="6XX XXX XXX" autocomplete="tel" maxlength="20"')+
+      '<input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true"></section>'+
+    (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
+    '<label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>He revisado la vista previa y los textos, y quiero hacer el pedido.</span></label>'+
+    '<button type="button" class="btn" id="enviar"'+(S.consent?"":" disabled")+'>Confirmar y enviar</button></div></div>';
+}
+function vGracias(){
+  const e=S.enviado;
+  return cab+'<div class="center"><div class="ok">'+CHECK+'</div><h1>¡Gracias, '+esc(e.nombre)+'!</h1><p class="sub" style="margin-top:8px">Hemos recibido tu pedido. Lo revisaremos antes de imprimir.</p>'+
+    '<p style="margin:14px 0 0;font-size:14px;color:#5B6472">Tu código de pedido</p><div class="codigo">'+esc(e.codigo)+'</div></div>'+
+    '<div class="prev" style="max-width:520px;width:100%;margin:0 auto"><img src="'+e.url+'" alt="Tu diseño" style="display:block;width:100%;border-radius:10px"></div>'+
+    '<a class="btn2" href="pedir.html" style="max-width:520px;margin:0 auto">Hacer otro pedido</a>';
+}
+function render(){
+  if(S.enviado){ $("#app").innerHTML=vGracias(); return; }
+  $("#app").innerHTML=vForm();
+  D.campos.forEach(c=>{ const f=$("#t_"+c.id); f.addEventListener("input",()=>{ S.textos[c.id]=f.value; $("#n_"+c.id).textContent=f.value.length+"/"+c.max; repintar(); }); });
+  ["nombre","servicio","categoria","movil"].forEach(k=>{ const f=$("#d_"+k); f.addEventListener("input",()=>{ S.datos[k]=f.value; f.classList.remove("err"); }); });
+  $("#ejemplo").addEventListener("click",()=>{ D.campos.forEach(c=>S.textos[c.id]=c.def); render(); });
+  const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!S.consent; });
+  $("#enviar").addEventListener("click",enviar);
+  repintar();
+}
+
+function codigoPedido(){ const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=new Uint8Array(4); crypto.getRandomValues(r); r.forEach(x=>s+=a[x%a.length]); return s; }
+async function http(url,opts){ const r=await fetch(url,opts); if(!r.ok){ let t=""; try{t=await r.text();}catch(e){} throw new Error("HTTP "+r.status+" "+t.slice(0,200)); } return r; }
+let envio=null;
+async function enviar(){
+  if(!S.consent || $("#web").value) return;
+  ["nombre","servicio","categoria","movil"].forEach(k=>S.datos[k]=$("#d_"+k).value.trim());
+  const d=S.datos; S.E={}; S.aviso="";
+  if(d.nombre.length<2) S.E.nombre="Escribe tu nombre.";
+  if(d.servicio.length<2) S.E.servicio="Escribe tu servicio.";
+  if(d.categoria.length<2) S.E.categoria="Escribe tu categoría profesional.";
+  const tel=d.movil.replace(/[\s.\-()]/g,"").replace(/^(\+34|0034)/,"");
+  if(!/^[6-9]\d{8}$/.test(tel)) S.E.movil="Escribe un móvil de 9 cifras.";
+  if(!D.campos.some(c=>(S.textos[c.id]||"").trim())) S.aviso="Escribe al menos un texto.";
+  if(Object.keys(S.avisos).length) S.aviso="Hay algún texto demasiado largo. Acórtalo para que se lea bien.";
+  if(Object.keys(S.E).length||S.aviso){ render(); const f=document.querySelector("input.err,.bad"); if(f){ f.scrollIntoView({block:"center"}); if(f.focus) f.focus(); } return; }
+  if(!envio) envio={id:crypto.randomUUID(), codigo:codigoPedido()};
+  const ov=document.createElement("div"); ov.className="over"; document.body.appendChild(ov);
+  const pintar=(msg,pct,err)=>{ ov.innerHTML='<div style="font-size:18px;font-weight:700">'+esc(msg)+'</div>'+(err?'':'<div class="bar"><i style="width:'+pct+'%"></i></div><div class="small">No cierres esta pantalla.</div>');
+    if(err){ ov.insertAdjacentHTML("beforeend",'<div class="bad">'+esc(err)+'</div><button class="btn" style="max-width:340px;margin:0" id="reint">Reintentar</button><button class="btn2" style="max-width:340px" id="cancel">Volver</button>'); $("#reint").onclick=()=>{ov.remove();enviar();}; $("#cancel").onclick=()=>ov.remove(); } };
+  try{
+    pintar("Enviando tu pedido…",20);
+    const cv=document.createElement("canvas"); T.dibujar(cv,D,S.textos,S.img,1000);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.86));
+    const ruta=envio.id+"/montaje.jpg";
+    if(!envio.subido){ await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+ruta,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:blob}); envio.subido=true; }
+    pintar("Guardando tu pedido…",80);
+    const textos={}; D.campos.forEach(c=>textos[c.id]=(S.textos[c.id]||"").trim());
+    const fila={id:envio.id,producto:D.producto,modelo:D.id,anio:null,
+      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos},fotos:[]};
+    for(let t=0;;t++){
+      try{ await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)}); break; }
+      catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
+    }
+    S.enviado={nombre:d.nombre,codigo:envio.codigo,url:URL.createObjectURL(blob)};
+    envio=null; ov.remove(); render(); window.scrollTo(0,0);
+  }catch(e){ console.error(e); pintar("No se ha podido enviar",0,"Revisa tu conexión e inténtalo de nuevo. Tu pedido no se ha perdido: pulsa Reintentar."); }
+}
+
+render();
+T.cargar(D,false).then(img=>{ S.img=img; const g=$("#carg"); if(g) g.remove(); repintar(); })
+  .catch(()=>{ const g=$("#carg"); if(g) g.textContent="No se pudo cargar la vista previa. Recarga la página."; });
+})();
+</script>
+</body>
+</html>
