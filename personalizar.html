@@ -48,6 +48,10 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .formas{display:flex;flex-wrap:wrap;gap:6px}
 .formas button{min-height:38px;padding:0 12px;border-radius:999px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151;cursor:pointer}
 .formas button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
+.pjs{display:flex;gap:10px;flex-wrap:wrap}
+.pjs button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;border-radius:12px;border:2px solid #E5E8ED;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#374151;width:96px}
+.pjs button img{width:80px;height:80px;border-radius:8px;display:block}
+.pjs button[aria-pressed=true]{border-color:#13A4AA;background:#E6F6F6;color:#0B7C82}
 .link{background:none;border:0;color:#0B7C82;font-weight:600;font-size:14px;padding:6px 0;cursor:pointer;text-align:left}
 .bad{background:#FFF5F4;border:1.5px solid #E8B4AE;color:#8A2A20;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.4}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
@@ -88,7 +92,7 @@ if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
 const l=deLista()||{};
 const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), formas:Object.assign({},...D.campos.filter(c=>c.formas).map(c=>({[c.id]:"recto"}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
-  consent:false, E:{}, avisos:{}, img:null, foto:null, vista:"cojin", enviado:null, aviso:"", paso:"diseno", resumen:null};
+  consent:false, E:{}, avisos:{}, img:null, foto:null, vista:"cojin", enviado:null, aviso:"", paso:"diseno", resumen:null, personaje:(D.personajes&&D.personajes[0]?D.personajes[0].id:null), imgs:{}};
 const plano=document.createElement("canvas");
 
 let pendiente=null;
@@ -111,7 +115,7 @@ function vDiseno(){
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
-    '<div class="form"><section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
+    '<div class="form">'+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>').join("")+'</div>'+(D.proximamente?'<p class="small">'+esc(D.proximamente)+'</p>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
 }
@@ -120,7 +124,7 @@ function vDatos(){
   return '<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><button type="button" class="back" id="volver" style="background:none;border:0;cursor:pointer">'+ICO_BACK+'Cambiar textos</button></div>'+
     '<div class="head"><h1>Tus datos</h1><p class="sub">Último paso: dinos quién eres para preparar tu pedido.</p></div>'+
     '<div class="form" style="max-width:560px;width:100%;margin:0 auto">'+
-    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>'+esc(D.nombre)+'</strong>'+(D.precio?'<span class="price" style="font-size:17px">'+esc(D.precio)+'</span>':'')+'<button type="button" class="link" id="volver2">Cambiar textos</button></div></section>'+
+    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>'+esc(D.nombre)+'</strong>'+(D.personajes&&D.personajes.length>1?'<span class="small">'+esc(T.personaje(D,S.personaje).nombre)+'</span>':'')+''+(D.precio?'<span class="price" style="font-size:17px">'+esc(D.precio)+'</span>':'')+'<button type="button" class="link" id="volver2">Cambiar textos</button></div></section>'+
     '<section class="card">'+
       dat("nombre","Nombre","(sin apellidos)","text",'autocomplete="given-name" maxlength="40"')+
       dat("servicio","Servicio","","text",'autocomplete="off" maxlength="60"')+
@@ -154,7 +158,13 @@ function render(){
     document.querySelectorAll('[data-forma="'+k+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   document.querySelectorAll("[data-vista]").forEach(b=>b.addEventListener("click",()=>{ S.vista=b.dataset.vista; document.querySelectorAll("[data-vista]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   $("#pedir").addEventListener("click",irADatos);
+  document.querySelectorAll("[data-pj]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.pj; if(id===S.personaje) return; S.personaje=id;
+    document.querySelectorAll("[data-pj]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); cambiarPersonaje(id); }));
   repintar();
+}
+function cambiarPersonaje(id){
+  if(S.imgs[id]){ S.img=S.imgs[id]; repintar(); return; }
+  T.cargar(D,false,id).then(img=>{ S.imgs[id]=img; if(S.personaje===id){ S.img=img; repintar(); } }).catch(()=>{});
 }
 // Paso 1 -> paso 2: comprueba los textos y prepara la miniatura del resumen
 function irADatos(){
@@ -199,7 +209,7 @@ async function enviar(){
     pintar("Guardando tu pedido…",80);
     const textos={}; D.campos.forEach(c=>textos[c.id]=(S.textos[c.id]||"").trim());
     const fila={id:envio.id,producto:D.producto,modelo:D.id,anio:null,
-      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos,formas:Object.assign({},S.formas)},fotos:[]};
+      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos,formas:Object.assign({},S.formas),personaje:S.personaje},fotos:[]};
     for(let t=0;;t++){
       try{ await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)}); break; }
       catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
@@ -212,7 +222,7 @@ async function enviar(){
 }
 
 render();
-Promise.all([T.cargar(D,false),T.cargarMockup(D).catch(()=>null)]).then(([img,foto])=>{ S.img=img; S.foto=foto; if(!foto) S.vista="plano"; const g=$("#carg"); if(g) g.remove(); repintar(); })
+Promise.all([T.cargar(D,false,S.personaje),T.cargarMockup(D).catch(()=>null)]).then(([img,foto])=>{ S.img=img; S.imgs[S.personaje]=img; S.foto=foto; if(!foto) S.vista="plano"; const g=$("#carg"); if(g) g.remove(); repintar(); })
   .catch(()=>{ const g=$("#carg"); if(g) g.textContent="No se pudo cargar la vista previa. Recarga la página."; });
 })();
 </script>

@@ -15,6 +15,13 @@ const DISENOS={
     precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.webp", baseFull:"disenos/cojin_jubilacion/base_full.png",   // fondo transparente
+    // Personajes: mismo diseño con distinto personaje (el primero es el que sale al entrar)
+    personajes:[
+      {id:"jubilado1", nombre:"Jubilado 1", base:"disenos/cojin_jubilacion/base.webp", baseFull:"disenos/cojin_jubilacion/base_full.png", mini:"disenos/cojin_jubilacion/mini_jubilado1.jpg"},
+      {id:"jubilada_morena", nombre:"Jubilada morena", base:"disenos/cojin_jubilacion/jubilada_morena.webp", baseFull:"disenos/cojin_jubilacion/jubilada_morena_full.png", mini:"disenos/cojin_jubilacion/mini_jubilada_morena.jpg"},
+      {id:"jubilada_rubia", nombre:"Jubilada rubia", base:"disenos/cojin_jubilacion/jubilada_rubia.webp", baseFull:"disenos/cojin_jubilacion/jubilada_rubia_full.png", mini:"disenos/cojin_jubilacion/mini_jubilada_rubia.jpg"}
+    ],
+    proximamente:"Este diseño es de quirófano. Próximamente, más personajes y diseños de otros servicios.",
     logo:{src:"logo/rotulo_grande.png", der:968, abajo:972, w:150},   // logo ¡Qué lucha!! abajo a la derecha (unidades)
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
     mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
@@ -43,9 +50,11 @@ function cargarFuentes(){
 function cargarImagen(src){
   return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; });
 }
-function cargar(d,full){
+function personaje(d,pid){ const l=d.personajes||[]; return l.find(p=>p.id===pid)||l[0]||null; }
+function cargar(d,full,pid){
   const logo=d.logo&&!d.logoImg?cargarImagen(d.logo.src).then(i=>{ d.logoImg=i; }).catch(()=>{}):null;
-  return Promise.all([cargarFuentes(),cargarImagen(full?d.baseFull:d.base),logo]).then(r=>r[1]);
+  const pj=personaje(d,pid), src=pj?(full?pj.baseFull:pj.base):(full?d.baseFull:d.base);
+  return Promise.all([cargarFuentes(),cargarImagen(src),logo]).then(r=>r[1]);
 }
 
 const FAM={azul:"QL Titulo",rojo:"QL Destacado",mano:"QL Mano"};
@@ -187,5 +196,5 @@ function dibujarMockup(cv,d,diseno,foto){
   g.save(); g.globalCompositeOperation="multiply"; g.setTransform(m[0]*k,m[1]*k,m[2]*k,m[3]*k,m[4],m[5]);
   g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0); g.restore();
 }
-window.QLTextos={DISENOS,FORMAS,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
+window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
 })();
