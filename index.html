@@ -80,6 +80,10 @@ section{padding:44px 0 10px}
 .prod .foto img{width:100%;height:100%;object-fit:contain;padding:8px 0}
 .prod .foto.alto{aspect-ratio:3/4;background:#fff}
 .prod .foto.alto .etq{top:auto;bottom:10px}
+/* Fotos que van cambiando (fundido suave) */
+.foto.rota img{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+.foto.rota img.on{opacity:1}
+.foto.rota .etq{z-index:1}
 .prod .foto svg{width:64px;height:64px;stroke:var(--ac);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
 .prod .cuerpo{padding:14px 14px 16px;display:flex;flex-direction:column;flex:1}
 .prod h3{margin:0;font-size:18px;color:var(--navy)}
@@ -158,7 +162,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
       <div class="tit"><h2 class="display">Nuestros productos</h2><p>Detalles que emocionan, recuerdos que perduran.</p></div>
       <div class="rejilla">
         <article class="prod">
-          <div class="foto alto"><img src="img/ejemplo-quelucha.jpg" alt="Ejemplo de calendario de pared con fotos del equipo" loading="lazy"><span class="etq ok">Disponible</span></div>
+          <div class="foto alto rota"><img class="on" src="img/ejemplo-quelucha.jpg" alt="Ejemplo de calendario de pared con fotos del equipo" loading="lazy"><img src="disenos/raton/miniatura.jpg" alt="Diseño de calendario Ratón" loading="lazy"><img src="disenos/nido/miniatura.jpg" alt="Diseño de calendario Nido" loading="lazy"><img src="disenos/conejo/miniatura.jpg" alt="Diseño de calendario Conejo" loading="lazy"><span class="etq ok">Disponible</span></div>
           <div class="cuerpo">
             <h3>Calendarios de pared</h3>
             <p>Cada mes, una razón para sonreír. Con tus propias fotos.</p>
@@ -214,6 +218,25 @@ footer small{display:block;margin-top:14px;opacity:.92}
   <small>© 2026 ¡Qué lucha!! &nbsp;|&nbsp; Hecho con mucho cariño ♥</small>
 </footer>
 
+<script>
+/* Fotos de las tarjetas: cambian cada 4 segundos; se paran con el ratón encima.
+   Para añadir fotos a otro producto: poner class="foto alto rota" y más <img> dentro. */
+(function(){
+  var SEG=4;
+  document.querySelectorAll('.foto.rota').forEach(function(f,n){
+    var fotos=f.querySelectorAll('img'); if(fotos.length<2) return;
+    var i=0, quieto=false, tarjeta=f.closest('.prod');
+    tarjeta.addEventListener('mouseenter',function(){quieto=true});
+    tarjeta.addEventListener('mouseleave',function(){quieto=false});
+    setTimeout(function(){
+      setInterval(function(){
+        if(quieto||document.hidden) return;
+        fotos[i].classList.remove('on'); i=(i+1)%fotos.length; fotos[i].classList.add('on');
+      },SEG*1000);
+    },n*2000); /* cada tarjeta empieza 2 s después que la anterior */
+  });
+})();
+</script>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script>
 (function(){
