@@ -408,24 +408,27 @@ async function prevHoja(i){ // dibuja la hoja (a poca resolución) con las fotos
   hj.prev={key, url:URL.createObjectURL(blob)};
   return hj.prev;
 }
+const PPP_BIEN=150, PPP_MAL=100; // verde desde 150 ppp; naranja de 100 a 149 (bien en la pared); rojo por debajo de 100
 // Fotos de la vista previa: tocar = cambiar, X = quitar, + = añadir. Aviso si alguna sale con poca nitidez.
 function fotosEditables(fotos,pp,donde){
   let h='<div class="field"><label>'+donde+' <span>(toca una foto para cambiarla)</span></label><div class="edf">';
   fotos.forEach((f,j)=>{
-    const c=pp[j]>=200?"#1B7F4B":(pp[j]>=150?"#9A6700":"#C0392B");
-    h+='<div class="ef'+(pp[j]<150?" mal":"")+'"><button type="button" class="cam" data-cambiar="'+j+'" aria-label="Cambiar la foto '+(j+1)+'"><img src="'+f.preview+'" alt=""><span>Cambiar</span></button>'+
+    const c=pp[j]>=PPP_BIEN?"#1B7F4B":(pp[j]>=PPP_MAL?"#B45309":"#C0392B");
+    h+='<div class="ef'+(pp[j]<PPP_MAL?" mal":"")+'"><button type="button" class="cam" data-cambiar="'+j+'" aria-label="Cambiar la foto '+(j+1)+'"><img src="'+f.preview+'" alt=""><span>Cambiar</span></button>'+
        (fotos.length>1?'<button type="button" class="x" data-quitar="'+j+'" aria-label="Quitar la foto '+(j+1)+'">'+I.x+'</button>':'')+
        '<b style="color:'+c+'">'+pp[j]+' ppp</b></div>';
   });
   if(fotos.length<6) h+='<button type="button" class="ef add" data-anadir="1" aria-label="Añadir fotos">'+I.plus+'<b>Añadir</b></button>';
   h+='</div></div>';
-  const malas=fotos.map((f,j)=>j).filter(j=>pp[j]<150);
+  const malas=fotos.map((f,j)=>j).filter(j=>pp[j]<PPP_MAL);
+  const justas=fotos.map((f,j)=>j).filter(j=>pp[j]>=PPP_MAL&&pp[j]<PPP_BIEN);
   if(malas.length){
     const una=malas.length===1;
     h+='<div class="bad" style="max-width:none">'+(una?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(j=>j+1).join(", ")+" saldrán")+' con poca nitidez al imprimir (marcada'+(una?"":"s")+' en rojo). Puedes:<br>• Cambiar'+(una?"la":"las")+' por otra'+(una?"":"s")+' de más calidad.'+
        (fotos.length<6?'<br>• <b>Añadir más fotos</b>: así '+(una?"esa foto sale":"esas fotos salen")+' más pequeña'+(una?"":"s")+' y se ve'+(una?"":"n")+' mejor.':'')+
        (fotos.length>1?'<br>• Probar otra disposición o quitar'+(una?"la":"las")+'.':'')+'</div>';
   }
+  else if(justas.length) h+='<p class="small" style="color:#B45309">'+(justas.length===1?"La foto "+(justas[0]+1)+" (en naranja) se verá":"Las fotos "+justas.map(j=>j+1).join(", ")+" (en naranja) se verán")+' bien en la pared; de muy cerca, algo suave'+(fotos.length<6?". Si añades más fotos, sale"+(justas.length===1?"":"n")+" más pequeña"+(justas.length===1?"":"s")+" y más nítida"+(justas.length===1?"":"s"):"")+'.</p>';
   return h+'<input type="file" id="fileIn" accept="image/*" multiple hidden><input type="file" id="fileUno" accept="image/*" hidden>';
 }
 function miniPaleta(v,w){
@@ -538,14 +541,14 @@ function vPrevia(){
   if(es12()){
     const i=S.hoja12||0, hj=S.hojas[i], cur=dispHoja(i), pp={}; cur.rects.forEach(q=>pp[q.i]=q.ppp);
     h+='<div class="dos"><div class="izq">';
-    h+='<div class="tabs12" role="tablist">'+S.hojas.map((x,k)=>{ const mal=dispHoja(k).rects.some(q=>q.ppp<150); return '<button type="button" data-ir="'+k+'" class="'+(k===i?"on":"")+(mal?" mal":"")+'" aria-selected="'+(k===i)+'">'+(k===0?"Portada":MES3[k-1])+(mal?" ⚠":"")+'</button>'; }).join("")+'</div>';
+    h+='<div class="tabs12" role="tablist">'+S.hojas.map((x,k)=>{ const mal=dispHoja(k).rects.some(q=>q.ppp<PPP_MAL); return '<button type="button" data-ir="'+k+'" class="'+(k===i?"on":"")+(mal?" mal":"")+'" aria-selected="'+(k===i)+'">'+(k===0?"Portada":MES3[k-1])+(mal?" ⚠":"")+'</button>'; }).join("")+'</div>';
     if(hj.prev && hj.prev.key===clavePrev(i)) h+='<img id="posterImg" class="posterimg" src="'+hj.prev.url+'" alt="Vista previa de '+NOMBRE_HOJA(i)+'" style="cursor:zoom-in">';
     else h+='<div class="posterimg wait"><div class="spin"></div><div>Preparando '+NOMBRE_HOJA(i).toLowerCase()+'…</div></div>';
     h+='<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-paso="-1" style="flex:1"'+(i===0?" disabled":"")+'>‹ Anterior</button><div style="flex:none;text-align:center;font-size:13px;color:#5B6472;line-height:1.2">Hoja<br><b style="color:#111827;font-size:15px">'+NOMBRE_HOJA(i)+'</b></div><button type="button" class="btn2" data-paso="1" style="flex:1"'+(i===12?" disabled":"")+'>Siguiente ›</button></div>';
     h+='</div><div class="der">';
     if(hj.disp.lista.length>1) h+='<div class="field"><label>Disposición de las fotos de '+NOMBRE_HOJA(i).toLowerCase()+'</label><div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-disp="-1" style="flex:1" aria-label="Disposición anterior">‹</button><div style="flex:none;text-align:center;font-size:14px"><b>'+(hj.disp.idx+1)+' de '+hj.disp.lista.length+'</b></div><button type="button" class="btn2" data-disp="1" style="flex:1" aria-label="Disposición siguiente">›</button></div></div>';
     h+=fotosEditables(hj.fotos,pp,"Fotos de "+NOMBRE_HOJA(i).toLowerCase());
-    const otras=S.hojas.map((x,k)=>k).filter(k=>k!==i&&dispHoja(k).rects.some(q=>q.ppp<150));
+    const otras=S.hojas.map((x,k)=>k).filter(k=>k!==i&&dispHoja(k).rects.some(q=>q.ppp<PPP_MAL));
     if(otras.length) h+='<p class="small">⚠ También hay fotos con poca nitidez en: '+otras.map(k=>NOMBRE_HOJA(k).toLowerCase()).join(", ")+'.</p>';
   } else {
     h+='<div class="dos"><div class="izq">';
