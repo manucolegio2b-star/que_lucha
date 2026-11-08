@@ -113,7 +113,7 @@ function vDiseno(){
     return '<div class="field"><label for="t_'+c.id+'">'+esc(c.etiqueta)+'<span id="n_'+c.id+'">'+v.length+'/'+c.max+'</span></label>'+
       (c.varias?'<textarea id="t_'+c.id+'" maxlength="'+c.max+'" rows="'+(c.id==="pizarra"?4:2)+'">'+esc(v)+'</textarea>':'<input id="t_'+c.id+'" type="text" maxlength="'+c.max+'" autocomplete="off" value="'+esc(v)+'">')+
       (c.formas?'<div class="formas" role="group" aria-label="Forma del texto">'+Object.keys(T.FORMAS).map(f=>'<button type="button" data-forma="'+c.id+'" data-f="'+f+'" aria-pressed="'+(S.formas[c.id]===f)+'">'+esc(T.FORMAS[f].n)+'</button>').join("")+'</div>':'')+
-      '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda?'<p class="small">'+esc(c.ayuda)+'</p>':'')+'</div>'; };
+      '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda||c.quitar?'<p class="small">'+(c.quitar?'<button type="button" class="link" data-quitar="'+c.id+'" style="padding:0;margin-right:8px">Quitar este título</button>':'')+esc(c.ayuda||"")+'</p>':'')+'</div>'; };
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
@@ -160,6 +160,7 @@ function render(){
     document.querySelectorAll('[data-forma="'+k+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   document.querySelectorAll("[data-vista]").forEach(b=>b.addEventListener("click",()=>{ S.vista=b.dataset.vista; document.querySelectorAll("[data-vista]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   $("#pedir").addEventListener("click",irADatos);
+  document.querySelectorAll("[data-quitar]").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.quitar, f=$("#t_"+k); S.textos[k]=""; f.value=""; $("#n_"+k).textContent="0/"+f.maxLength; repintar(); }));
   document.querySelectorAll("[data-pj]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.pj; if(id===S.personaje) return; S.personaje=id;
     document.querySelectorAll("[data-pj]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); cambiarPersonaje(id); }));
   repintar();

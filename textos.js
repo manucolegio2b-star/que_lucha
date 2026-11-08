@@ -26,15 +26,15 @@ const DISENOS={
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
     mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
     campos:[
-      {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40, formas:true},
-      {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36, formas:true},
+      {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40, formas:true, quitar:true, ayuda:"Si dejas solo un título, saldrá más grande."},
+      {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36, formas:true, quitar:true, ayuda:"Si dejas solo un título, saldrá más grande."},
       {id:"pizarra", etiqueta:"Texto de la pizarra", def:"Diagnóstico: demasiados años aguantándonos.\n\nPronóstico: descanso de por vida.", max:120, varias:true,
        ayuda:"Deja una línea en blanco para separar dos partes con una raya roja."},
       {id:"cartel", etiqueta:"Texto del cartel amarillo", def:"Tus compañeros de celadores de quirófano", max:60, varias:true}
     ],
     zonas:[
-      {campo:"t1", estilo:"azul",  cx:506, cy:99, w:640, h:132, ang:0,    max:64, min:24, lineas:3, alto:1.0,  pegar:"abajo",  rayos:true},
-      {campo:"t2", estilo:"rojo",  cx:506, cy:266, w:760, h:164, ang:0,    max:124,min:30, lineas:3, alto:0.98, pegar:"arriba", subrayado:true},
+      {campo:"t1", estilo:"azul",  cx:506, cy:99, w:640, h:132, ang:0,    max:64, min:24, lineas:3, alto:1.0,  pegar:"abajo",  rayos:true, pareja:"t2", solo:{cy:194, h:288, max:110, pegar:"centro"}},
+      {campo:"t2", estilo:"rojo",  cx:506, cy:266, w:760, h:164, ang:0,    max:124,min:30, lineas:3, alto:0.98, pegar:"arriba", subrayado:true, pareja:"t1", solo:{cy:198, h:288, max:150, pegar:"centro"}},
       {campo:"pizarra", estilo:"mano", cx:785, cy:572, w:200, h:262, ang:-4.5, max:50, min:15, lineas:10, alto:1.04, color:"#1F2433", raya:true},
       {campo:"cartel",  estilo:"mano", cx:792, cy:797, w:258, h:68,  ang:-5,   max:42, min:14, lineas:3,  alto:0.98, color:"#1F2433", corazon:{w:150,s:26}}
     ]
@@ -145,8 +145,10 @@ function dibujar(cv,d,textos,img,px,formas,transparente){
   if(!transparente){ g.fillStyle="#fff"; g.fillRect(0,0,px,px); }
   g.drawImage(img,0,0,px,px);
   const avisos={};
+  const vacio=k=>!String((textos&&textos[k])||"").trim();
   d.zonas.forEach(z=>{
     const txt=(textos&&textos[z.campo]!=null)?textos[z.campo]:"";
+    if(z.pareja&&z.solo&&vacio(z.pareja)&&!vacio(z.campo)) z=Object.assign({},z,z.solo);   // solo un título: ocupa toda la zona
     const campo=d.campos.find(c=>c.id===z.campo)||{}, forma=campo.formas&&formas&&FORMAS[formas[z.campo]]?formas[z.campo]:"recto", F=FORMAS[forma];
     const a=ajustar(g,txt,z,forma); if(!a) return;
     if(a.corto) avisos[z.campo]=true;
