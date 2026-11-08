@@ -88,6 +88,10 @@ section{padding:44px 0 10px}
 .etq.ok{background:var(--ac);color:#fff}
 .pronto{margin:12px 0 0;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:999px;border:2px dashed #B9D6D9;color:var(--ac-d);font-weight:700;font-size:15px}
 .precios{margin:8px 0 0;font-size:13.5px;color:var(--ac-d);font-weight:700}
+/* Toda la tarjeta lleva al producto (el botón se estira por encima) */
+.prod{position:relative;transition:transform .15s,box-shadow .15s}
+.prod .boton.peq::after{content:"";position:absolute;inset:0;z-index:2;border-radius:18px}
+.prod:has(.boton.peq):hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(12,43,75,.15)}
 
 /* Más que un regalo */
 .regalo{background:var(--ac-l);border-radius:24px;padding:30px 26px;margin-top:34px;text-align:center}
