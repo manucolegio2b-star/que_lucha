@@ -15,8 +15,8 @@ const DISENOS={
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.jpg", baseFull:"disenos/cojin_jubilacion/base_full.jpg",
     campos:[
-      {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40},
-      {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36},
+      {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40, formas:true},
+      {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36, formas:true},
       {id:"pizarra", etiqueta:"Texto de la pizarra", def:"Diagnóstico: demasiados años aguantándonos.\n\nPronóstico: descanso de por vida.", max:170, varias:true,
        ayuda:"Deja una línea en blanco para separar dos partes con una raya roja."},
       {id:"cartel", etiqueta:"Texto del cartel amarillo", def:"Tus compañeros de celadores de quirófano", max:60, varias:true}
@@ -42,11 +42,36 @@ function cargarImagen(src){
 function cargar(d,full){ return Promise.all([cargarFuentes(),cargarImagen(full?d.baseFull:d.base)]).then(r=>r[1]); }
 
 const FAM={azul:"QL Titulo",rojo:"QL Destacado",mano:"QL Mano"};
+// Formas que el cliente puede elegir para los títulos.
+// arc: curva (parte de la anchura que baja en los extremos) · hl: alto extra por línea · w: anchura extra
+const FORMAS={recto:{n:"Recto"},arco:{n:"Arco",arc:0.07},saltarinas:{n:"Saltarinas",hl:0.1},onda:{n:"Onda",hl:0.32},abombado:{n:"Abombado",hl:0.3,w:1.2}};
+// Posición de cada letra según la forma (relativa al centro de la línea)
+function glifos(g,txt,t,forma){
+  const ch=Array.from(txt), W=g.measureText(txt).width; let acc="";
+  let L=ch.map(c=>{ const x0=g.measureText(acc).width; acc+=c; const w=g.measureText(c).width; return {c,x:x0+w/2-W/2,w,dy:0,r:0,s:1}; });
+  const n=L.length;
+  if(forma==="abombado"){
+    L.forEach(l=>{ const p=l.x/(W/2||1); l.s=1+0.4*(1-p*p); });
+    const W2=L.reduce((a,l)=>a+l.w*l.s,0); let x=-W2/2; L.forEach(l=>{ l.x=x+l.w*l.s/2; x+=l.w*l.s; });
+  } else if(forma==="arco"){
+    const R=W/(2*0.28)||1; L.forEach(l=>{ const th=l.x/R; l.x=R*Math.sin(th); l.dy=R*(1-Math.cos(th)); l.r=th; });
+  } else if(forma==="onda"){
+    const A=t*0.16; L.forEach(l=>{ const p=l.x/(W/2||1); l.dy=-A*Math.sin(p*Math.PI); l.r=-Math.atan(A*Math.PI/(W/2||1)*Math.cos(p*Math.PI)); });
+  } else if(forma==="saltarinas"){
+    let k=0; L.forEach(l=>{ if(l.c===" ") return; const v=[-1,0.6,-0.4,1,-0.8,0.3][k%6]; l.dy=t*0.055*v; l.r=[-0.07,0.05,0.02,-0.05,0.07,-0.02][k%6]; k++; });
+  }
+  const ancho=Math.max(...L.map(l=>Math.abs(l.x)+l.w*l.s/2))*2, bajo=Math.max(0,...L.map(l=>l.dy+(l.s-1)*t*0.4));
+  return {L,ancho,bajo};
+}
+function texto(g,fila,op,dx,dy){
+  if(!fila.gl){ g[op](fila.l.txt,dx,fila.y+dy); return; }
+  fila.gl.L.forEach(l=>{ if(l.c===" ") return; g.save(); g.translate(l.x+dx,fila.y+l.dy+dy); if(l.r) g.rotate(l.r); if(l.s!==1) g.scale(l.s,l.s); g[op](l.c,0,0); g.restore(); });
+}
 const MAY={azul:true,rojo:true,mano:false};
 
 // Reparte las palabras en líneas buscando el tamaño de letra más grande que cabe en la zona.
-function ajustar(g,texto,z){
-  const fam=FAM[z.estilo];
+function ajustar(g,texto,z,forma){
+  const fam=FAM[z.estilo], F=FORMAS[forma]||{};
   let t=String(texto||"").replace(/\r/g,"").replace(/[ \t]+/g," ");
   if(MAY[z.estilo]) t=t.toLocaleUpperCase("es");
   const secciones=t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
@@ -72,7 +97,7 @@ function ajustar(g,texto,z){
       }
     }
     const mw=f[n][N-1]; if(mw===Infinity) continue;
-    const tam=Math.min(z.max, z.w*100/mw, z.h/(n*z.alto+huecos*GAP));
+    const tam=Math.min(z.max, z.w*100/(mw*(F.w||1)), z.h/(n*(z.alto+(F.hl||0))+huecos*GAP+(F.arc||0)*mw/100));
     if(!mejor||tam>mejor.tam+0.01){
       const lineas=[]; let j=N-1;
       for(let k=n;k>=1;k--){ const i=k===1?0:de[k][j]; lineas.unshift({txt:pal.slice(i,j+1).join(" "),parte:i>0&&br[i-1]===2}); j=i-1; }
@@ -97,7 +122,7 @@ function corazon(g,cx,cy,s,color,grosor){
 }
 
 // Dibuja el diseño completo en un canvas de lado "px". Devuelve los avisos de textos demasiado largos.
-function dibujar(cv,d,textos,img,px){
+function dibujar(cv,d,textos,img,px,formas){
   cv.width=px; cv.height=px;
   const g=cv.getContext("2d"), u=px/1000;
   g.fillStyle="#fff"; g.fillRect(0,0,px,px);
@@ -105,27 +130,30 @@ function dibujar(cv,d,textos,img,px){
   const avisos={};
   d.zonas.forEach(z=>{
     const txt=(textos&&textos[z.campo]!=null)?textos[z.campo]:"";
-    const a=ajustar(g,txt,z); if(!a) return;
+    const campo=d.campos.find(c=>c.id===z.campo)||{}, forma=campo.formas&&formas&&FORMAS[formas[z.campo]]?formas[z.campo]:"recto", F=FORMAS[forma];
+    const a=ajustar(g,txt,z,forma); if(!a) return;
     if(a.corto) avisos[z.campo]=true;
-    const t=a.tam*u, lh=t*z.alto, gap=a.gap*lh, W=z.w*u, H=z.h*u;
-    const altoTot=a.lineas.length*lh+a.huecos*gap;
+    const t=a.tam*u, lh=t*(z.alto+(F.hl||0)), gap=a.gap*lh, W=z.w*u, H=z.h*u;
+    g.font=t+"px '"+FAM[z.estilo]+"'";
+    const gls=forma==="recto"?null:a.lineas.map(l=>glifos(g,l.txt,t,forma));
+    const altoTot=a.lineas.length*lh+a.huecos*gap+(F.arc?Math.max(...gls.map(x=>x.bajo)):0);
     let y0=-H/2; if(z.pegar==="abajo") y0=H/2-altoTot; else if(z.pegar!=="arriba") y0=-altoTot/2;
     g.save(); g.translate(z.cx*u,z.cy*u); if(z.ang) g.rotate(z.ang*Math.PI/180);
     g.font=t+"px '"+FAM[z.estilo]+"'"; g.textAlign="center"; g.textBaseline="middle"; g.lineJoin="round"; g.miterLimit=2;
     const pos=[]; let y=y0;
-    a.lineas.forEach((l,i)=>{ if(l.parte){ pos.push({raya:y+gap*0.5-lh*0.02,anterior:i-1}); y+=gap; } pos.push({l,y:y+lh*0.53}); y+=lh; });
+    a.lineas.forEach((l,i)=>{ if(l.parte){ pos.push({raya:y+gap*0.5-lh*0.02,anterior:i-1}); y+=gap; } pos.push({l,y:y+lh*0.53,gl:gls?gls[i]:null}); y+=lh; });
     const filas=pos.filter(p=>p.l);
     if(z.estilo==="rojo"){
       const ex=Math.max(2,t*0.055), pasos=6;
-      filas.forEach(p=>{ g.lineWidth=t*0.2; g.strokeStyle="#fff"; for(let s=0;s<=pasos;s++) g.strokeText(p.l.txt,ex*s/pasos,ex*s/pasos+p.y); });
-      filas.forEach(p=>{ g.fillStyle="#5E0B0B"; for(let s=pasos;s>=1;s--) g.fillText(p.l.txt,ex*s/pasos,ex*s/pasos+p.y); });
-      filas.forEach(p=>{ g.lineWidth=t*0.045; g.strokeStyle="#5E0B0B"; g.strokeText(p.l.txt,0,p.y); g.fillStyle="#E3231B"; g.fillText(p.l.txt,0,p.y); });
-      if(z.subrayado&&filas.length){ const ult=filas[filas.length-1], m=g.measureText(ult.l.txt), w=Math.max(m.width,t*2.2), gr=Math.max(3,Math.min(t,90*u)*0.075); rayaRoja(g,-w*0.3,w*0.34,ult.y+(m.actualBoundingBoxDescent||t*0.3)+gr*2.2,gr); }
+      filas.forEach(p=>{ g.lineWidth=t*0.2; g.strokeStyle="#fff"; for(let s=0;s<=pasos;s++) texto(g,p,"strokeText",ex*s/pasos,ex*s/pasos); });
+      filas.forEach(p=>{ g.fillStyle="#5E0B0B"; for(let s=pasos;s>=1;s--) texto(g,p,"fillText",ex*s/pasos,ex*s/pasos); });
+      filas.forEach(p=>{ g.lineWidth=t*0.045; g.strokeStyle="#5E0B0B"; texto(g,p,"strokeText",0,0); g.fillStyle="#E3231B"; texto(g,p,"fillText",0,0); });
+      if(z.subrayado&&filas.length){ const ult=filas[filas.length-1], m=g.measureText(ult.l.txt), w=Math.max(ult.gl?ult.gl.ancho:m.width,t*2.2), gr=Math.max(3,Math.min(t,90*u)*0.075), extra=ult.gl?ult.gl.bajo*(forma==="arco"?0.45:1):0; rayaRoja(g,-w*0.3,w*0.34,ult.y+(m.actualBoundingBoxDescent||t*0.3)+extra+gr*2.2,gr); }
     } else if(z.estilo==="azul"){
-      filas.forEach(p=>{ g.lineWidth=t*0.18; g.strokeStyle="#fff"; g.strokeText(p.l.txt,0,p.y); });
-      filas.forEach(p=>{ g.fillStyle="#1B2A41"; g.fillText(p.l.txt,0,p.y); });
+      filas.forEach(p=>{ g.lineWidth=t*0.18; g.strokeStyle="#fff"; texto(g,p,"strokeText",0,0); });
+      filas.forEach(p=>{ g.fillStyle="#1B2A41"; texto(g,p,"fillText",0,0); });
       if(z.rayos&&filas.length){
-        const wmax=Math.max(...filas.map(p=>g.measureText(p.l.txt).width)), cy=(filas[0].y+filas[filas.length-1].y)/2, r0=wmax/2+t*0.3, L=t*0.6;
+        const wmax=Math.max(...filas.map(p=>p.gl?p.gl.ancho:g.measureText(p.l.txt).width)), cy=(filas[0].y+filas[filas.length-1].y)/2, r0=wmax/2+t*0.3, L=t*0.6;
         g.strokeStyle="#1B2A41"; g.lineCap="round"; g.lineWidth=Math.max(3,t*0.13);
         [-34,0,34].forEach(gr=>{ const an=gr*Math.PI/180; [-1,1].forEach(sd=>{ const dx=sd*Math.cos(an), dy=Math.sin(an);
           const x1=sd*r0+dx*t*0.1, y1=cy+dy*t*0.75; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1+dx*L,y1+dy*L); g.stroke(); }); });
@@ -141,5 +169,5 @@ function dibujar(cv,d,textos,img,px){
   return avisos;
 }
 
-window.QLTextos={DISENOS,cargar,cargarFuentes,dibujar,ajustar};
+window.QLTextos={DISENOS,FORMAS,cargar,cargarFuentes,dibujar,ajustar};
 })();

@@ -41,6 +41,9 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:14px;background:#13A4AA;color:#fff;font-size:17px;font-weight:600;border:0;width:100%;cursor:pointer;text-decoration:none}
 .btn[disabled]{background:#B8C0CC;cursor:not-allowed}
 .btn2{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff;border:1.5px solid #13A4AA;color:#0B7C82;font-size:15px;font-weight:600;width:100%;cursor:pointer;text-decoration:none}
+.formas{display:flex;flex-wrap:wrap;gap:6px}
+.formas button{min-height:38px;padding:0 12px;border-radius:999px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151;cursor:pointer}
+.formas button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
 .link{background:none;border:0;color:#0B7C82;font-weight:600;font-size:14px;padding:6px 0;cursor:pointer;text-align:left}
 .bad{background:#FFF5F4;border:1.5px solid #E8B4AE;color:#8A2A20;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.4}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
@@ -80,14 +83,14 @@ if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'
 
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
 const l=deLista()||{};
-const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
+const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), formas:Object.assign({},...D.campos.filter(c=>c.formas).map(c=>({[c.id]:"recto"}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
   consent:false, E:{}, avisos:{}, img:null, enviado:null, aviso:""};
 
 let pendiente=null;
 function repintar(){
   if(pendiente) return;
   pendiente=requestAnimationFrame(()=>{ pendiente=null; const cv=$("#cv"); if(!cv||!S.img) return;
-    S.avisos=T.dibujar(cv,D,S.textos,S.img,1000);
+    S.avisos=T.dibujar(cv,D,S.textos,S.img,1000,S.formas);
     D.campos.forEach(c=>{ const m=$("#av_"+c.id); if(m) m.textContent=S.avisos[c.id]?"Es demasiado largo y la letra quedaría muy pequeña. Acórtalo un poco.":""; const f=$("#t_"+c.id); if(f) f.classList.toggle("err",!!S.avisos[c.id]); });
   });
 }
@@ -96,6 +99,7 @@ function vForm(){
   const campo=c=>{ const v=S.textos[c.id]||"";
     return '<div class="field"><label for="t_'+c.id+'">'+esc(c.etiqueta)+'<span id="n_'+c.id+'">'+v.length+'/'+c.max+'</span></label>'+
       (c.varias?'<textarea id="t_'+c.id+'" maxlength="'+c.max+'" rows="'+(c.id==="pizarra"?4:2)+'">'+esc(v)+'</textarea>':'<input id="t_'+c.id+'" type="text" maxlength="'+c.max+'" autocomplete="off" value="'+esc(v)+'">')+
+      (c.formas?'<div class="formas" role="group" aria-label="Forma del texto">'+Object.keys(T.FORMAS).map(f=>'<button type="button" data-forma="'+c.id+'" data-f="'+f+'" aria-pressed="'+(S.formas[c.id]===f)+'">'+esc(T.FORMAS[f].n)+'</button>').join("")+'</div>':'')+
       '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda?'<p class="small">'+esc(c.ayuda)+'</p>':'')+'</div>'; };
   const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
@@ -124,7 +128,9 @@ function render(){
   $("#app").innerHTML=vForm();
   D.campos.forEach(c=>{ const f=$("#t_"+c.id); f.addEventListener("input",()=>{ S.textos[c.id]=f.value; $("#n_"+c.id).textContent=f.value.length+"/"+c.max; repintar(); }); });
   ["nombre","servicio","categoria","movil"].forEach(k=>{ const f=$("#d_"+k); f.addEventListener("input",()=>{ S.datos[k]=f.value; f.classList.remove("err"); }); });
-  $("#ejemplo").addEventListener("click",()=>{ D.campos.forEach(c=>S.textos[c.id]=c.def); render(); });
+  $("#ejemplo").addEventListener("click",()=>{ D.campos.forEach(c=>S.textos[c.id]=c.def); Object.keys(S.formas).forEach(k=>S.formas[k]="recto"); render(); });
+  document.querySelectorAll("[data-forma]").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.forma; S.formas[k]=b.dataset.f;
+    document.querySelectorAll('[data-forma="'+k+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!S.consent; });
   $("#enviar").addEventListener("click",enviar);
   repintar();
@@ -151,14 +157,14 @@ async function enviar(){
     if(err){ ov.insertAdjacentHTML("beforeend",'<div class="bad">'+esc(err)+'</div><button class="btn" style="max-width:340px;margin:0" id="reint">Reintentar</button><button class="btn2" style="max-width:340px" id="cancel">Volver</button>'); $("#reint").onclick=()=>{ov.remove();enviar();}; $("#cancel").onclick=()=>ov.remove(); } };
   try{
     pintar("Enviando tu pedido…",20);
-    const cv=document.createElement("canvas"); T.dibujar(cv,D,S.textos,S.img,1000);
+    const cv=document.createElement("canvas"); T.dibujar(cv,D,S.textos,S.img,1000,S.formas);
     const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.86));
     const ruta=envio.id+"/montaje.jpg";
     if(!envio.subido){ await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+ruta,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:blob}); envio.subido=true; }
     pintar("Guardando tu pedido…",80);
     const textos={}; D.campos.forEach(c=>textos[c.id]=(S.textos[c.id]||"").trim());
     const fila={id:envio.id,producto:D.producto,modelo:D.id,anio:null,
-      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos},fotos:[]};
+      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos,formas:Object.assign({},S.formas)},fotos:[]};
     for(let t=0;;t++){
       try{ await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)}); break; }
       catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
