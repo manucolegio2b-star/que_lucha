@@ -451,12 +451,33 @@ function cab(volverA, etiqueta){
 function vProducto(){
   const q=PRODUCTOS.quelucha, p=PRODUCTOS.premium, d=PRODUCTOS["12hojas"];
   const miniPoster = (bg,ln)=>'<div class="thumb"><div class="mini" style="width:78px;height:110px;background:'+bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+ln+' 0,'+ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+ln+' 0,'+ln+' 1px,transparent 1px,transparent 13px)"></div></div></div>';
-  const mini12 = '<div class="thumb"><div style="position:relative;width:84px;height:120px"><div style="position:absolute;left:14px;top:0;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div style="position:absolute;left:7px;top:8px;width:66px;height:94px;background:#fff;border:1px solid #D0D5DD;border-radius:3px"></div><div class="mini" style="position:absolute;left:0;top:16px;width:66px;height:100px;padding:4px 5px 5px;gap:4px;background:#F7EFE6"><div style="height:8px;flex:none;background:radial-gradient(circle at 50% 50%,#6B7280 2px,transparent 2.6px) 0 0/12px 8px repeat-x"></div><div style="flex:1;border-radius:2px;background:linear-gradient(135deg,#F7D774,#F0A56F)"></div><div style="height:14px;background:#C9622E;border-radius:2px"></div></div></div></div>';
+  // Calendario de 12 hojas: abanico de 3 hojas reales en colores distintos (se dibujan en pintarMini12)
+  const h12=i=>'<img data-mini12="'+i+'" alt=""'+(MINI12_URL[i]?' src="'+MINI12_URL[i]+'"':'')+' style="position:absolute;'+MINI12_POS[i]+';width:58px;height:82px;border-radius:4px;background:#fff;box-shadow:0 '+(i===2?'2px 6px rgba(0,0,0,.35)':'1px 4px rgba(0,0,0,.3)')+'">';
+  const mini12 = '<div class="thumb"><div style="position:relative;width:104px;height:112px" role="img" aria-label="Calendario de 12 hojas en varios colores">'+h12(0)+h12(1)+h12(2)+'</div></div>';
   const card=(pr,mini,extra)=>'<button type="button" class="card" data-prod="'+pr.id+'">'+mini+'<div class="info"><div class="t">'+pr.nombre+'</div><div class="d">'+pr.desc+'</div><div class="row"><span style="font-size:16px;font-weight:700;color:#0B7C82">'+pr.precio+'</span>'+(extra||"")+'</div></div>'+I.chev+'</button>';
   return cab()+'<div class="head"><h1>¿Qué quieres pedir?</h1><p class="sub">Verás cómo queda antes de enviar nada.</p></div>'+
     '<div class="prods">'+card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
     card(p,'<div class="thumb"><div style="position:relative;width:104px;height:112px"><img src="disenos/raton/miniatura.jpg" alt="" style="position:absolute;left:0;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(-9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/conejo/miniatura.jpg" alt="" style="position:absolute;left:44px;top:14px;width:58px;height:82px;border-radius:4px;transform:rotate(9deg);box-shadow:0 1px 4px rgba(0,0,0,.3)"><img src="disenos/nido/miniatura.jpg" alt="Diseños del póster premium" style="position:absolute;left:23px;top:4px;width:58px;height:82px;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div></div>')+card(d,mini12)+'</div>'+
     '<p class="small center" style="margin-top:auto">Podrás cambiar de producto en cualquier momento antes de confirmar.</p>';
+}
+// Miniaturas del calendario de 12 hojas (izquierda, derecha y la de delante)
+const MINI12=[{paleta:"morado",mes:1},{paleta:"verde",mes:2},{paleta:"turquesa",mes:0}];
+const MINI12_POS=["left:0;top:14px;transform:rotate(-9deg)","left:44px;top:14px;transform:rotate(9deg)","left:23px;top:4px"];
+const MINI12_URL=[];
+let mini12Hecho=null;
+function pintarMini12(){
+  if(!mini12Hecho) mini12Hecho=(async()=>{
+    await QLCal12.cargarFuentes("");
+    const img=await cargarImg("img/ejemplo-12hojas.jpg");
+    const z=QLCal12.zona(false), r=Math.max(z.w/img.width, z.h/img.height), w=img.width*r, h=img.height*r;
+    const foto={img, x:(z.w-w)/2, y:(z.h-h)/2, w, h};
+    const anio=(C.ANIOS&&C.ANIOS[0])||new Date().getFullYear()+1;
+    MINI12.forEach((m,i)=>{
+      const cv=QLCal12.hojaCanvas({anio, mes:m.mes, paleta:m.paleta, fotos:[foto]}, 0.07);
+      MINI12_URL[i]=cv.toDataURL("image/jpeg",.85);
+    });
+  })().catch(()=>{});
+  mini12Hecho.then(()=>$$("[data-mini12]").forEach(el=>{ const u=MINI12_URL[+el.dataset.mini12]; if(u && el.src!==u) el.src=u; }));
 }
 function aniosDisp(){ const d=disenoAct(); return d? d.anios : C.ANIOS; }
 function selAnio(){
@@ -588,6 +609,7 @@ function render(){
   app.dataset.step = S.step;
   app.innerHTML = vistas[S.step]();
   bind();
+  if(S.step==="producto") pintarMini12();
 }
 function bind(){
   $$("[data-go]").forEach(b=>b.addEventListener("click",()=>{
