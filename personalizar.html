@@ -38,6 +38,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .small{margin:0;font-size:13px;line-height:1.4;color:#5B6472}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .price{font-size:20px;font-weight:800;color:#0B7C82}
+.ficha{margin:2px 0 0;padding-left:18px;font-size:14.5px;line-height:1.5;color:#374151}
 .chip{font-size:13px;background:#E6F6F6;color:#0B7C82;border-radius:999px;padding:4px 10px;font-weight:600}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
 .consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:#13A4AA}
@@ -108,7 +109,7 @@ function vForm(){
       '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda?'<p class="small">'+esc(c.ayuda)+'</p>':'')+'</div>'; };
   const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
-    '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'<span class="chip">Impresión '+D.cm+' × '+D.cm+' cm</span></div></div>'+
+    '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
     '<div class="form"><section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     '<section class="card"><h2>Tus datos</h2>'+

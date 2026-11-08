@@ -10,7 +10,8 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
 const DISENOS={
   jubilacion:{
     id:"jubilacion", producto:"cojin", nombre:"Cojín Jubilación", corto:"Jubilación",
-    desc:"Cojín con el celador saliendo del quirófano. Título, pizarra y cartel con tus textos.",
+    desc:"Cojín blanco de 40 × 40 cm con tus textos en el título, la pizarra y el cartel. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"],
     precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.webp", baseFull:"disenos/cojin_jubilacion/base_full.png",   // fondo transparente
