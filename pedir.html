@@ -62,6 +62,18 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 .slot .lab{position:absolute;left:0;right:0;bottom:0;background:rgba(17,24,39,.6);color:#fff;font-size:12px;font-weight:600;text-align:center;padding:3px 0}
 .slot.empty{border:2px dashed #9AA7C0;background:#fff;color:#5B6472;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;cursor:pointer}
 .slot.cover{aspect-ratio:16/9;width:100%}
+.hojas12{display:flex;flex-direction:column;gap:10px}
+.h12{background:#fff;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.h12.falta{box-shadow:inset 0 0 0 2px #F5C2C0}
+.h12 .cab{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;font-weight:700}
+.h12 .cab i{font-style:normal;font-size:12.5px;font-weight:600;color:#5B6472}
+.h12 .fs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.h12 .slot{border-radius:8px}.h12 .slot .x{width:24px;height:24px;top:2px;right:2px}
+.h12 .add svg{width:22px;height:22px}
+.tabs12{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px}
+.tabs12 button{flex:none;height:34px;padding:0 10px;border-radius:9px;border:1.5px solid #D0D5DD;background:#fff;font-size:13px;font-weight:600;color:#374151;cursor:pointer}
+.tabs12 button.on{border-color:#13A4AA;background:#13A4AA;color:#fff}
+.tabs12 button.mal{border-color:#E0A100}
 .hscroll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;margin:0 -20px;padding-left:20px;padding-right:20px}
 .hscroll>*{scroll-snap-align:center;flex:none}
 .poster{container-type:inline-size;width:100%;aspect-ratio:32/45;border-radius:4px;box-shadow:0 6px 18px rgba(17,24,39,.22);overflow:hidden;display:flex;flex-direction:column;position:relative}
@@ -135,6 +147,7 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 <div id="app"></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js"></script>
+<script src="calendario12.js"></script>
 <script>
 (function(){
 "use strict";
@@ -163,10 +176,9 @@ const PRODUCTOS = {
                {id:"nido",nombre:"Nido",thumb:"disenos/nido/miniatura.jpg",bg:"#F3EBDD",ac:"#8A6A3B",ln:"#CDBB9A"},
                {id:"conejo",nombre:"Conejo",thumb:"disenos/conejo/miniatura.jpg",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"}]},
   "12hojas":{id:"12hojas",nombre:"Calendario de 12 hojas",precio:"12,50 €",
-    desc:"Portada y una foto por mes. Cartulina 300 g, 32 × 45 cm, a dos caras, anillado y con colgador.",
-    corto:"12 hojas", max:13,
-    variantes:[{id:"modelo1",nombre:"Modelo 1",bg:"#F7EFE6",ac:"#C9622E",grad:"linear-gradient(135deg,#F6B26B,#F28C8C)"},
-               {id:"modelo2",nombre:"Modelo 2",bg:"#E6F0FF",ac:"#2F5BEA",grad:"linear-gradient(135deg,#7FB2F0,#A9D6F5)"}]}
+    desc:"Portada y una hoja por mes, con hasta 6 fotos en cada una. Cartulina 300 g, 32 × 45 cm, a dos caras, anillado y con colgador.",
+    corto:"12 hojas", max:6,
+    variantes:((window.QLCal12&&QLCal12.PALETAS)||[]).map(v=>Object.assign({},v))}
 };
 
 const I = {
@@ -188,9 +200,11 @@ const $$ = (s,r) => Array.from((r||document).querySelectorAll(s));
 // ---------- Estado ----------
 function nuevoEstado(){
   return {step:"producto", producto:null, variante:null, anio:C.ANIO_POR_DEFECTO,
-    datos:(function(){ const l=deLista()||{}; return {nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||"",acceso:l.codigo||""}; })(), fotos:[], slots:new Array(13).fill(null),
+    datos:(function(){ const l=deLista()||{}; return {nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||"",acceso:l.codigo||""}; })(), fotos:[], hojas:nuevasHojas(),
     consent:false, enviado:null, errores:{}, montaje:null, disp:null};
 }
+function nuevasHojas(){ return Array.from({length:13},()=>({fotos:[],disp:null,prev:null})); }
+const NOMBRE_HOJA = i => i===0 ? "Portada" : MESES[i-1];
 let S = nuevoEstado();
 const prod = () => PRODUCTOS[S.producto];
 const variante = () => { const p=prod(); return p && p.variantes ? (p.variantes.find(v=>v.id===S.variante)||p.variantes[0]) : null; };
@@ -200,7 +214,7 @@ const es12 = () => S.producto==="12hojas";
 function tituloResumen(){
   const p=prod(); let t = es12() ? "12 hojas" : p.corto;
   t += " · "+S.anio;
-  t += es12() ? " · 13 fotos" : " · hasta 6 fotos";
+  t += es12() ? " · hasta 6 fotos por hoja" : " · hasta 6 fotos";
   return t;
 }
 
@@ -241,7 +255,8 @@ const DISENOS = {
   nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}}
 };
 function disenoAct(){ const v=variante(), k=v?v.id:(prod()?prod().id:null); return (prod() && k && DISENOS[k] && DISENOS[k].producto===prod().id) ? DISENOS[k] : null; }
-function Z(){ const d=disenoAct(); return d? d.zona : ZONA_BASE; }
+let ZONA_FORZADA=null; // la usa el calendario de 12 hojas (cada hoja tiene su zona)
+function Z(){ if(ZONA_FORZADA) return ZONA_FORZADA; const d=disenoAct(); return d? d.zona : ZONA_BASE; }
 const _imgs={};
 function cargarImg(src){ if(!_imgs[src]) _imgs[src]=new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>{ delete _imgs[src]; rej(new Error("No se pudo cargar "+src)); }; i.src=src; }); return _imgs[src]; }
 const HUECO = C.HUECO_CM!=null ? C.HUECO_CM : 0.3; // cm entre fotos
@@ -361,12 +376,37 @@ function prepararMontaje(){
     .then(()=>{ montajeEnCurso=null; });
   montajeEnCurso={key,p}; return p;
 }
-function hojaHTML(idx){ // idx 0 = portada, 1..12 = meses
-  const t=tema(), f=S.slots[idx];
-  let h='<div class="sheet" style="background:'+t.bg+';color:#2b2622"><div class="rings"></div><div class="ph">'+(f?'<img src="'+f.preview+'" alt="">':'')+'</div>';
-  if(idx===0) h+='<div class="band" style="background:'+t.ac+'">'+S.anio+'</div>';
-  else h+='<div class="cal">'+mesHTML(S.anio,idx-1,{ac:t.ac,head:true})+'</div>';
-  return h+'</div>';
+// ---------- Calendario de 12 hojas ----------
+function dispHoja(i){ // disposición de las fotos de una hoja (misma lógica que los pósters)
+  const hj=S.hojas[i], k=hj.fotos.map(f=>f.preview).join("|");
+  if(!hj.disp || hj.disp.key!==k){
+    ZONA_FORZADA=QLCal12.zona(i===0);
+    try{ hj.disp={key:k, lista:generarDisposiciones(hj.fotos), idx:0}; } finally{ ZONA_FORZADA=null; }
+  }
+  return hj.disp.lista[hj.disp.idx];
+}
+function clavePrev(i){ const hj=S.hojas[i]; return [variante().id,S.anio,i,hj.disp?hj.disp.idx:0,hj.fotos.map(f=>f.preview).join("|")].join("~"); }
+async function prevHoja(i){ // dibuja la hoja (a poca resolución) con las fotos de muestra; es el mismo dibujo que el archivo final
+  const hj=S.hojas[i], key=clavePrev(i);
+  if(hj.prev && hj.prev.key===key) return hj.prev;
+  await QLCal12.cargarFuentes("");
+  const d=dispHoja(i);
+  const imgs=await Promise.all(d.rects.map(q=>cargarImg(hj.fotos[q.i].preview)));
+  const cv=QLCal12.hojaCanvas({anio:S.anio, mes:i-1, paleta:variante().id, fotos:d.rects.map((q,j)=>({img:imgs[j],x:q.x,y:q.y,w:q.w,h:q.h}))}, 0.36);
+  const blob=await aBlob(cv,.85); cv.width=cv.height=1;
+  if(clavePrev(i)!==key) return null;
+  if(hj.prev && hj.prev.url) URL.revokeObjectURL(hj.prev.url);
+  hj.prev={key, url:URL.createObjectURL(blob)};
+  return hj.prev;
+}
+function miniPaleta(v,w){
+  const h=Math.round(w*45/32), cel='<div style="flex:1;border-right:1px solid #E3E6EA"></div>';
+  let cab=''; for(let c=0;c<7;c++) cab+='<div style="flex:1;margin-right:1px;background:'+(c%2?v.a:v.b)+'"></div>';
+  return '<div class="m" style="width:'+w+'px;height:'+h+'px;background:#fff;padding:5px;gap:3px">'+
+    '<div style="height:42%;flex:none;background:#E5E8ED;border-radius:2px"></div>'+
+    '<div style="display:flex;align-items:center;gap:3px;height:11px;flex:none"><div style="width:20px;height:11px;background:'+v.a+';color:'+QLCal12.textoDe(v,"a")+';font-size:7px;font-weight:700;line-height:11px;text-align:center">'+S.anio+'</div><div style="font-size:9px;color:#111">enero</div></div>'+
+    '<div style="display:flex;height:5px;flex:none">'+cab+'</div>'+
+    '<div style="flex:1;display:flex;background:repeating-linear-gradient(to bottom,transparent 0,transparent 9px,#E3E6EA 9px,#E3E6EA 10px)">'+cel.repeat(6)+'<div style="flex:1"></div></div></div>';
 }
 
 // ---------- Cabecera común ----------
@@ -396,32 +436,32 @@ function selAnio(){
 }
 function vConfig(){
   const p=prod(); let h=cab("producto","Producto");
-  h+='<div class="head"><h1>'+p.nombre+'</h1><p class="sub">'+(es12()?"Elige el modelo y el año. Portada y una hoja por mes, de enero a diciembre.":p.intro)+'</p></div>';
+  h+='<div class="head"><h1>'+p.nombre+'</h1><p class="sub">'+(es12()?"Elige los colores y el año. Portada y una hoja por mes, de enero a diciembre.":p.intro)+'</p></div>';
   h+='<div class="row"><span class="price">'+p.precio+'</span>'+(p.badge?'<span class="badge">'+p.badge+'</span>':"")+(es12()?'<span class="small">Cartulina 300 g · 32 × 45 cm</span>':"")+'</div>';
   if(p.variantes){
-    h+='<div class="field"><label>'+(es12()?"Modelo":"Diseño")+'</label><div class="designs'+(es12()?" two":"")+'">';
+    h+='<div class="field"><label>'+(es12()?"Colores":"Diseño")+'</label><div class="designs">';
     p.variantes.forEach(v=>{
       const sel = v.id===variante().id;
-      const w=es12()?132:96, hh=es12()?186:134;
+      const w=96, hh=134;
       let mini;
-      if(es12()) mini='<div class="m" style="width:'+w+'px;height:'+hh+'px;background:'+v.bg+';padding:6px 7px 7px"><div style="height:8px;flex:none;background:radial-gradient(circle at 50% 50%,#6B7280 2px,transparent 2.6px) 0 0/12px 8px repeat-x"></div><div style="flex:1;border-radius:2px;background:'+v.grad+'"></div><div style="height:30px;flex:none;border-radius:2px;background:'+v.ac+';color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center">'+S.anio+'</div></div>';
+      if(es12()) mini=miniPaleta(v,w);
       else if(v.thumb) mini='<div class="m" style="width:'+w+'px;height:'+Math.round(w*45/32)+'px;padding:0;overflow:hidden;background:#fff"><img src="'+v.thumb+'" alt="Diseño '+esc(v.nombre)+'" width="'+w+'" height="'+Math.round(w*45/32)+'" style="width:100%;height:100%;display:block"></div>';
       else mini='<div class="m" style="width:'+w+'px;height:'+hh+'px;background:'+v.bg+'"><div style="height:44%;border-radius:2px;background:'+v.ac+';opacity:.75"></div><div style="flex:1;background:repeating-linear-gradient(to bottom,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 7px),repeating-linear-gradient(to right,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 12px)"></div></div>';
       h+='<button type="button" class="opt'+(sel?" sel":"")+'" data-var="'+v.id+'" aria-pressed="'+sel+'" aria-label="'+v.nombre+'">'+mini+'<span>'+v.nombre+'</span></button>';
     });
-    h+='</div><div class="small">'+(es12()?"Los dos modelos son iguales y cambian los colores. Miniaturas de ejemplo.":(p.variantes.every(v=>v.thumb)?"Los marcos se ven vacíos: ahí irán tus fotos.":"Miniaturas de ejemplo."))+'</div></div>';
+    h+='</div><div class="small">'+(es12()?"Todas las hojas llevan los mismos colores. Los festivos nacionales van marcados.":(p.variantes.every(v=>v.thumb)?"Los marcos se ven vacíos: ahí irán tus fotos.":"Miniaturas de ejemplo."))+'</div></div>';
   } else {
     const t=p.tema;
     h+='<div class="center" style="padding:6px 0"><div class="mini" style="width:140px;height:197px;margin:0 auto;background:'+t.bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 13px)"></div></div><div class="small" style="margin-top:8px">Un solo diseño. Miniatura de ejemplo.</div></div>';
   }
   h+=selAnio();
-  h+='<div class="note">'+I.info+'<span>'+(es12()?'Subirás <strong>13 fotos</strong>: una para la portada y una para cada mes. Se imprime a dos caras en 7 hojas, anillado y con colgador.':'Puedes subir <strong>de 1 a 6 fotos</strong>. Nosotros las colocamos en la zona de arriba, sobre el calendario.')+'</span></div>';
+  h+='<div class="note">'+I.info+'<span>'+(es12()?'Pondrás <strong>de 1 a 6 fotos en cada hoja</strong>: la portada y los 12 meses. Se imprime a dos caras en 7 hojas, anillado y con colgador.':'Puedes subir <strong>de 1 a 6 fotos</strong>. Nosotros las colocamos en la zona de arriba, sobre el calendario.')+'</span></div>';
   h+='<button type="button" class="btn" data-go="datos">Continuar'+I.next+'</button>';
   return h;
 }
 function vDatos(){
   const d=S.datos, e=S.errores;
-  return cab("config",es12()?"Modelo":(prod().variantes?"Diseño":"Producto"))+
+  return cab("config",es12()?"Colores":(prod().variantes?"Diseño":"Producto"))+
   '<div class="head"><h1>Tus datos</h1><p class="sub">Los necesitamos para preparar y entregarte tu pedido.</p></div>'+
   '<div><span class="pill">'+esc(tituloResumen())+'</span></div>'+
   '<div style="display:flex;flex-direction:column;gap:14px">'+
@@ -447,28 +487,44 @@ function vFotosPoster(){
   return h;
 }
 function vFotos12(){
-  const n=S.slots.filter(Boolean).length;
-  const faltan=[]; if(!S.slots[0]) faltan.push("la portada"); for(let m=0;m<12;m++) if(!S.slots[m+1]) faltan.push(MESES[m].toLowerCase());
-  const slot=(i,etq,cls)=>{ const f=S.slots[i];
-    return f ? '<div class="slot '+(cls||"")+'" data-slot="'+i+'"><img src="'+f.preview+'" alt="'+etq+'"><span class="lab">'+etq+'</span><button type="button" class="x" data-rmslot="'+i+'" aria-label="Quitar la foto de '+etq+'">'+I.x+'</button></div>'
-             : '<button type="button" class="slot empty '+(cls||"")+'" data-slot="'+i+'" aria-label="Elegir foto para '+etq+'">'+I.plus+'<span>'+etq+'</span></button>'; };
-  let h=cab("datos","Tus datos")+'<div class="head"><h1>Portada y una foto por mes</h1><p class="sub">Toca un hueco para elegir o cambiar su foto. Enero a diciembre de '+S.anio+'.</p></div>';
-  h+='<div style="display:flex;flex-direction:column;gap:10px">'+slot(0,"Portada","cover")+'<div class="grid3" style="grid-template-columns:repeat(4,1fr);gap:8px">';
-  for(let m=0;m<12;m++) h+=slot(m+1,MES3[m]);
-  h+='</div></div><div class="fhead"><b>'+n+' de 13 fotos</b><i>'+(faltan.length?"Faltan "+(faltan.length>3?faltan.length+" huecos":faltan.join(", ")):"¡Completo!")+'</i></div>';
+  const llenas=S.hojas.filter(h=>h.fotos.length).length, total=S.hojas.reduce((t,h)=>t+h.fotos.length,0);
+  let h=cab("datos","Tus datos")+'<div class="head"><h1>Fotos de cada hoja</h1><p class="sub">De 1 a 6 fotos en cada hoja. Toca + para añadir. Enero a diciembre de '+S.anio+'.</p></div>';
+  h+='<div class="fhead"><b>'+llenas+' de 13 hojas con fotos</b><i>'+total+' foto'+(total===1?"":"s")+'</i></div><div class="hojas12">';
+  S.hojas.forEach((hj,i)=>{
+    const n=hj.fotos.length;
+    h+='<div class="h12'+(n?"":" falta")+'"><div class="cab"><span>'+NOMBRE_HOJA(i)+'</span><i>'+n+' de 6</i></div><div class="fs">';
+    hj.fotos.forEach((f,j)=>{ h+='<div class="slot"><img src="'+f.preview+'" alt="'+NOMBRE_HOJA(i)+', foto '+(j+1)+'"><button type="button" class="x" data-rmf="'+i+'-'+j+'" aria-label="Quitar la foto '+(j+1)+' de '+NOMBRE_HOJA(i)+'">'+I.x+'</button></div>'; });
+    if(n<6) h+='<button type="button" class="slot add" data-hoja="'+i+'" aria-label="Añadir fotos a '+NOMBRE_HOJA(i)+'">'+I.plus+'</button>';
+    h+='</div></div>';
+  });
+  h+='</div><div class="note">'+I.info+'<span>Cuantas menos fotos pongas en una hoja, más grandes salen.</span></div>';
   h+='<input type="file" id="fileIn" accept="image/*" multiple hidden>';
   h+='<div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">'+
-     (n>0&&n<13?'<button type="button" class="btn2" id="repetir">Repetir fotos en los meses vacíos</button>':"")+
-     '<button type="button" class="btn" style="margin-top:0" id="verCal" '+(n<13?"disabled":"")+'>Ver mi calendario'+I.next+'</button>'+
-     (n<13?'<p class="small center">Necesitas las 13 fotos para continuar.</p>':'<p class="small center">Las fotos no salen de tu móvil hasta que confirmes.</p>')+'</div>';
+     (llenas>0&&llenas<13?'<button type="button" class="btn2" id="repetir">Repetir fotos en las hojas vacías</button>':"")+
+     '<button type="button" class="btn" style="margin-top:0" id="verCal" '+(llenas<13?"disabled":"")+'>Ver mi calendario'+I.next+'</button>'+
+     (llenas<13?'<p class="small center">Cada hoja necesita al menos una foto para continuar.</p>':'<p class="small center">Las fotos no salen de tu móvil hasta que confirmes.</p>')+'</div>';
   return h;
 }
 function vPrevia(){
-  const p=prod(), n=es12()?13:S.fotos.length;
-  let h=cab("fotos","Cambiar fotos")+'<div class="head"><h1>Así quedará tu calendario</h1><p class="sub">'+(es12()?"Desliza para ver la portada y todos los meses.":"Si te gusta, confírmalo y envía las fotos.")+'</p></div>';
+  const p=prod(), n=es12()?S.hojas.reduce((t,h)=>t+h.fotos.length,0):S.fotos.length;
+  let h=cab("fotos","Cambiar fotos")+'<div class="head"><h1>Así quedará tu calendario</h1><p class="sub">'+(es12()?"Revisa cada hoja. Puedes cambiar cómo se colocan las fotos.":"Si te gusta, confírmalo y envía las fotos.")+'</p></div>';
   if(es12()){
-    h+='<div class="hscroll">'; for(let i=0;i<13;i++) h+=hojaHTML(i); h+='</div>';
-    h+='<div class="thumbs">'+S.slots.map((f,i)=>'<div><img src="'+f.preview+'" alt="">'+(i===0?"Port.":MES3[i-1])+'</div>').join("")+'</div>';
+    const i=S.hoja12||0, hj=S.hojas[i], cur=dispHoja(i), pp={}; cur.rects.forEach(q=>pp[q.i]=q.ppp);
+    h+='<div class="dos"><div class="izq">';
+    h+='<div class="tabs12" role="tablist">'+S.hojas.map((x,k)=>{ const mal=dispHoja(k).rects.some(q=>q.ppp<150); return '<button type="button" data-ir="'+k+'" class="'+(k===i?"on":"")+(mal?" mal":"")+'" aria-selected="'+(k===i)+'">'+(k===0?"Portada":MES3[k-1])+(mal?" ⚠":"")+'</button>'; }).join("")+'</div>';
+    if(hj.prev && hj.prev.key===clavePrev(i)) h+='<img id="posterImg" class="posterimg" src="'+hj.prev.url+'" alt="Vista previa de '+NOMBRE_HOJA(i)+'" style="cursor:zoom-in">';
+    else h+='<div class="posterimg wait"><div class="spin"></div><div>Preparando '+NOMBRE_HOJA(i).toLowerCase()+'…</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-paso="-1" style="flex:1"'+(i===0?" disabled":"")+'>‹ Anterior</button><div style="flex:none;text-align:center;font-size:13px;color:#5B6472;line-height:1.2">Hoja<br><b style="color:#111827;font-size:15px">'+NOMBRE_HOJA(i)+'</b></div><button type="button" class="btn2" data-paso="1" style="flex:1"'+(i===12?" disabled":"")+'>Siguiente ›</button></div>';
+    h+='</div><div class="der">';
+    if(hj.disp.lista.length>1) h+='<div class="field"><label>Disposición de las fotos de '+NOMBRE_HOJA(i).toLowerCase()+'</label><div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-disp="-1" style="flex:1" aria-label="Disposición anterior">‹</button><div style="flex:none;text-align:center;font-size:14px"><b>'+(hj.disp.idx+1)+' de '+hj.disp.lista.length+'</b></div><button type="button" class="btn2" data-disp="1" style="flex:1" aria-label="Disposición siguiente">›</button></div></div>';
+    h+='<div class="field"><label>Fotos de '+NOMBRE_HOJA(i).toLowerCase()+'</label><div class="thumbs" style="gap:10px">'+hj.fotos.map((f,j)=>{
+      const c=pp[j]>=200?"#1B7F4B":(pp[j]>=150?"#9A6700":"#C0392B");
+      return '<div style="width:64px"><img src="'+f.preview+'" alt="Foto '+(j+1)+'" style="width:64px;height:64px"><span style="color:'+c+';font-weight:700">'+pp[j]+' ppp</span></div>';
+    }).join("")+'</div></div>';
+    const malas=hj.fotos.map((f,j)=>j).filter(j=>pp[j]<150);
+    if(malas.length) h+='<div class="bad" style="max-width:none">'+(malas.length===1?"La foto "+(malas[0]+1)+" de esta hoja saldrá":"Las fotos "+malas.map(j=>j+1).join(", ")+" de esta hoja saldrán")+' con poca nitidez al imprimir. Prueba otra disposición o vuelve atrás para cambiarla.</div>';
+    const otras=S.hojas.map((x,k)=>k).filter(k=>k!==i&&dispHoja(k).rects.some(q=>q.ppp<150));
+    if(otras.length) h+='<p class="small">⚠ También hay fotos con poca nitidez en: '+otras.map(k=>NOMBRE_HOJA(k).toLowerCase()).join(", ")+'.</p>';
   } else {
     h+='<div class="dos"><div class="izq">';
     const m=S.montaje;
@@ -487,12 +543,12 @@ function vPrevia(){
   }
   const v=variante(), mod = v? v.nombre : "";
   const filas = es12()
-    ? [["Modelo",mod+" · "+S.anio],["Fotos","13 (portada + 12 meses)"],["Impresión","7 hojas, a dos caras"],["Acabado","Anillado y con colgador"],["Papel","Cartulina 300 g · 32 × 45 cm"],["Precio",p.precio]]
+    ? [["Colores",mod],["Año",String(S.anio)],["Fotos",n+" (portada + 12 meses)"],["Impresión","7 hojas, a dos caras"],["Acabado","Anillado y con colgador"],["Papel","Cartulina 300 g · 32 × 45 cm"],["Precio",p.precio]]
     : [["Producto",p.nombre],v?["Diseño",mod]:null,["Año",String(S.anio)],["Fotos",String(n)],["Papel","Cartulina 300 g · 32 × 45 cm"],["Precio",p.precio]].filter(Boolean);
   h+='<div class="sum">'+filas.map(f=>'<div><span>'+f[0]+'</span><span>'+esc(f[1])+'</span></div>').join("")+'</div>';
   h+='<div style="margin-top:auto;display:flex;flex-direction:column;gap:12px"><label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>Acepto el uso de mis fotos para hacer el calendario y que se borren al terminar el pedido.</span></label>'+
      '<button type="button" class="btn" style="margin-top:0" id="enviar" '+((S.consent&&(es12()||S.montaje))?"":"disabled")+'>Confirmar y enviar '+n+' foto'+(n===1?"":"s")+'</button></div>';
-  if(!es12()) h+='</div></div>';
+  h+='</div></div>';
   return h;
 }
 function vGracias(){
@@ -519,7 +575,7 @@ function bind(){
     go(dest);
   }));
   $$("[data-prod]").forEach(b=>b.addEventListener("click",()=>{
-    if(S.producto!==b.dataset.prod){ S.producto=b.dataset.prod; S.variante=null; S.fotos=[]; S.slots=new Array(13).fill(null); }
+    if(S.producto!==b.dataset.prod){ S.producto=b.dataset.prod; S.variante=null; S.fotos=[]; S.hojas=nuevasHojas(); S.hoja12=0; }
     const p=prod(); if(p.variantes && !S.variante) S.variante=p.variantes[0].id;
     go("config");
   }));
@@ -583,16 +639,15 @@ async function procesar(file){
   if(!blob||!pb) throw new Error("No se pudo procesar la foto");
   return {nombre:file.name||"foto.jpg", blob, pw, ph, preview:URL.createObjectURL(pb), mb:(blob.size/1048576).toFixed(1).replace(".",",")+" MB"};
 }
-function liberar(){ S.fotos.forEach(f=>URL.revokeObjectURL(f.preview)); S.slots.forEach(f=>f&&URL.revokeObjectURL(f.preview)); if(S.montaje&&S.montaje.url) URL.revokeObjectURL(S.montaje.url); if(S.enviado){ S.enviado.items.forEach(i=>URL.revokeObjectURL(i.preview)); } }
+function liberar(){ S.fotos.forEach(f=>URL.revokeObjectURL(f.preview)); S.hojas.forEach(hj=>{ hj.fotos.forEach(f=>{ if(!f.copia) URL.revokeObjectURL(f.preview); }); if(hj.prev) URL.revokeObjectURL(hj.prev.url); }); if(S.montaje&&S.montaje.url) URL.revokeObjectURL(S.montaje.url); if(S.enviado){ S.enviado.items.forEach(i=>URL.revokeObjectURL(i.preview)); } }
 
 async function aniadir(files, slotInicial){
   files = Array.from(files).filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name));
   if(!files.length) return;
-  let libres;
   if(es12()){
-    libres=[]; const ini = slotInicial==null?0:slotInicial;
-    for(let k=0;k<13;k++){ const i=(ini+k)%13; if(k===0 || !S.slots[i]) libres.push(i); }
-    if(files.length>libres.length) toast("Solo caben "+libres.length+" fotos más. Hemos usado las primeras.");
+    const hj=S.hojas[slotInicial||0], sitio=6-hj.fotos.length;
+    if(files.length>sitio) toast("Máximo 6 fotos por hoja. Hemos usado las primeras.");
+    files = files.slice(0,Math.max(sitio,0));
   } else {
     const sitio = prod().max - S.fotos.length;
     if(files.length>sitio) toast("Máximo "+prod().max+" fotos. Hemos usado las primeras.");
@@ -600,11 +655,11 @@ async function aniadir(files, slotInicial){
   }
   const ov=document.createElement("div"); ov.className="over"; ov.innerHTML='<div style="font-size:17px;font-weight:600" id="ovt">Preparando tus fotos…</div><div class="bar"><i id="ovb"></i></div>'; document.body.appendChild(ov);
   let hechas=0, fallo=0;
-  const lote = es12()? files.slice(0,libres.length) : files;
+  const lote = files;
   for(let k=0;k<lote.length;k++){
     try{
       const r = await procesar(lote[k]);
-      if(es12()){ const i=libres[k]; if(S.slots[i]) URL.revokeObjectURL(S.slots[i].preview); S.slots[i]=r; } else S.fotos.push(r);
+      if(es12()) S.hojas[slotInicial||0].fotos.push(r); else S.fotos.push(r);
     }catch(e){ fallo++; }
     hechas++; $("#ovb").style.width=Math.round(hechas/lote.length*100)+"%"; $("#ovt").textContent="Preparando tus fotos… "+hechas+" de "+lote.length;
   }
@@ -617,11 +672,11 @@ function bindFotos(){
   inp.addEventListener("change",()=>{ const fs=inp.files; const s=slotSel; slotSel=null; aniadir(fs,s); inp.value=""; });
   const add=$("#addFotos"); if(add) add.addEventListener("click",()=>inp.click());
   $$("[data-rm]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.rm; URL.revokeObjectURL(S.fotos[i].preview); S.fotos.splice(i,1); render(); }));
-  $$("[data-slot]").forEach(b=>b.addEventListener("click",e=>{ if(e.target.closest("[data-rmslot]")) return; slotSel=+b.dataset.slot; inp.click(); }));
-  $$("[data-rmslot]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); const i=+b.dataset.rmslot; URL.revokeObjectURL(S.slots[i].preview); S.slots[i]=null; render(); }));
-  const rep=$("#repetir"); if(rep) rep.addEventListener("click",()=>{
-    const llenas=S.slots.map((f,i)=>f?i:-1).filter(i=>i>=0); let k=0;
-    for(let i=0;i<13;i++) if(!S.slots[i]){ const o=S.slots[llenas[k%llenas.length]]; S.slots[i]={nombre:o.nombre,blob:o.blob,preview:o.preview,mb:o.mb,copia:true}; k++; }
+  $$("[data-hoja]").forEach(b=>b.addEventListener("click",()=>{ slotSel=+b.dataset.hoja; inp.click(); }));
+  $$("[data-rmf]").forEach(b=>b.addEventListener("click",()=>{ const [i,j]=b.dataset.rmf.split("-").map(Number); S.hojas[i].fotos.splice(j,1); render(); }));
+  const rep=$("#repetir"); if(rep) rep.addEventListener("click",()=>{ // una foto de las ya elegidas en cada hoja vacía
+    const todas=[]; S.hojas.forEach(hj=>hj.fotos.forEach(f=>todas.push(f))); let k=0;
+    S.hojas.forEach(hj=>{ if(!hj.fotos.length){ const o=todas[k%todas.length]; hj.fotos.push(Object.assign({},o,{copia:true})); k++; } });
     render();
   });
   $("#verCal").addEventListener("click",()=>go("previa"));
@@ -636,9 +691,16 @@ async function http(url,opts){
 }
 let envio=null;
 function bindPrevia(){
-  $$("[data-disp]").forEach(b=>b.addEventListener("click",()=>{ const n=S.disp.lista.length; S.disp.idx=(S.disp.idx+(+b.dataset.disp)+n)%n; S.montaje=null; render(); }));
+  $$("[data-disp]").forEach(b=>b.addEventListener("click",()=>{ const d=es12()?S.hojas[S.hoja12||0].disp:S.disp, n=d.lista.length; d.idx=(d.idx+(+b.dataset.disp)+n)%n; S.montaje=null; render(); }));
+  $$("[data-paso]").forEach(b=>b.addEventListener("click",()=>{ S.hoja12=Math.min(12,Math.max(0,(S.hoja12||0)+(+b.dataset.paso))); render(); }));
+  $$("[data-ir]").forEach(b=>b.addEventListener("click",()=>{ S.hoja12=+b.dataset.ir; render(); }));
+  if(es12()){
+    const i=S.hoja12||0, hj=S.hojas[i];
+    if(!(hj.prev && hj.prev.key===clavePrev(i))) prevHoja(i).then(r=>{ if(r && S.step==="previa" && (S.hoja12||0)===i) render(); }).catch(e=>{ console.error(e); toast("No se ha podido dibujar la vista previa de esta hoja."); });
+    const t=$(".tabs12 .on"); if(t) t.scrollIntoView({block:"nearest",inline:"center"});
+  }
   $$("[data-quitar]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.quitar; URL.revokeObjectURL(S.fotos[i].preview); S.fotos.splice(i,1); S.montaje=null; render(); }));
-  const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+S.montaje.url+'" alt=""><button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
+  const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+(es12()?S.hojas[S.hoja12||0].prev.url:S.montaje.url)+'" alt=""><button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
   const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!(c.checked&&(es12()||S.montaje)); });
   if(!es12() && !(S.montaje && S.montaje.key===claveMontaje())){
     prepararMontaje().then(()=>{ if(S.step==="previa") render(); });
@@ -646,7 +708,7 @@ function bindPrevia(){
   $("#enviar").addEventListener("click",enviar);
 }
 function listaEnvio(){
-  if(es12()) return S.slots.map((f,i)=>({f,etq:i===0?"Portada":MESES[i-1],clave:(i===0?"00-portada":String(i).padStart(2,"0")+"-"+MES_ID[i-1])}));
+  if(es12()){ const l=[]; S.hojas.forEach((hj,i)=>hj.fotos.forEach((f,j)=>l.push({f,hoja:i,n:j,etq:NOMBRE_HOJA(i)+" · foto "+(j+1),clave:(i===0?"00-portada":String(i).padStart(2,"0")+"-"+MES_ID[i-1])+"-"+(j+1)}))); return l; }
   return S.fotos.map((f,i)=>({f,etq:"Foto "+(i+1),clave:String(i+1).padStart(2,"0")}));
 }
 async function enviar(){
@@ -684,6 +746,7 @@ async function enviar(){
     const fila={id:envio.id,producto:S.producto,modelo:v?v.id:null,anio:S.anio,
       datos:{nombre:S.datos.nombre,servicio:S.datos.servicio,categoria:S.datos.categoria,movil:S.datos.movil,acceso:(pideCodigo()?S.datos.acceso:undefined),codigo:envio.codigo,n_fotos:total,
              etiquetas:lista.map(i=>i.etq), montaje:rutaMontaje,
+             hojas: es12()?S.hojas.map((hj,i)=>{ const d=dispHoja(i); return {hoja:NOMBRE_HOJA(i),zona_cm:QLCal12.zona(i===0),fotos:d.rects.map(q=>({archivo:lista.find(it=>it.hoja===i&&it.n===q.i).clave+".jpg",x:+q.x.toFixed(2),y:+q.y.toFixed(2),w:+q.w.toFixed(2),h:+q.h.toFixed(2),ppp:q.ppp}))}; }):undefined, hueco_cm:es12()?HUECO:undefined,
              disposicion: es12()?null:{diseno:disenoAct()?(variante()?variante().id:S.producto):null,zona_cm:Z(),hueco_cm:HUECO,fotos:S.disp.lista[S.disp.idx].rects.map(q=>({archivo:String(q.i+1).padStart(2,"0")+".jpg",x:+q.x.toFixed(2),y:+q.y.toFixed(2),w:+q.w.toFixed(2),h:+q.h.toFixed(2),ppp:q.ppp}))}},
       fotos:rutas};
     if(!envio.guardado){
@@ -699,7 +762,7 @@ async function enviar(){
     S.enviado={nombre:S.datos.nombre,codigo:envio.codigo,items,nFotos:total};
     envio=null; ov.remove();
     // los blobs ya no hacen falta
-    S.fotos=[]; S.slots=new Array(13).fill(null); S.montaje=null;
+    S.fotos=[]; S.hojas.forEach(hj=>{ if(hj.prev) URL.revokeObjectURL(hj.prev.url); }); S.hojas=nuevasHojas(); S.hoja12=0; S.montaje=null;
     S.step="gracias"; history.pushState({step:"gracias"},""); render(); window.scrollTo(0,0);
   }catch(err){
     console.error(err);

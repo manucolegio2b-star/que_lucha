@@ -56,7 +56,8 @@ a.tr:hover{background:#F4F7FF}
 .b.ok[aria-pressed=true]{background:#DDF3E6;border-color:#2E9E5B;color:#14532D}
 .b.no[aria-pressed=true]{background:#FDE7E4;border-color:#D4574A;color:#8A2A20}
 .b.pri{background:#13A4AA;border-color:#13A4AA;color:#fff;width:100%;height:48px;font-size:15px}
-.b.pri[disabled]{background:#B8C0CC;border-color:#B8C0CC;cursor:not-allowed}
+.b[disabled]{opacity:.55;cursor:not-allowed}
+.b.pri[disabled]{opacity:1;background:#B8C0CC;border-color:#B8C0CC;cursor:not-allowed}
 .b.full{width:100%}
 .steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
 .steps li{display:flex;align-items:center;gap:10px;font-size:14px}
@@ -71,6 +72,11 @@ input,select{height:42px;border:1.5px solid #B8C0CC;border-radius:10px;padding:0
 .big{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
 canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 6px 18px rgba(17,24,39,.22);background:#fff}
 .q{display:grid;grid-template-columns:1fr 70px 100px;gap:8px;font-size:14px;padding:6px 0;border-bottom:1px solid #F0F2F5}
+.hojas12{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.hojas12 figure{margin:0;text-align:center;font-size:12.5px;color:#5B6472}
+.hojas12 .hx{aspect-ratio:32/45;background:#E5E8ED;border-radius:4px;box-shadow:0 2px 8px rgba(17,24,39,.18);overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center;font-size:12px}
+.hojas12 .hx img{width:100%;height:100%;display:block}
+.hojas12 figcaption b{display:block;color:#111827;font-size:13px;margin-top:4px}
 .warn{display:flex;gap:10px;background:#FFF1CC;color:#7A4B00;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
 .zoom{position:fixed;inset:0;background:rgba(17,24,39,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .zoom img{max-width:100%;max-height:100%;border-radius:6px}
@@ -106,6 +112,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 <div id="root"></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js"></script>
+<script src="calendario12.js"></script>
 <script>
 (function(){
 "use strict";
@@ -121,6 +128,7 @@ const TXD=(window.QLTextos&&QLTextos.DISENOS)||{};
 const esTexto=p=>!!TXD[p.modelo]&&TXD[p.modelo].producto===p.producto;
 const MODELOS={raton:"Ratón",nido:"Nido",conejo:"Conejo",modelo1:"Modelo 1",modelo2:"Modelo 2"};
 Object.values((window.QLTextos&&QLTextos.DISENOS)||{}).forEach(d=>{ MODELOS[d.id]=d.corto; });
+((window.QLCal12&&QLCal12.PALETAS)||[]).forEach(v=>{ MODELOS[v.id]=v.nombre; }); // colores del calendario de 12 hojas
 const SIT={rev:["Por revisar fotos","#FFF1CC","#7A4B00"],listo:["Listo para imprimir","#E3EAFD","#1E3FA8"],imp:["Impreso","#EDE7FB","#4C2A9A"],ent:["Entregado","#DDF3E6","#14532D"]};
 const ORDEN=["rev","listo","imp","ent"];
 const SIGUIENTE={rev:"Marcar fotos como revisadas",listo:"Marcar como impreso",imp:"Marcar como entregado"};
@@ -445,7 +453,9 @@ async function urlsFirmadas(paths){
   return paths.map(p=>cacheUrl[p]?cacheUrl[p].url:"");
 }
 const archivo=ruta=>ruta.split("/").pop();
-const pppDe=(p,ar)=>{ const d=p.datos&&p.datos.disposicion; if(!d) return null; const f=d.fotos.find(x=>x.archivo===ar); return f?f.ppp:null; };
+const pppDe=(p,ar)=>{ const dd=p.datos||{};
+  if(dd.hojas){ for(const h of dd.hojas){ const f=h.fotos.find(x=>x.archivo===ar); if(f) return f.ppp; } return null; }
+  const d=dd.disposicion; if(!d) return null; const f=d.fotos.find(x=>x.archivo===ar); return f?f.ppp:null; };
 
 // ---------- Ficha ----------
 function pintarFicha(num){
@@ -465,7 +475,7 @@ function pintarFicha(num){
    (apuDe(p)?(a=>'<div class="kv"><span>Lista ¡Qué lucha!</span><span>'+(a.en_lista?pill("#DDF3E6","#14532D","En la lista"):pill("#FFF1CC","#7A4B00","Sin confirmar"))+'</span></div>'+(a.en_lista?'':'<p class="sm" style="margin:8px 0">Todavía no lo has marcado como añadido a tu lista de difusión. Comprueba que te ha enviado su WhatsApp de autorización.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b ok" aria-pressed="true" id="enlista">✓ Añadido a la lista</button><a class="b" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener" href="'+chatDe(a.movil)+'">Abrir su chat</a></div>'))(apuDe(p)):'')+'</section>'+
    (esTexto(p)?'<section class="card"><h2>Pedido</h2><div class="kv"><span>Producto</span><span>'+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(TXD[p.modelo].nombre)+'</span></div>'+(TXD[p.modelo].personajes?'<div class="kv"><span>Personaje</span><span>'+esc((QLTextos.personaje(TXD[p.modelo],d.personaje)||{}).nombre||"")+'</span></div>':'')+'<div class="kv"><span>Tamaño</span><span>'+esc(pr.tam||"")+'</span></div>'+(TXD[p.modelo].precio?'<div class="kv"><span>Precio</span><span>'+esc(TXD[p.modelo].precio)+'</span></div>':'')+'</section>'+
      '<section class="card"><h2>Textos del cliente</h2>'+TXD[p.modelo].campos.map(c=>'<div class="kv" style="align-items:flex-start"><span>'+esc(c.etiqueta)+(c.formas?'<br><span class="sm">Forma: '+esc((QLTextos.FORMAS[(d.formas||{})[c.id]]||QLTextos.FORMAS.recto).n)+'</span>':'')+'</span><span style="white-space:pre-line;text-align:right">'+(esc((d.textos||{})[c.id])||'<i class="sm">(vacío)</i>')+'</span></div>').join("")+'</section>':
-   '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Modelo":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>')+
+   '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Colores":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>')+
    (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
    (esTexto(p)?'':'<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section>')+'</div>'+
    '<div class="col"><section class="card"><h2>Pago</h2><div class="kv"><span>'+(p.pagado?"Pagado":"Sin pagar")+'</span><span>'+esc(pr.precio||"")+'</span></div><button class="b full" id="pago" style="margin-top:10px">'+(p.pagado?"Marcar como sin pagar":"Marcar como pagado")+'</button></section>'+
@@ -473,7 +483,7 @@ function pintarFicha(num){
    (SIGUIENTE[p.situacion]?'<button class="b pri" id="sig" style="margin-bottom:8px">'+(esTexto(p)&&p.situacion==="rev"?"Marcar como revisado":SIGUIENTE[p.situacion])+'</button>':'')+(idx>0?'<button class="b full" id="atras">Un paso atrás</button>':'')+(d.fotos_borradas?'<p class="sm" style="margin:10px 0 0">Fotos borradas el '+fecha(d.fotos_borradas)+'.</p>':((p.fotos||[]).length?'<button class="b full" id="borrarfotos" style="margin-top:8px">Borrar las fotos del cliente</button>':''))+'</section>'+
    (esTexto(p)?'<section class="card"><h2>'+esc(pr.corto||"Diseño")+'</h2><p class="sm" style="margin:0 0 12px">Revisa los textos y genera el archivo de impresión ('+esc(pr.tam||"")+').</p><a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar archivo</a></section>':
    '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
-   (p.producto==="12hojas"?'<button class="b pri" disabled>Generar calendario</button><p class="sm">El calendario de 12 hojas se prepara en la etapa 4.</p>':
+   (p.producto==="12hojas"?(d.hojas&&!d.fotos_borradas?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar las 13 hojas</a>':'<button class="b pri" disabled>Generar las 13 hojas</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este pedido no tiene las hojas guardadas.")+'</p>'):
     (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section>')+
    '</div></div></main>';
   enlazarComun();
@@ -561,6 +571,78 @@ async function pdfDe(cv,wc,hc,pc,pa){
   push(x+"trailer<</Size 6/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
   return new Blob(parts,{type:"application/pdf"});
 }
+// PDF de varias páginas de wc×hc cm; cada página es un JPG ya hecho (todos del mismo tamaño en píxeles)
+function pdfVarias(jpgs,pxw,pxh,wc,hc){
+  const enc=new TextEncoder(), parts=[], offs=[]; let pos=0;
+  const push=x=>{ const u=typeof x==="string"?enc.encode(x):x; parts.push(u); pos+=u.length; };
+  const pt=c=>(c/2.54*72).toFixed(2), n=jpgs.length, W=pt(wc), H=pt(hc);
+  // objetos: 1 catálogo, 2 páginas, y por cada hoja 3: página, imagen, contenido
+  push("%PDF-1.4\n");
+  offs[1]=pos; push("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n");
+  const kids=[]; for(let i=0;i<n;i++) kids.push((3+i*3)+" 0 R");
+  offs[2]=pos; push("2 0 obj<</Type/Pages/Kids["+kids.join(" ")+"]/Count "+n+">>endobj\n");
+  jpgs.forEach((jpg,i)=>{
+    const o=3+i*3, c="q "+W+" 0 0 "+H+" 0 0 cm /Im0 Do Q";
+    offs[o]=pos; push(o+" 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+W+" "+H+"]/Resources<</XObject<</Im0 "+(o+1)+" 0 R>>>>/Contents "+(o+2)+" 0 R>>endobj\n");
+    offs[o+1]=pos; push((o+1)+" 0 obj<</Type/XObject/Subtype/Image/Width "+pxw+"/Height "+pxh+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpg.length+">>stream\n"); push(jpg); push("\nendstream endobj\n");
+    offs[o+2]=pos; push((o+2)+" 0 obj<</Length "+c.length+">>stream\n"+c+"\nendstream endobj\n");
+  });
+  const tot=3+n*3, xr=pos; let x="xref\n0 "+tot+"\n0000000000 65535 f \n"; for(let i=1;i<tot;i++) x+=String(offs[i]).padStart(10,"0")+" 00000 n \n";
+  push(x+"trailer<</Size "+tot+"/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
+  return new Blob(parts,{type:"application/pdf"});
+}
+// Calendario de 12 hojas: dibuja cada hoja a 200 ppp con las fotos originales
+async function componerHoja12(p,i,fotoDe){
+  const dd=p.datos, h=dd.hojas[i];
+  const fotos=[];
+  for(const f of h.fotos) fotos.push({img:await fotoDe(f.archivo),x:f.x,y:f.y,w:f.w,h:f.h});
+  const pie=["Pedido "+p.numero,dd.nombre,dd.movil?"456"+dd.movil:"",h.hoja].filter(Boolean).join("  ·  ");
+  const cv=QLCal12.hojaCanvas({anio:p.anio,mes:i-1,paleta:p.modelo,fotos,pie});
+  fotos.forEach(f=>{ if(f.img&&f.img.close) f.img.close(); });
+  return cv;
+}
+let gen12=null; // {num, hojas:[{jpg (Uint8Array con 200 ppp), url (miniatura)}]}
+function pintarImprimir12(p){
+  const d=p.datos, num=p.numero, hojas=d.hojas;
+  const filas=[]; hojas.forEach(h=>{ const z=h.zona_cm, area=z.w*z.h; h.fotos.forEach(f=>filas.push({hoja:h.hoja,n:f.archivo,a:Math.round(f.w*f.h/area*100),ppp:f.ppp})); });
+  const baja=filas.filter(f=>f.ppp<150);
+  const rech=Object.keys(p.fotos_ok||{}).filter(k=>p.fotos_ok[k]==="no");
+  root.innerHTML=barra("")+'<main><div class="top"><div><h1>Vista previa · calendario de 12 hojas</h1><p class="sub">Compruébalo con calma. No se imprime nada hasta que lo confirmes.</p></div><a class="back" href="#/pedido/'+num+'">'+I.back+'Volver a la ficha</a></div>'+
+   '<div class="big"><div><div id="estadoGen" class="sm" style="margin-bottom:10px">Preparando las hojas a máxima calidad… 0 de 13</div><div class="hojas12">'+hojas.map((h,i)=>'<figure><div class="hx" data-h="'+i+'">…</div><figcaption><b>'+esc(h.hoja)+'</b>'+h.fotos.length+' foto'+(h.fotos.length===1?"":"s")+'</figcaption></figure>').join("")+'</div><div class="sm" style="margin-top:10px">Cada hoja: 32 × 45 cm · 200 ppp · colores '+esc(MODELOS[p.modelo]||p.modelo)+' · sin sangrado. Toca una hoja para verla en grande.</div></div>'+
+   '<div class="col"><section class="card"><h2>Pedido '+num+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>'+esc(PRODUCTOS[p.producto].nombre)+'</span></div><div class="kv"><span>Colores</span><span>'+esc(MODELOS[p.modelo]||p.modelo)+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+'</span></div><div class="kv"><span>Fotos</span><span>'+filas.length+'</span></div></section>'+
+   '<section class="card"><h2>Calidad de cada foto al imprimir</h2><div class="q" style="font-size:12px;font-weight:700;color:#5B6472"><span>Foto</span><span>% zona</span><span>Resolución</span></div>'+filas.map(f=>'<div class="q"><span>'+esc(f.hoja)+' · '+esc(f.n.replace(/\.jpg$/,"").split("-").pop())+'</span><span>'+f.a+' %</span><span style="'+(f.ppp<150?"color:#7A4B00;font-weight:700":"")+'">'+f.ppp+' ppp</span></div>').join("")+
+   (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de 150 ppp y puede verse pixelada ('+esc([...new Set(baja.map(f=>f.hoja))].join(", "))+').</div>':"")+
+   (rech.length?'<div class="warn">⚠ Has rechazado '+rech.length+' foto'+(rech.length>1?"s":"")+' de este pedido ('+esc(rech.join(", "))+').</div>':"")+'</section>'+
+   '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado las 13 hojas y quiero imprimirlas.</span></label>'+
+   '<button class="b pri" id="dpdf" disabled>Descargar PDF (13 páginas)</button><button class="b full" id="djpg" disabled style="margin-top:8px">Descargar las 13 hojas en JPG</button>'+
+   '<p class="sm" style="margin:10px 0 0">Cada página mide 32 × 45 cm a 200 ppp. Imprímelo al 100 %, sin "ajustar a página". Orden: portada, enero… diciembre.</p></section></div></div></main>';
+  enlazarComun();
+  const listo=()=>gen12&&gen12.num===num&&gen12.hojas.length===hojas.length&&gen12.hojas.every(Boolean);
+  const onList=()=>{ const ok=$("#rev").checked&&listo(); ["dpdf","djpg"].forEach(id=>$("#"+id).disabled=!ok); };
+  $("#rev").onchange=onList;
+  const mostrar=i=>{ const x=root.querySelector('.hx[data-h="'+i+'"]'); if(x&&gen12.hojas[i]){ x.innerHTML='<img src="'+gen12.hojas[i].url+'" alt="'+esc(hojas[i].hoja)+'">'; x.onclick=()=>zoom(gen12.hojas[i].grande); } };
+  const nom="calendario12_"+num;
+  $("#dpdf").onclick=()=>{ descargar(pdfVarias(gen12.hojas.map(h=>h.jpg),QLCal12.ANCHO,QLCal12.ALTO,WC,HC),nom+".pdf"); setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Lo marco como Impreso? Pulsa Aceptar cuando lo hayas impreso.")) guardarCambios(p,{situacion:"imp"}); },800); };
+  $("#djpg").onclick=async()=>{ for(let i=0;i<gen12.hojas.length;i++){ descargar(new Blob([gen12.hojas[i].jpg],{type:"image/jpeg"}),nom+"_"+String(i).padStart(2,"0")+"_"+hojas[i].hoja.toLowerCase()+".jpg"); await esperar(700); } };
+  if(gen12&&gen12.num===num&&listo()){ hojas.forEach((_,i)=>mostrar(i)); $("#estadoGen").textContent="Las 13 hojas están listas."; onList(); return; }
+  if(gen12) gen12.hojas.forEach(h=>{ if(h){ URL.revokeObjectURL(h.url); URL.revokeObjectURL(h.grande); } });
+  gen12={num,hojas:[]};
+  (async()=>{
+    await QLCal12.cargarFuentes("");
+    const rutas=p.fotos||[], us=await urlsFirmadas(rutas);
+    const fotoDe=async ar=>{ const i=rutas.findIndex(r=>archivo(r)===ar); if(i<0) throw new Error("Falta la foto "+ar); return createImageBitmap(await (await fetch(us[i])).blob(),{imageOrientation:"from-image"}); };
+    for(let i=0;i<hojas.length;i++){
+      if(!gen12||gen12.num!==num) return;
+      const cv=await componerHoja12(p,i,fotoDe);
+      const jpg=new Uint8Array(await (await jpgA200(cv)).arrayBuffer());
+      const mini=document.createElement("canvas"); mini.width=360; mini.height=Math.round(360*cv.height/cv.width); mini.getContext("2d").drawImage(cv,0,0,mini.width,mini.height);
+      const med=document.createElement("canvas"); med.width=1260; med.height=Math.round(1260*cv.height/cv.width); med.getContext("2d").drawImage(cv,0,0,med.width,med.height);
+      cv.width=cv.height=1;
+      gen12.hojas[i]={jpg,url:URL.createObjectURL(await aBlob(mini,"image/jpeg",.85)),grande:URL.createObjectURL(await aBlob(med,"image/jpeg",.9))};
+      if(ruta().r==="imprimir"&&+ruta().id===num){ mostrar(i); const e=$("#estadoGen"); if(e) e.textContent=i<hojas.length-1?"Preparando las hojas a máxima calidad… "+(i+1)+" de "+hojas.length:"Las 13 hojas están listas."; onList(); }
+    }
+  })().catch(e=>{ console.error(e); gen12=null; const s=$("#estadoGen"); if(s){ s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
+}
 // Archivo de impresión de los diseños con texto (cojines…), a 200 ppp
 async function componerTexto(p){
   const dz=TXD[p.modelo], img=await QLTextos.cargar(dz,true,(p.datos||{}).personaje), px=Math.round(dz.cm/2.54*200), cv=document.createElement("canvas");
@@ -590,6 +672,7 @@ function pintarImprimirTexto(p){
 function pintarImprimir(num){
   const p=pedidos.find(x=>x.numero===num);
   if(p&&esTexto(p)) return pintarImprimirTexto(p);
+  if(p&&p.producto==="12hojas"&&p.datos&&p.datos.hojas) return pintarImprimir12(p);
   if(!p||!p.datos||!p.datos.disposicion){ root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+(estado()||'<div class="empty">No se puede generar este pedido.</div>')+'</main>'; enlazarComun(); return; }
   const d=p.datos, dis=d.disposicion, z=dis.zona_cm, area=z.w*z.h;
   const filas=dis.fotos.map(f=>({n:f.archivo,a:Math.round(f.w*f.h/area*100),ppp:f.ppp}));
