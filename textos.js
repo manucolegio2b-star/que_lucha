@@ -11,7 +11,7 @@ const DISENOS={
   jubilacion:{
     id:"jubilacion", producto:"cojin", nombre:"Cojín Jubilación", corto:"Jubilación",
     desc:"Cojín con el celador saliendo del quirófano. Título, pizarra y cartel con tus textos.",
-    precio:"",                     // <- pon aquí el precio, por ejemplo "19,50 €" (vacío = no se muestra)
+    precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
     base:"disenos/cojin_jubilacion/base.jpg", baseFull:"disenos/cojin_jubilacion/base_full.jpg",
     campos:[

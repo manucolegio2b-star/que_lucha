@@ -115,7 +115,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const PRODUCTOS={quelucha:{n:1,nombre:"Calendario Que Lucha!",corto:"Que Lucha!",precio:"1 €",tam:"Cartulina 300 g · 32 × 45 cm"},
   premium:{n:2,nombre:"Calendario Póster Premium",corto:"Póster Premium",precio:"3 €",tam:"Cartulina 300 g · 32 × 45 cm"},
   "12hojas":{n:3,nombre:"Calendario de 12 hojas",corto:"12 hojas",precio:"12,50 €",tam:"Cartulina 300 g · 32 × 45 cm · 7 hojas a dos caras"},
-  cojin:{n:4,nombre:"Cojín personalizado",corto:"Cojín",precio:"",tam:"Impresión 29 × 29 cm · 200 ppp"}};
+  cojin:{n:4,nombre:"Cojín personalizado",corto:"Cojín",precio:"19,50 €",tam:"Impresión 29 × 29 cm · 200 ppp"}};
 // Diseños con texto (textos.js): cojines, etc.
 const TXD=(window.QLTextos&&QLTextos.DISENOS)||{};
 const esTexto=p=>!!TXD[p.modelo]&&TXD[p.modelo].producto===p.producto;
@@ -543,29 +543,23 @@ async function asegurarImpresor(){
 }
 function aBlob(cv,tipo,q){ return new Promise(r=>cv.toBlob(r,tipo,q)); }
 function descargar(blob,nombre){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); }
-async function pdfDe(cv,wc,hc){
-  wc=wc||WC; hc=hc||HC;
+// PDF de una página de pc×pa cm con la imagen a su tamaño real (wc×hc cm), centrada
+async function pdfDe(cv,wc,hc,pc,pa){
+  wc=wc||WC; hc=hc||HC; pc=pc||wc; pa=pa||hc;
   const jpg=new Uint8Array(await (await aBlob(cv,"image/jpeg",.95)).arrayBuffer());
   const enc=new TextEncoder(), parts=[], offs=[]; let pos=0;
   const push=x=>{ const u=typeof x==="string"?enc.encode(x):x; parts.push(u); pos+=u.length; };
-  const wpt=(wc/2.54*72).toFixed(2), hpt=(hc/2.54*72).toFixed(2);
+  const pt=c=>c/2.54*72, wpt=pt(wc).toFixed(2), hpt=pt(hc).toFixed(2), Pw=pt(pc).toFixed(2), Ph=pt(pa).toFixed(2), ox=((pt(pc)-pt(wc))/2).toFixed(2), oy=((pt(pa)-pt(hc))/2).toFixed(2);
   push("%PDF-1.4\n");
   offs[1]=pos; push("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n");
   offs[2]=pos; push("2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n");
-  offs[3]=pos; push("3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+wpt+" "+hpt+"]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>endobj\n");
+  offs[3]=pos; push("3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+Pw+" "+Ph+"]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>endobj\n");
   offs[4]=pos; push("4 0 obj<</Type/XObject/Subtype/Image/Width "+cv.width+"/Height "+cv.height+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpg.length+">>stream\n"); push(jpg); push("\nendstream endobj\n");
-  const c="q "+wpt+" 0 0 "+hpt+" 0 0 cm /Im0 Do Q";
+  const c="q "+wpt+" 0 0 "+hpt+" "+ox+" "+oy+" cm /Im0 Do Q";
   offs[5]=pos; push("5 0 obj<</Length "+c.length+">>stream\n"+c+"\nendstream endobj\n");
   const xr=pos; let x="xref\n0 6\n0000000000 65535 f \n"; for(let i=1;i<=5;i++) x+=String(offs[i]).padStart(10,"0")+" 00000 n \n";
   push(x+"trailer<</Size 6/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");
   return new Blob(parts,{type:"application/pdf"});
-}
-function ventanaImprimir(p,blob,wc,hc){
-  const u=URL.createObjectURL(blob), w=window.open("","_blank");
-  if(!w){ aviso("El navegador ha bloqueado la ventana. Permite las ventanas emergentes para esta página."); return; }
-  w.document.write('<!doctype html><title>Pedido '+p.numero+'</title><style>@page{size:'+wc*10+'mm '+hc*10+'mm;margin:0}html,body{margin:0}img{display:block;width:'+wc*10+'mm;height:'+hc*10+'mm}</style><img src="'+u+'">');
-  w.document.close(); const im=w.document.querySelector("img"); im.onload=()=>{ w.focus(); w.print(); };
-  w.onafterprint=()=>setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Has impreso el pedido "+p.numero+"? Pulsa Aceptar para marcarlo como Impreso.")) guardarCambios(p,{situacion:"imp"}); },400);
 }
 // Archivo de impresión de los diseños con texto (cojines…), a 200 ppp
 async function componerTexto(p){
@@ -579,11 +573,11 @@ function pintarImprimirTexto(p){
    '<div class="big"><div><div id="estadoGen" class="empty" style="padding:60px 0">Preparando el archivo a máxima calidad…</div><canvas id="prev" style="display:none;width:100%;max-width:640px;height:auto"></canvas><div class="sm" style="margin-top:8px">'+dz.cm+' × '+dz.cm+' cm · 200 ppp</div></div>'+
    '<div class="col"><section class="card"><h2>Pedido '+num+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>'+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(dz.nombre)+'</span></div><div id="avisoTx"></div></section>'+
    '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado la vista previa y quiero imprimirla.</span></label>'+
-   '<button class="b pri" id="imprimir" disabled>'+I.print+'Imprimir</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">Descargar PNG</button><button class="b" id="dpdf" disabled style="flex:1">Descargar PDF</button></div>'+
-   '<p class="sm" style="margin:10px 0 0">Se abrirá el cuadro de impresión de este equipo. Después te preguntaré si lo marco como impreso.</p></section></div></div></main>';
+   '<button class="b pri" id="da3" disabled>Descargar en A3 (PDF)</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">PNG '+dz.cm+'×'+dz.cm+'</button><button class="b" id="dpdf" disabled style="flex:1">PDF '+dz.cm+'×'+dz.cm+'</button></div>'+
+   '<p class="sm" style="margin:10px 0 0">El A3 lleva el diseño a tamaño real ('+dz.cm+' × '+dz.cm+' cm, 200 ppp) centrado en la hoja. Imprímelo al 100 %, sin "ajustar a página".</p></section></div></div></main>';
   enlazarComun();
   let gen=null;
-  const onList=()=>{ const ok=$("#rev").checked&&!!gen; ["imprimir","dpng","dpdf"].forEach(k=>$("#"+k).disabled=!ok); };
+  const onList=()=>{ const ok=$("#rev").checked&&!!gen; ["da3","dpng","dpdf"].forEach(k=>$("#"+k).disabled=!ok); };
   $("#rev").onchange=onList;
   componerTexto(p).then(r=>{ if(ruta().r!=="imprimir"||+ruta().id!==num) return; gen=r.cv; const v=$("#prev"); v.width=gen.width; v.height=gen.height; v.getContext("2d").drawImage(gen,0,0); v.style.display="block"; $("#estadoGen").style.display="none";
     const av=Object.keys(r.avisos); if(av.length) $("#avisoTx").innerHTML='<div class="warn">⚠ Algún texto es muy largo y la letra queda pequeña ('+esc(av.map(k=>(dz.campos.find(c=>c.id===k)||{}).etiqueta||k).join(", "))+').</div>'; onList(); })
@@ -591,7 +585,7 @@ function pintarImprimirTexto(p){
   const nom=(p.producto||"diseno")+"_"+num;
   $("#dpng").onclick=async()=>descargar(await pngA200(gen),nom+".png");
   $("#dpdf").onclick=async()=>descargar(await pdfDe(gen,dz.cm,dz.cm),nom+".pdf");
-  $("#imprimir").onclick=async()=>ventanaImprimir(p,await pngA200(gen),dz.cm,dz.cm);
+  $("#da3").onclick=async()=>{ descargar(await pdfDe(gen,dz.cm,dz.cm,29.7,42),nom+"_A3.pdf"); setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Lo marco como Impreso? Pulsa Aceptar cuando lo hayas impreso.")) guardarCambios(p,{situacion:"imp"}); },800); };
 }
 function pintarImprimir(num){
   const p=pedidos.find(x=>x.numero===num);
