@@ -94,7 +94,7 @@ let pendiente=null;
 function repintar(){
   if(pendiente) return;
   pendiente=requestAnimationFrame(()=>{ pendiente=null; const cv=$("#cv"); if(!cv||!S.img) return;
-    if(S.vista==="cojin"&&S.foto){ S.avisos=T.dibujar(plano,D,S.textos,S.img,1000,S.formas); T.dibujarMockup(cv,D,plano,S.foto); }
+    if(S.vista==="cojin"&&S.foto){ S.avisos=T.dibujar(plano,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(cv,D,plano,S.foto); }
     else S.avisos=T.dibujar(cv,D,S.textos,S.img,1000,S.formas);
     D.campos.forEach(c=>{ const m=$("#av_"+c.id); if(m) m.textContent=S.avisos[c.id]?"Es demasiado largo y la letra quedaría muy pequeña. Acórtalo un poco.":""; const f=$("#t_"+c.id); if(f) f.classList.toggle("err",!!S.avisos[c.id]); });
   });
@@ -176,7 +176,7 @@ async function enviar(){
       catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
     }
     let url=URL.createObjectURL(blob);
-    if(S.foto){ const mc=document.createElement("canvas"); T.dibujarMockup(mc,D,cv,S.foto); url=mc.toDataURL("image/jpeg",.85); }
+    if(S.foto){ const mc=document.createElement("canvas"), tr=document.createElement("canvas"); T.dibujar(tr,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(mc,D,tr,S.foto); url=mc.toDataURL("image/jpeg",.85); }
     S.enviado={nombre:d.nombre,codigo:envio.codigo,url};
     envio=null; ov.remove(); render(); window.scrollTo(0,0);
   }catch(e){ console.error(e); pintar("No se ha podido enviar",0,"Revisa tu conexión e inténtalo de nuevo. Tu pedido no se ha perdido: pulsa Reintentar."); }

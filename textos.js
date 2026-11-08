@@ -13,7 +13,7 @@ const DISENOS={
     desc:"Cojín con el celador saliendo del quirófano. Título, pizarra y cartel con tus textos.",
     precio:"19,50 €",              // vacío = no se muestra
     cm:29,                         // tamaño de impresión: 29 × 29 cm a 200 ppp
-    base:"disenos/cojin_jubilacion/base.jpg", baseFull:"disenos/cojin_jubilacion/base_full.jpg",
+    base:"disenos/cojin_jubilacion/base.webp", baseFull:"disenos/cojin_jubilacion/base_full.png",   // fondo transparente
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
     mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
     campos:[
@@ -124,10 +124,11 @@ function corazon(g,cx,cy,s,color,grosor){
 }
 
 // Dibuja el diseño completo en un canvas de lado "px". Devuelve los avisos de textos demasiado largos.
-function dibujar(cv,d,textos,img,px,formas){
+// transparente=true: sin fondo blanco (para ponerlo sobre la foto del cojín)
+function dibujar(cv,d,textos,img,px,formas,transparente){
   cv.width=px; cv.height=px;
   const g=cv.getContext("2d"), u=px/1000;
-  g.fillStyle="#fff"; g.fillRect(0,0,px,px);
+  if(!transparente){ g.fillStyle="#fff"; g.fillRect(0,0,px,px); }
   g.drawImage(img,0,0,px,px);
   const avisos={};
   d.zonas.forEach(z=>{
