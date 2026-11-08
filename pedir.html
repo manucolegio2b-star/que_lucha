@@ -70,6 +70,15 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 .h12 .fs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .h12 .slot{border-radius:8px}.h12 .slot .x{width:24px;height:24px;top:2px;right:2px}
 .h12 .add svg{width:22px;height:22px}
+.edf{display:flex;flex-wrap:wrap;gap:10px}
+.ef{position:relative;width:72px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px}
+.ef .cam{position:relative;width:72px;height:72px;padding:0;border:0;border-radius:10px;overflow:hidden;cursor:pointer;background:#E5E8ED}
+.ef.mal .cam{box-shadow:0 0 0 3px #C0392B}
+.ef .cam img{width:100%;height:100%;object-fit:cover;display:block}
+.ef .cam span{position:absolute;left:0;right:0;bottom:0;background:rgba(17,24,39,.62);color:#fff;font-size:11px;font-weight:600;padding:2px 0}
+.ef .x{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;background:#111827;border:2px solid #fff;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ef.add{height:72px;justify-content:center;border:2px dashed #13A4AA;border-radius:10px;background:#fff;color:#0B7C82;cursor:pointer;gap:0}
+.ef.add b{font-size:11px}
 .tabs12{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px}
 .tabs12 button{flex:none;height:34px;padding:0 10px;border-radius:9px;border:1.5px solid #D0D5DD;background:#fff;font-size:13px;font-weight:600;color:#374151;cursor:pointer}
 .tabs12 button.on{border-color:#13A4AA;background:#13A4AA;color:#fff}
@@ -399,6 +408,26 @@ async function prevHoja(i){ // dibuja la hoja (a poca resolución) con las fotos
   hj.prev={key, url:URL.createObjectURL(blob)};
   return hj.prev;
 }
+// Fotos de la vista previa: tocar = cambiar, X = quitar, + = añadir. Aviso si alguna sale con poca nitidez.
+function fotosEditables(fotos,pp,donde){
+  let h='<div class="field"><label>'+donde+' <span>(toca una foto para cambiarla)</span></label><div class="edf">';
+  fotos.forEach((f,j)=>{
+    const c=pp[j]>=200?"#1B7F4B":(pp[j]>=150?"#9A6700":"#C0392B");
+    h+='<div class="ef'+(pp[j]<150?" mal":"")+'"><button type="button" class="cam" data-cambiar="'+j+'" aria-label="Cambiar la foto '+(j+1)+'"><img src="'+f.preview+'" alt=""><span>Cambiar</span></button>'+
+       (fotos.length>1?'<button type="button" class="x" data-quitar="'+j+'" aria-label="Quitar la foto '+(j+1)+'">'+I.x+'</button>':'')+
+       '<b style="color:'+c+'">'+pp[j]+' ppp</b></div>';
+  });
+  if(fotos.length<6) h+='<button type="button" class="ef add" data-anadir="1" aria-label="Añadir fotos">'+I.plus+'<b>Añadir</b></button>';
+  h+='</div></div>';
+  const malas=fotos.map((f,j)=>j).filter(j=>pp[j]<150);
+  if(malas.length){
+    const una=malas.length===1;
+    h+='<div class="bad" style="max-width:none">'+(una?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(j=>j+1).join(", ")+" saldrán")+' con poca nitidez al imprimir (marcada'+(una?"":"s")+' en rojo). Puedes:<br>• Cambiar'+(una?"la":"las")+' por otra'+(una?"":"s")+' de más calidad.'+
+       (fotos.length<6?'<br>• <b>Añadir más fotos</b>: así '+(una?"esa foto sale":"esas fotos salen")+' más pequeña'+(una?"":"s")+' y se ve'+(una?"":"n")+' mejor.':'')+
+       (fotos.length>1?'<br>• Probar otra disposición o quitar'+(una?"la":"las")+'.':'')+'</div>';
+  }
+  return h+'<input type="file" id="fileIn" accept="image/*" multiple hidden><input type="file" id="fileUno" accept="image/*" hidden>';
+}
 function miniPaleta(v,w){
   const h=Math.round(w*45/32), cel='<div style="flex:1;border-right:1px solid #E3E6EA"></div>';
   let cab=''; for(let c=0;c<7;c++) cab+='<div style="flex:1;margin-right:1px;background:'+(c%2?v.a:v.b)+'"></div>';
@@ -515,12 +544,7 @@ function vPrevia(){
     h+='<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-paso="-1" style="flex:1"'+(i===0?" disabled":"")+'>‹ Anterior</button><div style="flex:none;text-align:center;font-size:13px;color:#5B6472;line-height:1.2">Hoja<br><b style="color:#111827;font-size:15px">'+NOMBRE_HOJA(i)+'</b></div><button type="button" class="btn2" data-paso="1" style="flex:1"'+(i===12?" disabled":"")+'>Siguiente ›</button></div>';
     h+='</div><div class="der">';
     if(hj.disp.lista.length>1) h+='<div class="field"><label>Disposición de las fotos de '+NOMBRE_HOJA(i).toLowerCase()+'</label><div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-disp="-1" style="flex:1" aria-label="Disposición anterior">‹</button><div style="flex:none;text-align:center;font-size:14px"><b>'+(hj.disp.idx+1)+' de '+hj.disp.lista.length+'</b></div><button type="button" class="btn2" data-disp="1" style="flex:1" aria-label="Disposición siguiente">›</button></div></div>';
-    h+='<div class="field"><label>Fotos de '+NOMBRE_HOJA(i).toLowerCase()+'</label><div class="thumbs" style="gap:10px">'+hj.fotos.map((f,j)=>{
-      const c=pp[j]>=200?"#1B7F4B":(pp[j]>=150?"#9A6700":"#C0392B");
-      return '<div style="width:64px"><img src="'+f.preview+'" alt="Foto '+(j+1)+'" style="width:64px;height:64px"><span style="color:'+c+';font-weight:700">'+pp[j]+' ppp</span></div>';
-    }).join("")+'</div></div>';
-    const malas=hj.fotos.map((f,j)=>j).filter(j=>pp[j]<150);
-    if(malas.length) h+='<div class="bad" style="max-width:none">'+(malas.length===1?"La foto "+(malas[0]+1)+" de esta hoja saldrá":"Las fotos "+malas.map(j=>j+1).join(", ")+" de esta hoja saldrán")+' con poca nitidez al imprimir. Prueba otra disposición o vuelve atrás para cambiarla.</div>';
+    h+=fotosEditables(hj.fotos,pp,"Fotos de "+NOMBRE_HOJA(i).toLowerCase());
     const otras=S.hojas.map((x,k)=>k).filter(k=>k!==i&&dispHoja(k).rects.some(q=>q.ppp<150));
     if(otras.length) h+='<p class="small">⚠ También hay fotos con poca nitidez en: '+otras.map(k=>NOMBRE_HOJA(k).toLowerCase()).join(", ")+'.</p>';
   } else {
@@ -532,12 +556,7 @@ function vPrevia(){
     const cur=asegurarDisp(), d=S.disp, pp={}; cur.rects.forEach(q=>pp[q.i]=q.ppp);
     if(d.lista.length>1) h+='<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn2" data-disp="-1" style="flex:1" aria-label="Disposición anterior">‹ Anterior</button><div style="flex:none;text-align:center;font-size:13px;color:#5B6472;line-height:1.2">Disposición<br><b style="color:#111827;font-size:15px">'+(d.idx+1)+' de '+d.lista.length+'</b></div><button type="button" class="btn2" data-disp="1" style="flex:1" aria-label="Disposición siguiente">Siguiente ›</button></div>';
     h+='</div><div class="der">';
-    const malas=S.fotos.map((f,i)=>i).filter(i=>pp[i]<150);
-    h+='<div class="field"><label>Tus fotos <span>(toca la X para quitar una)</span></label><div class="thumbs" style="gap:10px">'+S.fotos.map((f,i)=>{
-      const c=pp[i]>=200?"#1B7F4B":(pp[i]>=150?"#9A6700":"#C0392B");
-      return '<div style="width:64px"><div style="position:relative"><img src="'+f.preview+'" alt="Foto '+(i+1)+'" style="width:64px;height:64px">'+(S.fotos.length>1?'<button type="button" class="x" data-quitar="'+i+'" aria-label="Quitar la foto '+(i+1)+'" style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;background:rgba(17,24,39,.72);border:0;padding:0;display:flex;align-items:center;justify-content:center">'+I.x+'</button>':"")+'</div><span style="color:'+c+';font-weight:700">'+pp[i]+' ppp</span></div>';
-    }).join("")+'</div></div>';
-    if(malas.length) h+='<div class="bad" style="max-width:none">'+(malas.length===1?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(i=>i+1).join(", ")+" saldrán")+' con poca nitidez al imprimir. Prueba otra disposición, o cámbiala o quítala.</div>';
+    h+=fotosEditables(S.fotos,pp,"Tus fotos");
   }
   const v=variante(), mod = v? v.nombre : "";
   const filas = es12()
@@ -697,7 +716,16 @@ function bindPrevia(){
     if(!(hj.prev && hj.prev.key===clavePrev(i))) prevHoja(i).then(r=>{ if(r && S.step==="previa" && (S.hoja12||0)===i) render(); }).catch(e=>{ console.error(e); toast("No se ha podido dibujar la vista previa de esta hoja."); });
     const t=$(".tabs12 .on"); if(t) t.scrollIntoView({block:"nearest",inline:"center"});
   }
-  $$("[data-quitar]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.quitar; URL.revokeObjectURL(S.fotos[i].preview); S.fotos.splice(i,1); S.montaje=null; render(); }));
+  const listaPrev=()=>es12()?S.hojas[S.hoja12||0].fotos:S.fotos;
+  $$("[data-quitar]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.quitar, l=listaPrev(); if(!es12()) URL.revokeObjectURL(l[i].preview); l.splice(i,1); S.montaje=null; render(); }));
+  const fi=$("#fileIn"), fu=$("#fileUno"); let cambiar=null;
+  $$("[data-anadir]").forEach(b=>b.addEventListener("click",()=>fi.click()));
+  if(fi) fi.addEventListener("change",()=>{ const fs=fi.files; S.montaje=null; aniadir(fs,S.hoja12||0); fi.value=""; });
+  $$("[data-cambiar]").forEach(b=>b.addEventListener("click",()=>{ cambiar=+b.dataset.cambiar; fu.click(); }));
+  if(fu) fu.addEventListener("change",async()=>{ const f=fu.files[0], j=cambiar; fu.value=""; if(!f||j==null) return;
+    const ov=document.createElement("div"); ov.className="over"; ov.innerHTML='<div style="font-size:17px;font-weight:600">Preparando tu foto…</div>'; document.body.appendChild(ov);
+    try{ const r=await procesar(f), l=listaPrev(); if(!es12()) URL.revokeObjectURL(l[j].preview); l[j]=r; S.montaje=null; }catch(e){ toast("No se ha podido leer esa foto. Prueba con otra."); }
+    ov.remove(); render(); });
   const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+(es12()?S.hojas[S.hoja12||0].prev.url:S.montaje.url)+'" alt=""><button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
   const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!(c.checked&&(es12()||S.montaje)); });
   if(!es12() && !(S.montaje && S.montaje.key===claveMontaje())){
