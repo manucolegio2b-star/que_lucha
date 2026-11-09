@@ -178,12 +178,13 @@ const PRODUCTOS = {
     intro:"Elige el año. Los 12 meses van bajo tu collage, en una cartulina de 300 g de 32 × 45 cm.",
     corto:"Póster collage", tema:{bg:"#F7EFE6",ac:"#C9622E",ln:"#C9B8A5"}, max:6},
   premium:{id:"premium",nombre:"Calendario Póster Premium",precio:"3 €",
-    desc:"El mismo póster collage en 3 diseños: ratón, nido y conejo. Cartulina 300 g, 32 × 45 cm.",
+    desc:"El mismo póster collage en 4 diseños: ratón, nido, conejo y colores. Cartulina 300 g, 32 × 45 cm.",
     intro:"Elige el diseño y el año. Los 12 meses van bajo tu collage, en una cartulina de 300 g de 32 × 45 cm.",
     corto:"Póster collage", max:6,
     variantes:[{id:"raton",nombre:"Ratón",thumb:"disenos/raton/miniatura.jpg",bg:"#E9EDF4",ac:"#5B6B8C",ln:"#9AA7C0"},
                {id:"nido",nombre:"Nido",thumb:"disenos/nido/miniatura.jpg",bg:"#F3EBDD",ac:"#8A6A3B",ln:"#CDBB9A"},
-               {id:"conejo",nombre:"Conejo",thumb:"disenos/conejo/miniatura.jpg",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"}]},
+               {id:"conejo",nombre:"Conejo",thumb:"disenos/conejo/miniatura.jpg",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"},
+               {id:"colores",nombre:"Colores",thumb:"disenos/colores/miniatura.jpg",bg:"#EAF3FB",ac:"#4197E0",ln:"#A9CDEF"}]},
   "12hojas":{id:"12hojas",nombre:"Calendario de 12 hojas",precio:"12,50 €",
     desc:"Portada y una hoja por mes, con hasta 6 fotos en cada una. Cartulina 300 g, 32 × 45 cm, a dos caras, anillado y con colgador.",
     corto:"12 hojas", max:6,
@@ -261,7 +262,8 @@ const DISENOS = {
   quelucha:{producto:"quelucha", anios:[2027], base:"disenos/quelucha/base.jpg", marco:null, zona:{x:1.575,y:7.467,w:22.97,h:17.22}},
   conejo:{producto:"premium", anios:[2027], base:"disenos/conejo/base.jpg", marco:"disenos/conejo/marco.png", zona:{x:6.565,y:5.181,w:18.883,h:14.235}},
   raton:{producto:"premium", anios:[2027], base:"disenos/raton/base.jpg", marco:"disenos/raton/marco.png", zona:{x:5.587,y:4.203,w:21.537,h:16.317}},
-  nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}}
+  nido:{producto:"premium", anios:[2027], base:"disenos/nido/base.jpg", marco:"disenos/nido/marco.png", zona:{x:6.571,y:5.175,w:18.877,h:14.248}},
+  colores:{producto:"premium", anios:[2027], base:"disenos/colores/base.jpg", marco:null, zona:{x:1.448,y:1.448,w:29.105,h:15.788}}
 };
 function disenoAct(){ const v=variante(), k=v?v.id:(prod()?prod().id:null); return (prod() && k && DISENOS[k] && DISENOS[k].producto===prod().id) ? DISENOS[k] : null; }
 let ZONA_FORZADA=null; // la usa el calendario de 12 hojas (cada hoja tiene su zona)
