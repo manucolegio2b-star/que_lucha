@@ -42,9 +42,15 @@
       tit.innerHTML=it.nombre+(n>1?'<small>'+(i+1)+' de '+n+'</small>':'');
       el.querySelectorAll(".qlv-pts i").forEach(function(p,j){ p.className=j===i?"on":""; });
       if(ok){ var ya=o.elegido===i; ok.className="qlv-ok"+(ya?" ya":""); ok.textContent=ya?(o.botonYa||"✓ Diseño elegido"):(o.boton||"Elegir este diseño"); }
-      var pedido=i; img.hidden=true; car.hidden=false; car.textContent="Cargando…";
-      url(it).then(function(u){ if(pedido!==i) return; img.onload=function(){ if(pedido===i){ img.hidden=false; car.hidden=true; } }; img.src=u; img.alt="Diseño "+it.nombre; })
-        .catch(function(){ if(pedido===i) car.textContent="No se ha podido cargar la imagen."; });
+      var pedido=i; img.alt="Diseño "+it.nombre;
+      if(it.previa){ img.onload=null; img.src=it.previa; img.hidden=false; car.hidden=true; }   // la miniatura sale al instante mientras llega la grande
+      else { img.hidden=true; car.hidden=false; car.textContent="Cargando…"; }
+      url(it).then(function(u){ if(pedido!==i) return; var nueva=new Image();
+          nueva.onload=function(){ if(pedido===i){ img.src=u; img.hidden=false; car.hidden=true; vecinos(); } }; nueva.src=u; })
+        .catch(function(){ if(pedido===i&&!it.previa) car.textContent="No se ha podido cargar la imagen."; });
+    }
+    function vecinos(){   // adelanta el anterior y el siguiente cuando el actual ya se ve
+      if(n>1) [1,-1].forEach(function(d){ var v=items[(i+d+n)%n]; url(v).then(function(u){ if(v.src){ var p=new Image(); p.src=u; } }).catch(function(){}); });
     }
     function mover(d){ if(n<2) return; i=(i+d+n)%n; pinta(); }
     function cerrar(){ document.removeEventListener("keydown",tecla); document.body.style.overflow=ov; el.remove(); if(previo&&previo.focus) previo.focus(); }

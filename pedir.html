@@ -447,13 +447,7 @@ function miniPaleta(v,w){
 }
 
 // ---------- Ver los diseños en grande (lupa) ----------
-function imgGrande(id){
-  const d=DISENOS[id];
-  if(!d.marco) return {src:d.base};
-  return {clave:"p_"+id, crear:async()=>{ const [b,m]=await Promise.all([cargarImg(d.base),cargarImg(d.marco)]);
-    const cv=document.createElement("canvas"); cv.width=b.width; cv.height=b.height; const g=cv.getContext("2d");
-    g.drawImage(b,0,0); g.drawImage(m,0,0,b.width,b.height); return cv.toDataURL("image/jpeg",.9); }};
-}
+function imgGrande(id){ return {src:"disenos/"+id+"/grande.jpg", previa:"disenos/"+id+"/miniatura.jpg"}; }
 function hoja12Grande(v){
   const anio=S.anio;
   return {clave:"h12_"+v.id+"_"+anio, crear:async()=>{
