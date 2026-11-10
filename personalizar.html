@@ -53,6 +53,8 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .pjs{display:flex;gap:10px;flex-wrap:wrap}
 .pjs button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;border-radius:12px;border:2px solid #E5E8ED;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#374151;width:96px}
 .pjs button img{width:80px;height:80px;border-radius:8px;display:block}
+.pjw{position:relative}
+.pjw .qlv-lupa{top:10px;right:10px;width:30px;height:30px}
 .pjs button[aria-pressed=true]{border-color:#13A4AA;background:#E6F6F6;color:#0B7C82}
 .quitar{display:inline-flex;align-items:center;gap:6px;margin:4px 10px 6px 0;padding:7px 14px;border-radius:999px;border:2px solid #13A4AA;background:#E6F6F7;color:#0B7C82;font-weight:800;font-size:14px;cursor:pointer}
 .quitar span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#13A4AA;color:#fff;font-size:11px}
@@ -80,6 +82,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js"></script>
+<script src="visor.js"></script>
 <script>
 (function(){
 "use strict";
@@ -120,7 +123,7 @@ function vDiseno(){
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'</span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
-    '<div class="form">'+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>').join("")+'</div>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
+    '<div class="form">'+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<div class="pjw"><button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>'+QLVisor.lupa('data-ver="'+pj.id+'"',pj.nombre)+'</div>').join("")+'</div><p class="small" style="margin-top:8px">Toca la lupa para verlo en grande, con tus textos.</p>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
 }
@@ -166,7 +169,20 @@ function render(){
   document.querySelectorAll("[data-quitar]").forEach(b=>b.addEventListener("click",()=>{ const k=b.dataset.quitar, f=$("#t_"+k); S.textos[k]=""; f.value=""; $("#n_"+k).textContent="0/"+f.maxLength; repintar(); }));
   document.querySelectorAll("[data-pj]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.pj; if(id===S.personaje) return; S.personaje=id;
     document.querySelectorAll("[data-pj]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); cambiarPersonaje(id); }));
+  document.querySelectorAll("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
   repintar();
+}
+// Lupa: cada personaje en grande con los textos que lleva escritos el cliente
+function verGrande(id){
+  const L=D.personajes, firma=JSON.stringify([S.textos,S.formas,S.vista]);
+  const items=L.map(pj=>({nombre:pj.nombre, clave:pj.id+firma, crear:async()=>{
+    const img=S.imgs[pj.id]||(S.imgs[pj.id]=await T.cargar(D,false,pj.id));
+    const plano=document.createElement("canvas");
+    if(S.vista==="cojin"&&S.foto){ T.dibujar(plano,D,S.textos,img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,plano,S.foto); return cv.toDataURL("image/jpeg",.9); }
+    T.dibujar(plano,D,S.textos,img,1000,S.formas); return plano.toDataURL("image/jpeg",.9); }}));
+  QLVisor.abrir({items, idx:Math.max(0,L.findIndex(p=>p.id===id)), elegido:L.findIndex(p=>p.id===S.personaje),
+    boton:"Elegir este personaje", botonYa:"✓ Personaje elegido",
+    onElegir:j=>{ const b=document.querySelector('[data-pj="'+L[j].id+'"]'); if(b) b.click(); }});
 }
 function cambiarPersonaje(id){
   if(S.imgs[id]){ S.img=S.imgs[id]; repintar(); return; }

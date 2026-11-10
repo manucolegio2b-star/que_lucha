@@ -52,6 +52,8 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 .opt.sel .m{box-shadow:0 0 0 2px #F4F6F8,0 0 0 4px #13A4AA}
 .opt span{font-size:13px;font-weight:500;color:#111827}
 .opt.sel span{color:#0B7C82;font-weight:700}
+.optw{position:relative;width:fit-content;margin:0 auto}
+.optw .qlv-lupa{top:8px;right:4px;width:30px;height:30px}
 .fhead{display:flex;justify-content:space-between;align-items:baseline}
 .fhead b{font-size:15px}.fhead i{font-style:normal;font-size:13px;color:#5B6472}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -157,6 +159,7 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js"></script>
 <script src="calendario12.js"></script>
+<script src="visor.js"></script>
 <script>
 (function(){
 "use strict";
@@ -443,6 +446,32 @@ function miniPaleta(v,w){
     '<div style="flex:1;display:flex;background:repeating-linear-gradient(to bottom,transparent 0,transparent 9px,#E3E6EA 9px,#E3E6EA 10px)">'+cel.repeat(6)+'<div style="flex:1"></div></div></div>';
 }
 
+// ---------- Ver los diseños en grande (lupa) ----------
+function imgGrande(id){
+  const d=DISENOS[id];
+  if(!d.marco) return {src:d.base};
+  return {clave:"p_"+id, crear:async()=>{ const [b,m]=await Promise.all([cargarImg(d.base),cargarImg(d.marco)]);
+    const cv=document.createElement("canvas"); cv.width=b.width; cv.height=b.height; const g=cv.getContext("2d");
+    g.drawImage(b,0,0); g.drawImage(m,0,0,b.width,b.height); return cv.toDataURL("image/jpeg",.9); }};
+}
+function hoja12Grande(v){
+  const anio=S.anio;
+  return {clave:"h12_"+v.id+"_"+anio, crear:async()=>{
+    await QLCal12.cargarFuentes("");
+    const img=await cargarImg("img/ejemplo-12hojas.jpg");
+    const z=QLCal12.zona(false), r=Math.max(z.w/img.width, z.h/img.height), w=img.width*r, h=img.height*r;
+    const cv=QLCal12.hojaCanvas({anio, mes:0, paleta:v.id, fotos:[{img, x:(z.w-w)/2, y:(z.h-h)/2, w, h}]}, 0.4);
+    return cv.toDataURL("image/jpeg",.88); }};
+}
+function verGrande(id){
+  const p=prod();
+  if(!p.variantes){ QLVisor.abrir({items:[Object.assign({nombre:p.nombre},imgGrande(id))]}); return; }
+  const items=p.variantes.map(v=>Object.assign({nombre:v.nombre}, es12()?hoja12Grande(v):imgGrande(v.id)));
+  const idx=Math.max(0,p.variantes.findIndex(v=>v.id===id)), sel=p.variantes.findIndex(v=>v.id===variante().id);
+  QLVisor.abrir({items, idx, elegido:sel, boton:es12()?"Elegir estos colores":"Elegir este diseño", botonYa:es12()?"✓ Colores elegidos":"✓ Diseño elegido",
+    onElegir:j=>{ S.variante=p.variantes[j].id; render(); }});
+}
+
 // ---------- Cabecera común ----------
 function cab(volverA, etiqueta){
   return '<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a>'+
@@ -500,12 +529,14 @@ function vConfig(){
       if(es12()) mini=miniPaleta(v,w);
       else if(v.thumb) mini='<div class="m" style="width:'+w+'px;height:'+Math.round(w*45/32)+'px;padding:0;overflow:hidden;background:#fff"><img src="'+v.thumb+'" alt="Diseño '+esc(v.nombre)+'" width="'+w+'" height="'+Math.round(w*45/32)+'" style="width:100%;height:100%;display:block"></div>';
       else mini='<div class="m" style="width:'+w+'px;height:'+hh+'px;background:'+v.bg+'"><div style="height:44%;border-radius:2px;background:'+v.ac+';opacity:.75"></div><div style="flex:1;background:repeating-linear-gradient(to bottom,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 7px),repeating-linear-gradient(to right,'+v.ln+' 0,'+v.ln+' 1px,transparent 1px,transparent 12px)"></div></div>';
-      h+='<button type="button" class="opt'+(sel?" sel":"")+'" data-var="'+v.id+'" aria-pressed="'+sel+'" aria-label="'+v.nombre+'">'+mini+'<span>'+v.nombre+'</span></button>';
+      h+='<div class="optw"><button type="button" class="opt'+(sel?" sel":"")+'" data-var="'+v.id+'" aria-pressed="'+sel+'" aria-label="'+v.nombre+'">'+mini+'<span>'+v.nombre+'</span></button>'+QLVisor.lupa('data-ver="'+v.id+'"',v.nombre)+'</div>';
     });
-    h+='</div><div class="small">'+(es12()?"Todas las hojas llevan los mismos colores. Los festivos nacionales van marcados.":(p.variantes.every(v=>v.thumb)?"Los marcos se ven vacíos: ahí irán tus fotos.":"Miniaturas de ejemplo."))+'</div></div>';
+    h+='</div><div class="small">'+(es12()?"Todas las hojas llevan los mismos colores. Los festivos nacionales van marcados.":(p.variantes.every(v=>v.thumb)?"Los marcos se ven vacíos: ahí irán tus fotos.":"Miniaturas de ejemplo."))+' Toca la lupa para verlo en grande.</div></div>';
   } else {
     const t=p.tema;
-    h+='<div class="center" style="padding:6px 0"><div class="mini" style="width:140px;height:197px;margin:0 auto;background:'+t.bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 13px)"></div></div><div class="small" style="margin-top:8px">Un solo diseño. Miniatura de ejemplo.</div></div>';
+    const dz=DISENOS[p.id];
+    if(dz) h+='<div class="center" style="padding:6px 0"><div style="position:relative;width:140px;margin:0 auto"><img src="disenos/'+p.id+'/miniatura.jpg" alt="Diseño '+esc(p.nombre)+'" width="140" height="197" style="width:140px;height:197px;display:block;border-radius:4px;border:1px solid #B8C0CC;background:#fff">'+QLVisor.lupa('data-ver="'+p.id+'"',p.nombre)+'</div><div class="small" style="margin-top:8px">Un solo diseño. Los marcos se ven vacíos: ahí irán tus fotos. Toca la lupa para verlo en grande.</div></div>';
+    else h+='<div class="center" style="padding:6px 0"><div class="mini" style="width:140px;height:197px;margin:0 auto;background:'+t.bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 13px)"></div></div><div class="small" style="margin-top:8px">Un solo diseño. Miniatura de ejemplo.</div></div>';
   }
   h+=selAnio();
   h+='<div class="note">'+I.info+'<span>'+(es12()?'Pondrás <strong>de 1 a 6 fotos en cada hoja</strong>: la portada y los 12 meses. Se imprime a dos caras en 7 hojas, anillado y con colgador.':'Puedes subir <strong>de 1 a 6 fotos</strong>. Nosotros las colocamos en la zona de arriba, sobre el calendario.')+'</span></div>';
@@ -624,6 +655,7 @@ function bind(){
     go("config");
   }));
   $$("[data-var]").forEach(b=>b.addEventListener("click",()=>{ S.variante=b.dataset.var; render(); }));
+  $$("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
   const an=$("#anio"); if(an) an.addEventListener("change",()=>{ S.anio=+an.value; if(S.step==="config") render(); });
   if(S.step==="datos") bindDatos();
   if(S.step==="fotos") bindFotos();
