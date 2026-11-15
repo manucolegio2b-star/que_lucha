@@ -37,6 +37,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .small{margin:0;font-size:13px;line-height:1.4;color:#5B6472}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .price{font-size:20px;font-weight:800;color:#0B7C82}
+.iva{font-size:12.5px;font-weight:500;color:#5B6472;margin-left:6px}
 .ficha{margin:2px 0 0;padding-left:18px;font-size:14.5px;line-height:1.5;color:#374151}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
 .consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:#13A4AA}
@@ -166,7 +167,7 @@ function vDiseno(){
     '<div class="field"><span class="lab">Tipo de letra</span><div class="chips letra" role="group" aria-label="Tipo de letra">'+Object.keys(F.FUENTES).map(k=>'<button type="button" data-fuente="'+k+'" aria-pressed="'+(S.fuente[S.modelo]===k)+'" style="font-family:\''+F.FUENTES[k].fam+'\',cursive">'+esc(F.FUENTES[k].n)+'</button>').join("")+'</div></div>'+
     '<div class="field"><span class="lab">Color del texto</span><div class="colores" role="group" aria-label="Color del texto">'+m.colores.map(k=>'<button type="button" data-color="'+k+'" aria-pressed="'+(S.color[S.modelo]===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div></section>':'';
   return cab+'<div class="head"><h1>Tu cojín con tus fotos</h1><p class="sub">Elige el modelo, pon tus fotos y tu texto, y mira cómo queda al momento.</p>'+
-    (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'</span></div>':'')+
+    (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'<span class="iva">IVA incluido</span></span></div>':'')+
     '<ul class="ficha"><li>Cojín de 40 × 40 cm, color blanco</li><li>Zona impresa: 29 × 29 cm</li></ul></div>'+
     '<div class="cols"><div class="prev"><div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>'+
     '<canvas id="cv" width="1000" height="'+(S.vista==="cojin"&&S.mk?1007:1000)+'" aria-label="Vista previa del cojín"></canvas></div>'+
@@ -190,7 +191,7 @@ function vDatos(){
   return '<div class="top">'+LOGO+'<button type="button" class="back" id="volver">'+ICO_BACK+'Cambiar el cojín</button></div>'+
     '<div class="head"><h1>Tus datos</h1><p class="sub">Último paso: dinos quién eres para preparar tu pedido.</p></div>'+
     '<div class="form" style="max-width:560px;width:100%;margin:0 auto">'+
-    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>Tu cojín con tus fotos</strong><span class="small">'+esc(M().nombre)+' · '+n+' foto'+(n>1?"s":"")+'</span>'+(PRECIO?'<span class="price" style="font-size:17px">'+esc(PRECIO)+'</span>':'')+'<button type="button" class="back" id="volver2" style="min-height:32px;font-size:14px">Cambiar el cojín</button></div></section>'+
+    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>Tu cojín con tus fotos</strong><span class="small">'+esc(M().nombre)+' · '+n+' foto'+(n>1?"s":"")+'</span>'+(PRECIO?'<span class="price" style="font-size:17px">'+esc(PRECIO)+'<span class="iva">IVA incluido</span></span>':'')+'<button type="button" class="back" id="volver2" style="min-height:32px;font-size:14px">Cambiar el cojín</button></div></section>'+
     '<section class="card">'+
       dat("nombre","Nombre","(sin apellidos)","text",'autocomplete="given-name" maxlength="40"')+
       dat("servicio","Servicio","","text",'autocomplete="off" maxlength="60"')+

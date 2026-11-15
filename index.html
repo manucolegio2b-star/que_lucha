@@ -100,6 +100,7 @@ section{padding:44px 0 10px}
 .etq.ok{background:var(--ac);color:#fff}
 .pronto{margin:12px 0 0;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:999px;border:2px dashed #B9D6D9;color:var(--ac-d);font-weight:700;font-size:15px}
 .precios{margin:8px 0 0;font-size:13.5px;color:var(--ac-d);font-weight:700}
+.precios .iva{font-weight:500;color:var(--mute);font-size:12px;margin-left:4px;white-space:nowrap}
 /* Toda la tarjeta lleva al producto (el botón se estira por encima) */
 .prod{position:relative;transition:transform .15s,box-shadow .15s}
 .prod .boton.peq::after{content:"";position:absolute;inset:0;z-index:2;border-radius:18px}
@@ -178,7 +179,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
           <div class="cuerpo">
             <h3>Calendarios de pared</h3>
             <p>Cada mes, una razón para sonreír. Con tus propias fotos.</p>
-            <div class="precios">Desde 1 €</div>
+            <div class="precios">Desde 1 € <span class="iva">IVA incluido</span></div>
             <a class="boton peq" href="pedir.html">Pedir calendario <span aria-hidden="true">→</span></a>
           </div>
         </article>
@@ -195,7 +196,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
           <div class="cuerpo">
             <h3>Cojines</h3>
             <p>Comodidad y buena energía, siempre. Cojín blanco de 40 × 40 cm con tus propios textos. Próximamente, más diseños.</p>
-            <div class="precios">19,50 €</div>
+            <div class="precios">19,50 € <span class="iva">IVA incluido</span></div>
             <a class="boton peq" href="personalizar.html?d=jubilacion">Personalizar cojín <span aria-hidden="true">→</span></a>
           </div>
         </article>
@@ -204,6 +205,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
           <div class="cuerpo">
             <h3>Cojín con tus fotos</h3>
             <p>Tus fotos y tu texto en un cojín blanco de 40 × 40 cm. Una foto grande o un collage de 8 o 9 fotos.</p>
+            <div class="precios">19,50 € <span class="iva">IVA incluido</span></div>
             <a class="boton peq" href="cojin-fotos.html">Crear mi cojín <span aria-hidden="true">→</span></a>
           </div>
         </article>

@@ -7,7 +7,7 @@
 
 const CM=29;                 // zona impresa: 29 × 29 cm
 const PPP=200;               // resolución de impresión
-const PRECIO="";             // vacío = no se muestra (pendiente de que el dueño lo diga)
+const PRECIO="19,50 €";      // IVA incluido (vacío = no se muestra)
 
 // Tipos de letra que puede elegir el cliente (alto = espacio entre líneas)
 const FUENTES={
