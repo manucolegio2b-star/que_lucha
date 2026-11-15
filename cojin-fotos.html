@@ -154,7 +154,7 @@ function vForm(){ return S.paso==="datos"?vDatos():vDiseno(); }
 function vDiseno(){
   const m=M(), n=hs().length, puestas=fotosAct().filter(Boolean).length;
   const modelos='<section class="card"><h2>1. Elige el modelo</h2><div class="mods">'+Object.values(F.MODELOS).map(x=>
-    '<div class="modw"><button type="button" class="mod" data-mod="'+x.id+'" aria-pressed="'+(S.modelo===x.id)+'"><img src="disenos/cojin_fotos/mini_'+x.id+'.jpg?v=2" alt="" width="300" height="300"><b>'+esc(x.nombre)+'</b><span>'+esc(x.desc)+'</span></button>'+QLVisor.lupa('data-ver="'+x.id+'"',x.nombre)+'</div>').join("")+
+    '<div class="modw"><button type="button" class="mod" data-mod="'+x.id+'" aria-pressed="'+(S.modelo===x.id)+'"><img src="disenos/cojin_fotos/mini_'+x.id+'.jpg?v=3" alt="" width="300" height="300"><b>'+esc(x.nombre)+'</b><span>'+esc(x.desc)+'</span></button>'+QLVisor.lupa('data-ver="'+x.id+'"',x.nombre)+'</div>').join("")+
     '</div><p class="small">Las fotos de los ejemplos son de muestra: irán las tuyas. Toca la lupa para verlo en grande.</p></section>';
   let rej;
   if(S.modelo==="una") rej='<div class="huecos una">'+hueco(0)+'</div>';
@@ -255,7 +255,7 @@ let ejemplos=null;
 function cargarImg(src){ return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; }); }
 function verGrande(id){
   const L=Object.values(F.MODELOS);
-  const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id], degradado:x.id==="una"?Object.assign({},S.deg):undefined};
+  const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id], degradado:x.id==="una"?Object.assign({},S.deg):undefined, enc:x.id==="una"?[]:Array.from({length:9},(_,i)=>F.EJEMPLO_ENC[i%8])};
     return {nombre:x.nombre, clave:JSON.stringify(c)+S.vista, crear:async()=>{
       if(!ejemplos) ejemplos=Promise.all(EJEMPLOS.map(cargarImg)).catch(e=>{ ejemplos=null; throw e; });
       const ej=await ejemplos, n=F.nFotos(c.modelo,c.conTexto), imgs=x.id==="una"?[ej[8]]:Array.from({length:n},(_,i)=>ej[i%8]);

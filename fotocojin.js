@@ -177,6 +177,8 @@ function dibujarMockup(cv,diseno,foto){
   g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
 }
 
-window.QLFotoCojin={CM,PPP,PRECIO,TRAMOS,FUENTES,COLORES,TAM_DEG,COLORES_DEG,OP_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
+// Encuadre de las fotos de ejemplo del collage (ejemplo1..8.jpg), para que no se corten las cabezas
+const EJEMPLO_ENC=[{z:1,x:.55,y:.5},{z:1,x:.5,y:.5},{z:1,x:.5,y:0},{z:1,x:.5,y:0},{z:1,x:.5,y:.5},{z:1,x:.5,y:.5},{z:1,x:.5,y:.3},{z:1,x:.5,y:.4}];
+window.QLFotoCojin={EJEMPLO_ENC,CM,PPP,PRECIO,TRAMOS,FUENTES,COLORES,TAM_DEG,COLORES_DEG,OP_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
   porModelo:m=>Object.values(MODELOS).find(x=>x.modelo===m)||null};
 })();
