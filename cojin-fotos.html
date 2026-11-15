@@ -118,7 +118,7 @@ const l=deLista()||{};
 const ini=new URLSearchParams(location.search).get("m");
 const S={modelo:ini==="una"?"una":"collage", conTexto:true,
   textos:Object.assign({},TEXTO_DEF), fuente:{una:F.MODELOS.una.fuente,collage:F.MODELOS.collage.fuente}, color:{una:F.MODELOS.una.color,collage:F.MODELOS.collage.color},
-  deg:{on:true,color:"negro",tam:"m"}, fotos:Array(9).fill(null), vista:"cojin", mk:null, listo:false, aviso:"", corto:false,
+  deg:{on:true,color:"negro",tam:"m",op:0.65}, fotos:Array(9).fill(null), vista:"cojin", mk:null, listo:false, aviso:"", corto:false,
   paso:"diseno", datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""}, E:{}, consent:false, resumen:null, enviado:null};
 
 const M=()=>F.MODELOS[S.modelo];
@@ -169,7 +169,8 @@ function vDiseno(){
   const dg=S.deg, degradado=S.modelo==="una"?'<section class="card"><h2>4. Degradado de abajo</h2><p class="small" style="margin-top:-6px">Una franja suave en la parte de abajo de la foto. Ayuda a que el texto se lea bien.</p>'+
     '<div class="chips" role="group" aria-label="Degradado"><button type="button" data-dg="1" aria-pressed="'+dg.on+'">Con degradado</button><button type="button" data-dg="0" aria-pressed="'+(!dg.on)+'">Sin degradado</button></div>'+
     (dg.on?'<div class="field"><span class="lab">Tamaño</span><div class="chips" role="group" aria-label="Tamaño del degradado">'+Object.keys(F.TAM_DEG).map(k=>'<button type="button" data-dgtam="'+k+'" aria-pressed="'+(dg.tam===k)+'">'+esc(F.TAM_DEG[k].n)+'</button>').join("")+'</div></div>'+
-     '<div class="field"><span class="lab">Color</span><div class="colores" role="group" aria-label="Color del degradado">'+F.COLORES_DEG.map(k=>'<button type="button" data-dgcol="'+k+'" aria-pressed="'+(dg.color===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div>':'')+'</section>':'';
+     '<div class="field"><span class="lab">Color</span><div class="colores" role="group" aria-label="Color del degradado">'+F.COLORES_DEG.map(k=>'<button type="button" data-dgcol="'+k+'" aria-pressed="'+(dg.color===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div>'+
+     '<div class="field"><label for="dgop">Transparencia</label><input type="range" id="dgop" min="'+F.OP_DEG.min+'" max="'+F.OP_DEG.max+'" step="0.01" value="'+dg.op+'" style="width:100%;accent-color:#13A4AA"><div class="row" style="justify-content:space-between"><span class="small">Más transparente</span><span class="small">Menos transparente</span></div></div>':'')+'</section>':'';
   return cab+'<div class="head"><h1>Tu cojín con tus fotos</h1><p class="sub">Elige el modelo, pon tus fotos y tu texto, y mira cómo queda al momento.</p>'+
     (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'<span class="iva">IVA incluido</span></span></div>':'')+
     '<ul class="ficha"><li>Cojín de 40 × 40 cm, color blanco</li><li>Zona impresa: 29 × 29 cm</li></ul></div>'+
@@ -233,6 +234,7 @@ function render(){
   $$("[data-color]").forEach(b=>b.addEventListener("click",()=>{ S.color[S.modelo]=b.dataset.color; $$("[data-color]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   $$("[data-dg]").forEach(b=>b.addEventListener("click",()=>{ S.deg.on=b.dataset.dg==="1"; render(); }));
   $$("[data-dgtam]").forEach(b=>b.addEventListener("click",()=>{ S.deg.tam=b.dataset.dgtam; $$("[data-dgtam]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  const dop=$("#dgop"); if(dop) dop.addEventListener("input",()=>{ S.deg.op=+dop.value; repintar(); });
   $$("[data-dgcol]").forEach(b=>b.addEventListener("click",()=>{ S.deg.color=b.dataset.dgcol; $$("[data-dgcol]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   const inp=$("#fileIn"); let desde=0;
   inp.addEventListener("change",()=>{ const fs=inp.files; aniadir(fs,desde); inp.value=""; });

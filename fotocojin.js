@@ -23,7 +23,8 @@ const COLORES={
 
 // Degradado de abajo del modelo "Una foto": tamaños (alto en unidades) y colores que puede elegir el cliente
 const TAM_DEG={p:{n:"Pequeño",u:260}, m:{n:"Mediano",u:400}, g:{n:"Grande",u:560}};
-const COLORES_DEG=["negro","blanco","marino","turquesa","rosa","rojo"];
+const COLORES_DEG=["negro","blanco"];
+const OP_DEG={min:0.15, max:0.95, def:0.65};   // opacidad del borde de abajo (más bajo = más transparente)
 
 // Modelos. Cada hueco de foto es cuadrado.
 const G=14, CEL=(1000-2*G)/3;   // collage: separación y lado de cada casilla
@@ -140,7 +141,7 @@ function dibujar(cv,cfg,imgs,px,transparente){
     const dg=cfg.degradado||{on:!!a, color:claro(col)?"negro":"blanco", tam:"m"};
     if(dg.on){
       const alto=(TAM_DEG[dg.tam]||TAM_DEG.m).u, y0=(1000-alto)*u, n=parseInt((COLORES[dg.color]||COLORES.negro).hex.slice(1),16), rgb=(n>>16)+","+(n>>8&255)+","+(n&255);
-      const fuerte=dg.color==="blanco"?[.55,.78]:[.42,.62];
+      const op=Math.min(OP_DEG.max,Math.max(OP_DEG.min,dg.op==null?OP_DEG.def:+dg.op)), fuerte=[op*0.68,op];
       const gr=g.createLinearGradient(0,y0,0,px);
       gr.addColorStop(0,"rgba("+rgb+",0)"); gr.addColorStop(0.55,"rgba("+rgb+","+fuerte[0]+")"); gr.addColorStop(1,"rgba("+rgb+","+fuerte[1]+")");
       g.fillStyle=gr; g.fillRect(0,y0,px,px-y0);
@@ -174,6 +175,6 @@ function dibujarMockup(cv,diseno,foto){
   g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
 }
 
-window.QLFotoCojin={CM,PPP,PRECIO,FUENTES,COLORES,TAM_DEG,COLORES_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
+window.QLFotoCojin={CM,PPP,PRECIO,FUENTES,COLORES,TAM_DEG,COLORES_DEG,OP_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
   porModelo:m=>Object.values(MODELOS).find(x=>x.modelo===m)||null};
 })();
