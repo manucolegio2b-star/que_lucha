@@ -114,8 +114,8 @@ const LOGO='<a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/
 const cab='<div class="top">'+LOGO+'<a class="back" href="./#productos">'+ICO_BACK+'Productos</a></div>';
 const PRECIO=F.PRECIO;
 const PPP_BIEN=F.TRAMOS[1], PPP_MAL=F.TRAMOS[2];   // tramos del cojín (fotocojin.js)
-const TEXTO_DEF={una:"Los mejores compañeros", collage:"Los mejores\ncompañeros"};
-const EJEMPLOS=[1,2,3,4,5,6,7,8].map(n=>"disenos/cojin_fotos/ejemplo"+n+".jpg");
+const TEXTO_DEF={una:"Felicidades Juan", collage:"Los mejores\ncompañeros"};
+const EJEMPLOS=[1,2,3,4,5,6,7,8].map(n=>"disenos/cojin_fotos/ejemplo"+n+".jpg").concat("disenos/cojin_fotos/ejemplo_una.jpg");
 
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
 const l=deLista()||{};
@@ -153,7 +153,7 @@ function vForm(){ return S.paso==="datos"?vDatos():vDiseno(); }
 function vDiseno(){
   const m=M(), n=hs().length, puestas=fotosAct().filter(Boolean).length;
   const modelos='<section class="card"><h2>1. Elige el modelo</h2><div class="mods">'+Object.values(F.MODELOS).map(x=>
-    '<div class="modw"><button type="button" class="mod" data-mod="'+x.id+'" aria-pressed="'+(S.modelo===x.id)+'"><img src="disenos/cojin_fotos/mini_'+x.id+'.jpg?v=1" alt="" width="300" height="300"><b>'+esc(x.nombre)+'</b><span>'+esc(x.desc)+'</span></button>'+QLVisor.lupa('data-ver="'+x.id+'"',x.nombre)+'</div>').join("")+
+    '<div class="modw"><button type="button" class="mod" data-mod="'+x.id+'" aria-pressed="'+(S.modelo===x.id)+'"><img src="disenos/cojin_fotos/mini_'+x.id+'.jpg?v=2" alt="" width="300" height="300"><b>'+esc(x.nombre)+'</b><span>'+esc(x.desc)+'</span></button>'+QLVisor.lupa('data-ver="'+x.id+'"',x.nombre)+'</div>').join("")+
     '</div><p class="small">Las fotos de los ejemplos son de muestra: irán las tuyas. Toca la lupa para verlo en grande.</p></section>';
   let rej;
   if(S.modelo==="una") rej='<div class="huecos una">'+hueco(0)+'</div>';
@@ -257,7 +257,7 @@ function verGrande(id){
   const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id], degradado:x.id==="una"?Object.assign({},S.deg):undefined};
     return {nombre:x.nombre, clave:JSON.stringify(c)+S.vista, crear:async()=>{
       if(!ejemplos) ejemplos=Promise.all(EJEMPLOS.map(cargarImg)).catch(e=>{ ejemplos=null; throw e; });
-      const ej=await ejemplos, n=F.nFotos(c.modelo,c.conTexto), imgs=x.id==="una"?[ej[1]]:Array.from({length:n},(_,i)=>ej[i%ej.length]);
+      const ej=await ejemplos, n=F.nFotos(c.modelo,c.conTexto), imgs=x.id==="una"?[ej[8]]:Array.from({length:n},(_,i)=>ej[i%8]);
       await F.cargarFuentes();
       const pl=document.createElement("canvas");
       if(S.vista==="cojin"&&S.mk){ F.dibujar(pl,c,imgs,1000,true); const cv=document.createElement("canvas"); F.dibujarMockup(cv,pl,S.mk); return QLVisor.marca(cv); }
