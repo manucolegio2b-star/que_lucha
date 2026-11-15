@@ -19,16 +19,11 @@
   var LUPA='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B7C82" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
   function lupa(attr,nombre){ return '<button type="button" class="qlv-lupa" '+attr+' aria-label="Ver '+(nombre||"")+' en grande">'+LUPA+'</button>'; }
 
-  // Copia reducida (760 px de ancho) con la marca de agua "¡Qué lucha!! · MUESTRA" en diagonal. Devuelve un JPG.
+  // Copia reducida (760 px de ancho), que no sirve para imprimir. Devuelve un JPG.
   function marca(src){
     var W=760, H=Math.round(W*src.height/src.width), cv=document.createElement("canvas"); cv.width=W; cv.height=H;
     var g=cv.getContext("2d"); g.imageSmoothingQuality="high"; g.drawImage(src,0,0,W,H);
-    var txt="¡Qué lucha!! · MUESTRA"; g.font='34px "QL Titulo","Lilita One",system-ui,sans-serif';
-    var tw=g.measureText(txt).width, px=tw+60, py=150, D=Math.hypot(W,H);
-    g.save(); g.translate(W/2,H/2); g.rotate(-Math.PI/6);
-    g.lineWidth=1.5; g.strokeStyle="rgba(17,24,39,.24)"; g.fillStyle="rgba(255,255,255,.42)"; g.textBaseline="top";
-    for(var f=0,y=-D/2; y<D/2; y+=py,f++) for(var x=-D/2-(f%2)*px/2; x<D/2; x+=px){ g.strokeText(txt,x,y); g.fillText(txt,x,y); }
-    g.restore(); return cv.toDataURL("image/jpeg",.8);
+    return cv.toDataURL("image/jpeg",.82);
   }
 
   var cache={};

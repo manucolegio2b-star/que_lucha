@@ -12,4 +12,4 @@ ARCHIVOS DE IMPRENTA (base_full, marco_full y los _full del cojín)
 - Están en el almacén privado de Supabase (bucket "plantillas"). Solo el panel, con sesión, puede leerlos.
 - Para añadir uno nuevo: subirlo a la web con su ruta, añadirlo a ARCH_IMPRENTA en admin.html y abrir el panel
   (se copia solo al almacén). Después, borrarlo de la web.
-- La lupa de la web usa disenos/<diseño>/grande.jpg: 760 px con marca de agua "¡Qué lucha!! · MUESTRA".
+- La lupa de la web usa disenos/<diseño>/grande.jpg (imagen reducida, con fotos de ejemplo). Al cambiarla, subir el ?v= en pedir.html e index.html.
