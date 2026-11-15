@@ -21,6 +21,10 @@ const COLORES={
   turquesa:{n:"Turquesa",hex:"#0B8F95"}, rosa:{n:"Rosa",hex:"#D9467A"}, rojo:{n:"Rojo",hex:"#C62828"}
 };
 
+// Degradado de abajo del modelo "Una foto": tamaños (alto en unidades) y colores que puede elegir el cliente
+const TAM_DEG={p:{n:"Pequeño",u:260}, m:{n:"Mediano",u:400}, g:{n:"Grande",u:560}};
+const COLORES_DEG=["negro","blanco","marino","turquesa","rosa","rojo"];
+
 // Modelos. Cada hueco de foto es cuadrado.
 const G=14, CEL=(1000-2*G)/3;   // collage: separación y lado de cada casilla
 const casilla=i=>({x:(i%3)*(CEL+G), y:Math.floor(i/3)*(CEL+G), w:CEL, h:CEL});
@@ -130,19 +134,24 @@ function dibujar(cv,cfg,imgs,px,transparente){
     g.drawImage(im,r.sx,r.sy,r.vw,r.vh,X,Y,W,H);
   });
   const res={};
+  const F=FUENTES[cfg.fuente]||FUENTES[M.fuente], col=(COLORES[cfg.color]||COLORES[M.color]).hex;
+  const a=lleva(cfg)?ajustarTexto(g,cfg.texto,F.fam,M.texto,F.alto):null;
+  if(cfg.modelo==="una"){   // degradado abajo (el cliente elige si lo quiere, su color y su tamaño)
+    const dg=cfg.degradado||{on:!!a, color:claro(col)?"negro":"blanco", tam:"m"};
+    if(dg.on){
+      const alto=(TAM_DEG[dg.tam]||TAM_DEG.m).u, y0=(1000-alto)*u, n=parseInt((COLORES[dg.color]||COLORES.negro).hex.slice(1),16), rgb=(n>>16)+","+(n>>8&255)+","+(n&255);
+      const fuerte=dg.color==="blanco"?[.55,.78]:[.42,.62];
+      const gr=g.createLinearGradient(0,y0,0,px);
+      gr.addColorStop(0,"rgba("+rgb+",0)"); gr.addColorStop(0.55,"rgba("+rgb+","+fuerte[0]+")"); gr.addColorStop(1,"rgba("+rgb+","+fuerte[1]+")");
+      g.fillStyle=gr; g.fillRect(0,y0,px,px-y0);
+    }
+  }
   if(!lleva(cfg)) return res;
-  const z=M.texto, F=FUENTES[cfg.fuente]||FUENTES[M.fuente], col=(COLORES[cfg.color]||COLORES[M.color]).hex;
+  const z=M.texto;
   if(cfg.modelo==="collage"&&!transparente){ const c=casilla(4); g.fillStyle="#fff"; g.fillRect(c.x*u,c.y*u,c.w*u,c.h*u); }
-  const a=ajustarTexto(g,cfg.texto,F.fam,z,F.alto);
   if(!a) return res;
   if(a.corto) res.corto=true;
   const t=a.tam*u, lh=t*F.alto;
-  if(cfg.modelo==="una"){   // franja suave detrás del texto para que se lea sobre la foto
-    const alto=Math.min(430,a.lineas.length*a.tam*F.alto+210), y0=(1000-alto)*u, osc=claro(col);
-    const gr=g.createLinearGradient(0,y0,0,px);
-    gr.addColorStop(0,osc?"rgba(0,0,0,0)":"rgba(255,255,255,0)"); gr.addColorStop(0.55,osc?"rgba(0,0,0,.42)":"rgba(255,255,255,.55)"); gr.addColorStop(1,osc?"rgba(0,0,0,.62)":"rgba(255,255,255,.78)");
-    g.fillStyle=gr; g.fillRect(0,y0,px,px-y0);
-  }
   g.save();
   g.font=t+"px '"+F.fam+"'"; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle=col;
   if(cfg.modelo==="una"){ g.shadowColor=claro(col)?"rgba(0,0,0,.45)":"rgba(255,255,255,.6)"; g.shadowBlur=8*u; g.shadowOffsetY=2*u; }
@@ -165,6 +174,6 @@ function dibujarMockup(cv,diseno,foto){
   g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
 }
 
-window.QLFotoCojin={CM,PPP,PRECIO,FUENTES,COLORES,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
+window.QLFotoCojin={CM,PPP,PRECIO,FUENTES,COLORES,TAM_DEG,COLORES_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
   porModelo:m=>Object.values(MODELOS).find(x=>x.modelo===m)||null};
 })();

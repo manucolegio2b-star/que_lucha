@@ -118,14 +118,14 @@ const l=deLista()||{};
 const ini=new URLSearchParams(location.search).get("m");
 const S={modelo:ini==="una"?"una":"collage", conTexto:true,
   textos:Object.assign({},TEXTO_DEF), fuente:{una:F.MODELOS.una.fuente,collage:F.MODELOS.collage.fuente}, color:{una:F.MODELOS.una.color,collage:F.MODELOS.collage.color},
-  fotos:Array(9).fill(null), vista:"cojin", mk:null, listo:false, aviso:"", corto:false,
+  deg:{on:true,color:"negro",tam:"m"}, fotos:Array(9).fill(null), vista:"cojin", mk:null, listo:false, aviso:"", corto:false,
   paso:"diseno", datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""}, E:{}, consent:false, resumen:null, enviado:null};
 
 const M=()=>F.MODELOS[S.modelo];
 const conTexto=()=>S.modelo==="una"||S.conTexto;
 const hs=()=>F.huecos(S.modelo,S.conTexto);
 const fotosAct=()=>S.fotos.slice(0,hs().length);
-const cfg=()=>({modelo:S.modelo, conTexto:S.conTexto, texto:S.textos[S.modelo], fuente:S.fuente[S.modelo], color:S.color[S.modelo], enc:fotosAct().map(f=>f&&f.enc)});
+const cfg=()=>({modelo:S.modelo, conTexto:S.conTexto, texto:S.textos[S.modelo], fuente:S.fuente[S.modelo], color:S.color[S.modelo], degradado:S.modelo==="una"?Object.assign({},S.deg):undefined, enc:fotosAct().map(f=>f&&f.enc)});
 const pppDe=i=>{ const f=S.fotos[i]; return f?F.ppp(hs()[i],f.enc,f.pw,f.ph):null; };
 const colorPpp=p=>p>=PPP_BIEN?"#1B7F4B":(p>=PPP_MAL?"#B45309":"#C0392B");
 
@@ -166,12 +166,16 @@ function vDiseno(){
     '<p class="small">La letra se ajusta sola para que quepa. Pulsa Intro para cambiar de línea.'+(S.modelo==="una"?' Si lo dejas vacío, la foto sale sola.':'')+'</p></div>'+
     '<div class="field"><span class="lab">Tipo de letra</span><div class="chips letra" role="group" aria-label="Tipo de letra">'+Object.keys(F.FUENTES).map(k=>'<button type="button" data-fuente="'+k+'" aria-pressed="'+(S.fuente[S.modelo]===k)+'" style="font-family:\''+F.FUENTES[k].fam+'\',cursive">'+esc(F.FUENTES[k].n)+'</button>').join("")+'</div></div>'+
     '<div class="field"><span class="lab">Color del texto</span><div class="colores" role="group" aria-label="Color del texto">'+m.colores.map(k=>'<button type="button" data-color="'+k+'" aria-pressed="'+(S.color[S.modelo]===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div></section>':'';
+  const dg=S.deg, degradado=S.modelo==="una"?'<section class="card"><h2>4. Degradado de abajo</h2><p class="small" style="margin-top:-6px">Una franja suave en la parte de abajo de la foto. Ayuda a que el texto se lea bien.</p>'+
+    '<div class="chips" role="group" aria-label="Degradado"><button type="button" data-dg="1" aria-pressed="'+dg.on+'">Con degradado</button><button type="button" data-dg="0" aria-pressed="'+(!dg.on)+'">Sin degradado</button></div>'+
+    (dg.on?'<div class="field"><span class="lab">Tamaño</span><div class="chips" role="group" aria-label="Tamaño del degradado">'+Object.keys(F.TAM_DEG).map(k=>'<button type="button" data-dgtam="'+k+'" aria-pressed="'+(dg.tam===k)+'">'+esc(F.TAM_DEG[k].n)+'</button>').join("")+'</div></div>'+
+     '<div class="field"><span class="lab">Color</span><div class="colores" role="group" aria-label="Color del degradado">'+F.COLORES_DEG.map(k=>'<button type="button" data-dgcol="'+k+'" aria-pressed="'+(dg.color===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div>':'')+'</section>':'';
   return cab+'<div class="head"><h1>Tu cojín con tus fotos</h1><p class="sub">Elige el modelo, pon tus fotos y tu texto, y mira cómo queda al momento.</p>'+
     (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'<span class="iva">IVA incluido</span></span></div>':'')+
     '<ul class="ficha"><li>Cojín de 40 × 40 cm, color blanco</li><li>Zona impresa: 29 × 29 cm</li></ul></div>'+
     '<div class="cols"><div class="prev"><div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>'+
     '<canvas id="cv" width="1000" height="'+(S.vista==="cojin"&&S.mk?1007:1000)+'" aria-label="Vista previa del cojín"></canvas></div>'+
-    '<div class="form">'+modelos+fotos+texto+(S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
+    '<div class="form">'+modelos+fotos+texto+degradado+(S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(PRECIO?' · '+esc(PRECIO):'')+'</button></div></div>';
 }
 function hueco(i){
@@ -227,6 +231,9 @@ function render(){
   const t=$("#texto"); if(t) t.addEventListener("input",()=>{ S.textos[S.modelo]=t.value; $("#nTexto").textContent=t.value.length+"/"+t.maxLength; repintar(); });
   $$("[data-fuente]").forEach(b=>b.addEventListener("click",()=>{ S.fuente[S.modelo]=b.dataset.fuente; $$("[data-fuente]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   $$("[data-color]").forEach(b=>b.addEventListener("click",()=>{ S.color[S.modelo]=b.dataset.color; $$("[data-color]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  $$("[data-dg]").forEach(b=>b.addEventListener("click",()=>{ S.deg.on=b.dataset.dg==="1"; render(); }));
+  $$("[data-dgtam]").forEach(b=>b.addEventListener("click",()=>{ S.deg.tam=b.dataset.dgtam; $$("[data-dgtam]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  $$("[data-dgcol]").forEach(b=>b.addEventListener("click",()=>{ S.deg.color=b.dataset.dgcol; $$("[data-dgcol]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   const inp=$("#fileIn"); let desde=0;
   inp.addEventListener("change",()=>{ const fs=inp.files; aniadir(fs,desde); inp.value=""; });
   $$("[data-hu]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.hu; if(S.fotos[i]) encuadrar(i); else { desde=i; inp.click(); } }));
@@ -240,7 +247,7 @@ let ejemplos=null;
 function cargarImg(src){ return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; }); }
 function verGrande(id){
   const L=Object.values(F.MODELOS);
-  const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id]};
+  const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id], degradado:x.id==="una"?Object.assign({},S.deg):undefined};
     return {nombre:x.nombre, clave:JSON.stringify(c)+S.vista, crear:async()=>{
       if(!ejemplos) ejemplos=Promise.all(EJEMPLOS.map(cargarImg)).catch(e=>{ ejemplos=null; throw e; });
       const ej=await ejemplos, n=F.nFotos(c.modelo,c.conTexto), imgs=x.id==="una"?[ej[1]]:Array.from({length:n},(_,i)=>ej[i%ej.length]);
@@ -389,7 +396,7 @@ async function enviar(){
     const fila={id:envio.id,producto:"cojin",modelo:M().modelo,anio:null,
       datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:tel,codigo:envio.codigo,n_fotos:total,montaje:rutaMontaje,
         etiquetas:fotos.map((f,i)=>"Foto "+(i+1)),
-        cojin_fotos:{modelo:S.modelo,con_texto:conTexto(),texto:conTexto()?(S.textos[S.modelo]||"").trim():"",fuente:c.fuente,color:c.color,
+        cojin_fotos:{modelo:S.modelo,con_texto:conTexto(),texto:conTexto()?(S.textos[S.modelo]||"").trim():"",fuente:c.fuente,color:c.color,degradado:S.modelo==="una"?Object.assign({},S.deg):null,
           fotos:fotos.map((f,i)=>({archivo:String(i+1).padStart(2,"0")+".jpg",z:+f.enc.z.toFixed(4),x:+f.enc.x.toFixed(4),y:+f.enc.y.toFixed(4),ppp:F.ppp(hu[i],f.enc,f.pw,f.ph)}))}},
       fotos:rutas};
     if(!envio.guardado){
