@@ -100,6 +100,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="fotocojin.js"></script>
 <script src="visor.js"></script>
+<script src="calidad.js"></script>
 <script>
 (function(){
 "use strict";
@@ -160,7 +161,7 @@ function vDiseno(){
   const pp=fotosAct().map((f,i)=>f?pppDe(i):null), malas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]<PPP_MAL), justas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]>=PPP_MAL&&pp[i]<PPP_BIEN);
   const fotos='<section class="card"><h2>2. Tus fotos <span class="small" style="font-weight:600">'+puestas+' de '+n+'</span></h2>'+
     (S.modelo==="collage"?'<div class="chips" role="group" aria-label="Texto en el centro"><button type="button" data-ct="1" aria-pressed="'+S.conTexto+'">Con texto · 8 fotos</button><button type="button" data-ct="0" aria-pressed="'+(!S.conTexto)+'">Sin texto · 9 fotos</button></div>':'')+
-    rej+'<div class="guia"><span class="ic" aria-hidden="true">👆</span><span><b>Toca un hueco vacío</b> para poner fotos (puedes elegir varias a la vez).<br><b>Toca una foto</b> para moverla, acercarla o cambiarla.</span></div>'+
+    rej+'<div class="guia"><span class="ic" aria-hidden="true">👆</span><span><b>Toca un hueco vacío</b> para poner fotos (puedes elegir varias a la vez).<br><b>Toca una foto</b> para moverla, acercarla o cambiarla.</span></div>'+(puestas?QLCalidad.enlace():'')+
     (malas.length?'<div class="bad">'+(malas.length===1?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(i=>i+1).join(", ")+" saldrán")+' con poca nitidez al imprimir (en rojo). Cámbiala'+(malas.length>1?"s":"")+' por otra de más calidad o aléjala un poco.</div>':
      (justas.length?'<p class="small naranja">'+(justas.length===1?"La foto "+(justas[0]+1)+" (en naranja) se verá":"Las fotos "+justas.map(i=>i+1).join(", ")+" (en naranja) se verán")+' bien, aunque de muy cerca algo suave.</p>':''))+
     '<input type="file" id="fileIn" accept="image/*" multiple hidden></section>';

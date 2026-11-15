@@ -161,6 +161,7 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 <script src="textos.js"></script>
 <script src="calendario12.js"></script>
 <script src="visor.js"></script>
+<script src="calidad.js"></script>
 <script>
 (function(){
 "use strict";
@@ -427,7 +428,7 @@ function fotosEditables(fotos,pp,donde){
        '<b style="color:'+ca.c+';font-size:11px;line-height:1.15;text-align:center">'+ca.n+'</b></div>';
   });
   if(fotos.length<6) h+='<button type="button" class="ef add" data-anadir="1" aria-label="Añadir fotos">'+I.plus+'<b>Añadir</b></button>';
-  h+='</div></div>';
+  h+='</div>'+QLCalidad.enlace()+'</div>';
   const malas=fotos.map((f,j)=>j).filter(j=>pp[j]<PPP_MAL);
   const justas=fotos.map((f,j)=>j).filter(j=>pp[j]>=PPP_MAL&&pp[j]<PPP_BIEN);
   if(malas.length){
