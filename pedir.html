@@ -414,15 +414,17 @@ async function prevHoja(i){ // dibuja la hoja (a poca resolución) con las fotos
   hj.prev={key, url:URL.createObjectURL(blob)};
   return hj.prev;
 }
-const PPP_BIEN=150, PPP_MAL=100; // verde desde 150 ppp; naranja de 100 a 149 (bien en la pared); rojo por debajo de 100
+const PPP_BIEN=150, PPP_MAL=100; // naranja de 100 a 149 (bien en la pared); rojo por debajo de 100
+// Calidad que ve el cliente (en vez de los ppp): alta ≥200 · media 150-199 · baja 100-149 · mala <100
+const calidad=p=>p>=200?{n:"Calidad alta",c:"#1B7F4B"}:(p>=150?{n:"Calidad media",c:"#4F9A1E"}:(p>=100?{n:"Calidad baja",c:"#B45309"}:{n:"Calidad mala",c:"#C0392B"}));
 // Fotos de la vista previa: tocar = cambiar, X = quitar, + = añadir. Aviso si alguna sale con poca nitidez.
 function fotosEditables(fotos,pp,donde){
   let h='<div class="field"><label>'+donde+' <span>(toca una foto para cambiarla)</span></label><div class="edf">';
   fotos.forEach((f,j)=>{
-    const c=pp[j]>=PPP_BIEN?"#1B7F4B":(pp[j]>=PPP_MAL?"#B45309":"#C0392B");
+    const ca=calidad(pp[j]);
     h+='<div class="ef'+(pp[j]<PPP_MAL?" mal":"")+'"><button type="button" class="cam" data-cambiar="'+j+'" aria-label="Cambiar la foto '+(j+1)+'"><img src="'+f.preview+'" alt=""><span>Cambiar</span></button>'+
        (fotos.length>1?'<button type="button" class="x" data-quitar="'+j+'" aria-label="Quitar la foto '+(j+1)+'">'+I.x+'</button>':'')+
-       '<b style="color:'+c+'">'+pp[j]+' ppp</b></div>';
+       '<b style="color:'+ca.c+';font-size:11px;line-height:1.15;text-align:center">'+ca.n+'</b></div>';
   });
   if(fotos.length<6) h+='<button type="button" class="ef add" data-anadir="1" aria-label="Añadir fotos">'+I.plus+'<b>Añadir</b></button>';
   h+='</div></div>';

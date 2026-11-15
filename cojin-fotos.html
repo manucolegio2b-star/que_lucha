@@ -130,7 +130,8 @@ const hs=()=>F.huecos(S.modelo,S.conTexto);
 const fotosAct=()=>S.fotos.slice(0,hs().length);
 const cfg=()=>({modelo:S.modelo, conTexto:S.conTexto, texto:S.textos[S.modelo], fuente:S.fuente[S.modelo], color:S.color[S.modelo], degradado:S.modelo==="una"?Object.assign({},S.deg):undefined, enc:fotosAct().map(f=>f&&f.enc)});
 const pppDe=i=>{ const f=S.fotos[i]; return f?F.ppp(hs()[i],f.enc,f.pw,f.ph):null; };
-const colorPpp=p=>p>=PPP_BIEN?"#1B7F4B":(p>=PPP_MAL?"#B45309":"#C0392B");
+// Calidad que ve el cliente (en vez de los ppp): alta ≥200 · media 150-199 · baja 100-149 · mala <100
+const calidad=p=>p>=200?{n:"Calidad alta",c:"#1B7F4B"}:(p>=150?{n:"Calidad media",c:"#4F9A1E"}:(p>=100?{n:"Calidad baja",c:"#B45309"}:{n:"Calidad mala",c:"#C0392B"}));
 
 // ---------- Vista previa ----------
 const plano=document.createElement("canvas");
@@ -186,7 +187,7 @@ function hueco(i){
   const f=S.fotos[i];
   if(!f) return '<button type="button" class="hu vac" data-hu="'+i+'" aria-label="Poner la foto '+(i+1)+'">'+PLUS+'Foto '+(i+1)+'</button>';
   const p=pppDe(i);
-  return '<button type="button" class="hu" data-hu="'+i+'" aria-label="Ajustar la foto '+(i+1)+'"><canvas data-mini="'+i+'" width="240" height="240"></canvas><span class="ed">Ajustar</span><span class="q" style="color:'+colorPpp(p)+'">'+p+' ppp</span></button>';
+  return '<button type="button" class="hu" data-hu="'+i+'" aria-label="Ajustar la foto '+(i+1)+'"><canvas data-mini="'+i+'" width="240" height="240"></canvas><span class="ed">Ajustar</span><span class="q" style="color:'+calidad(p).c+'">'+calidad(p).n+'</span></button>';
 }
 function pintarMinis(){
   $$("[data-mini]").forEach(cv=>{ const i=+cv.dataset.mini, f=S.fotos[i]; if(!f) return;
@@ -318,7 +319,7 @@ function encuadrar(i){
   const cv=ov.querySelector("#ecv"), g=cv.getContext("2d"), z=ov.querySelector("#ez"), q=ov.querySelector("#eq");
   const pintar=()=>{ enc=F.ajustarEnc(iw,ih,h,enc); const r=F.recorte(iw,ih,h,enc);
     g.imageSmoothingQuality="high"; g.drawImage(f.img,r.sx,r.sy,r.vw,r.vh,0,0,cv.width,cv.height); z.value=enc.z;
-    const p=F.ppp(h,enc,f.pw,f.ph); q.innerHTML='<b style="color:'+colorPpp(p)+'">'+p+' ppp</b> · '+(p>=PPP_BIEN?"Se verá nítida.":(p>=PPP_MAL?"Se verá bien; de muy cerca, algo suave.":"Saldrá con poca nitidez: aléjala o usa otra foto.")); };
+    const p=F.ppp(h,enc,f.pw,f.ph); q.innerHTML='<b style="color:'+calidad(p).c+'">'+calidad(p).n+'</b> · '+(p>=PPP_BIEN?"Se verá nítida.":(p>=PPP_MAL?"Se verá bien; de muy cerca, algo suave.":"Saldrá con poca nitidez: aléjala o usa otra foto.")); };
   pintar();
   z.addEventListener("input",()=>{ enc.z=+z.value; pintar(); });
   const ptrs=new Map(); let dist0=0, z0=1;
