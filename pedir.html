@@ -425,7 +425,7 @@ function fotosEditables(fotos,pp,donde){
     const ca=calidad(pp[j]);
     h+='<div class="ef'+(pp[j]<PPP_MAL?" mal":"")+'"><button type="button" class="cam" data-cambiar="'+j+'" aria-label="Cambiar la foto '+(j+1)+'"><img src="'+f.preview+'" alt=""><span>Cambiar</span></button>'+
        (fotos.length>1?'<button type="button" class="x" data-quitar="'+j+'" aria-label="Quitar la foto '+(j+1)+'">'+I.x+'</button>':'')+
-       '<b style="color:'+ca.c+';font-size:11px;line-height:1.15;text-align:center">'+ca.n+'</b></div>';
+       '<b style="color:'+ca.c+';font-size:12.5px;font-weight:800;line-height:1.15;text-align:center">'+ca.n+'</b></div>';
   });
   if(fotos.length<6) h+='<button type="button" class="ef add" data-anadir="1" aria-label="Añadir fotos">'+I.plus+'<b>Añadir</b></button>';
   h+='</div>'+QLCalidad.enlace()+'</div>';
@@ -788,7 +788,12 @@ function bindPrevia(){
   if(!es12() && !(S.montaje && S.montaje.key===claveMontaje())){
     prepararMontaje().then(()=>{ if(S.step==="previa") render(); });
   }
-  $("#enviar").addEventListener("click",enviar);
+  $("#enviar").addEventListener("click",()=>{ if(!S.consent) return; QLCalidad.antesDePedir(fotosConCalidad(),enviar); });
+}
+// Todas las fotos con su calidad al imprimir (para el aviso antes de enviar)
+function fotosConCalidad(){
+  if(es12()){ const l=[]; S.hojas.forEach((hj,k)=>dispHoja(k).rects.forEach(q=>l.push({nombre:NOMBRE_HOJA(k)+" · foto "+(q.i+1),ppp:q.ppp,src:hj.fotos[q.i].preview}))); return l; }
+  return asegurarDisp().rects.map(q=>({nombre:"Foto "+(q.i+1),ppp:q.ppp,src:S.fotos[q.i].preview}));
 }
 function listaEnvio(){
   if(es12()){ const l=[]; S.hojas.forEach((hj,i)=>hj.fotos.forEach((f,j)=>l.push({f,hoja:i,n:j,etq:NOMBRE_HOJA(i)+" · foto "+(j+1),clave:(i===0?"00-portada":String(i).padStart(2,"0")+"-"+MES_ID[i-1])+"-"+(j+1)}))); return l; }
