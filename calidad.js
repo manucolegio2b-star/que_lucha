@@ -44,16 +44,17 @@
   // Un solo escuchador para todos los enlaces (las pantallas se vuelven a pintar a menudo)
   document.addEventListener("click",function(e){ var b=e.target.closest&&e.target.closest("[data-qlc]"); if(b){ e.preventDefault(); info(); } });
   function enlace(){ return '<button type="button" class="qlc-link" data-qlc="1"><i aria-hidden="true">i</i><span>¿Qué significa la calidad?<small>Mira cómo se verán tus fotos impresas</small></span><span class="fl" aria-hidden="true">›</span></button>'; }
-  function calidad(p){ return p>=200?{n:"Calidad alta",c:NIVELES[0][0]}:(p>=150?{n:"Calidad media",c:NIVELES[1][0]}:(p>=100?{n:"Calidad baja",c:NIVELES[2][0]}:{n:"Calidad mala",c:NIVELES[3][0]})); }
+  // t = tramos [alta, media, baja] en ppp (por defecto, los de los calendarios)
+  function calidad(p,t){ t=t||[200,150,100]; return p>=t[0]?{n:"Calidad alta",c:NIVELES[0][0]}:(p>=t[1]?{n:"Calidad media",c:NIVELES[1][0]}:(p>=t[2]?{n:"Calidad baja",c:NIVELES[2][0]}:{n:"Calidad mala",c:NIVELES[3][0]})); }
   // Antes de hacer el pedido: si hay fotos de calidad baja o mala, se avisa al cliente.
   // fotos = [{nombre, ppp, src}]; seguir() se llama si decide hacer el pedido igualmente.
-  function antesDePedir(fotos,seguir){
-    var malas=(fotos||[]).filter(function(f){ return f&&f.ppp!=null&&f.ppp<150; });
+  function antesDePedir(fotos,seguir,tramos){
+    var t=tramos||[200,150,100], malas=(fotos||[]).filter(function(f){ return f&&f.ppp!=null&&f.ppp<t[1]; });
     if(!malas.length){ seguir(); return; }
     var previo=document.activeElement, el=document.createElement("div"), una=malas.length===1;
     el.className="qlc"; el.setAttribute("role","dialog"); el.setAttribute("aria-modal","true"); el.setAttribute("aria-label","Revisa la calidad de tus fotos");
     el.innerHTML='<div class="caja"><h2>⚠ Revisa '+(una?'esta foto':'estas fotos')+'</h2><p style="margin:0;font-size:14.5px;line-height:1.4">'+(una?'Esta foto tiene':'Estas fotos tienen')+' poca calidad y puede'+(una?'':'n')+' no quedar tan bien como esperas al imprimir'+(una?'la':'las')+'.</p>'+
-      '<div class="malas">'+malas.slice(0,6).map(function(f){ var c=calidad(f.ppp); return '<div class="mf">'+(f.src?'<img src="'+f.src+'" alt="">':'')+'<div>'+esc(f.nombre)+'<b style="color:'+c.c+'">'+c.n+'</b></div></div>'; }).join("")+(malas.length>6?'<p style="margin:0;font-size:14px;color:#5B6472">… y '+(malas.length-6)+' más.</p>':'')+'</div>'+
+      '<div class="malas">'+malas.slice(0,6).map(function(f){ var c=calidad(f.ppp,t); return '<div class="mf">'+(f.src?'<img src="'+f.src+'" alt="">':'')+'<div>'+esc(f.nombre)+'<b style="color:'+c.c+'">'+c.n+'</b></div></div>'; }).join("")+(malas.length>6?'<p style="margin:0;font-size:14px;color:#5B6472">… y '+(malas.length-6)+' más.</p>':'')+'</div>'+
       '<ul>'+NIVELES.slice(2).map(function(n){ return '<li><span style="background:'+n[0]+'"></span><div><b style="color:'+n[0]+'">'+n[1]+':</b> '+n[2]+'</div></li>'; }).join("")+'</ul>'+
       '<div class="tip">💡 Para mejorarla: usa la foto original de la cámara del móvil (no una captura ni una de WhatsApp)'+(fotos.length>1?', o ponla más pequeña':'')+'.</div>'+
       '<button type="button" class="qlc-ok">Cambiar '+(una?'la foto':'las fotos')+'</button><button type="button" class="qlc-no">Hacer el pedido igualmente</button></div>';

@@ -113,7 +113,7 @@ const PLUS='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="
 const LOGO='<a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a>';
 const cab='<div class="top">'+LOGO+'<a class="back" href="./#productos">'+ICO_BACK+'Productos</a></div>';
 const PRECIO=F.PRECIO;
-const PPP_BIEN=150, PPP_MAL=100;   // igual que en los calendarios
+const PPP_BIEN=F.TRAMOS[1], PPP_MAL=F.TRAMOS[2];   // tramos del cojín (fotocojin.js)
 const TEXTO_DEF={una:"Los mejores compañeros", collage:"Los mejores\ncompañeros"};
 const EJEMPLOS=[1,2,3,4,5,6,7,8].map(n=>"disenos/cojin_fotos/ejemplo"+n+".jpg");
 
@@ -132,7 +132,7 @@ const fotosAct=()=>S.fotos.slice(0,hs().length);
 const cfg=()=>({modelo:S.modelo, conTexto:S.conTexto, texto:S.textos[S.modelo], fuente:S.fuente[S.modelo], color:S.color[S.modelo], degradado:S.modelo==="una"?Object.assign({},S.deg):undefined, enc:fotosAct().map(f=>f&&f.enc)});
 const pppDe=i=>{ const f=S.fotos[i]; return f?F.ppp(hs()[i],f.enc,f.pw,f.ph):null; };
 // Calidad que ve el cliente (en vez de los ppp): alta ≥200 · media 150-199 · baja 100-149 · mala <100
-const calidad=p=>p>=200?{n:"Calidad alta",c:"#1B7F4B"}:(p>=150?{n:"Calidad media",c:"#4F9A1E"}:(p>=100?{n:"Calidad baja",c:"#B45309"}:{n:"Calidad mala",c:"#C0392B"}));
+const calidad=p=>QLCalidad.calidad(p,F.TRAMOS);
 
 // ---------- Vista previa ----------
 const plano=document.createElement("canvas");
@@ -359,7 +359,7 @@ function irADatos(){
   if(!S.listo) return;
   S.aviso=comprobar();
   if(S.aviso){ render(); const b=document.querySelector(".bad:last-of-type,.form .bad"); if(b) b.scrollIntoView({block:"center"}); return; }
-  QLCalidad.antesDePedir(fotosAct().map((f,i)=>({nombre:"Foto "+(i+1),ppp:pppDe(i),src:f.preview})),pasarADatos);
+  QLCalidad.antesDePedir(fotosAct().map((f,i)=>({nombre:"Foto "+(i+1),ppp:pppDe(i),src:f.preview})),pasarADatos,F.TRAMOS);
 }
 function pasarADatos(){
   const pl=document.createElement("canvas"), imgs=fotosAct().map(f=>f.img);

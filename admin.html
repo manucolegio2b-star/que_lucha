@@ -523,7 +523,7 @@ function pintarFicha(num){
   const idx=ORDEN.indexOf(p.situacion);
   const etq=(d.etiquetas||[]);
   const fotosHTML=(p.fotos||[]).map((f,i)=>{ const a=archivo(f), ppp=pppDe(p,a);
-    return '<div class="ph"><img data-ruta="'+esc(f)+'" alt="Foto '+(i+1)+'"><div class="t"><span>'+esc(etq[i]||("Foto "+(i+1)))+'</span><small>'+(ppp?ppp+" ppp al imprimir"+(ppp<150?" · baja resolución":""):a)+'</small><a class="sm" data-abrir="'+esc(f)+'" href="#" style="color:#0B7C82">Abrir original</a></div>'+
+    return '<div class="ph"><img data-ruta="'+esc(f)+'" alt="Foto '+(i+1)+'"><div class="t"><span>'+esc(etq[i]||("Foto "+(i+1)))+'</span><small>'+(ppp?ppp+" ppp al imprimir"+(ppp<(esFoto(p)?FC.TRAMOS[1]:150)?" · baja resolución":""):a)+'</small><a class="sm" data-abrir="'+esc(f)+'" href="#" style="color:#0B7C82">Abrir original</a></div>'+
      '<div style="display:flex;gap:6px"><button class="b ok" data-ap="'+esc(a)+'" aria-pressed="'+(ok[a]==="ok")+'">Aprobar</button><button class="b no" data-re="'+esc(a)+'" aria-pressed="'+(ok[a]==="no")+'">Rechazar</button></div></div>'; }).join("");
   const dis=p.producto!=="12hojas"&&d.disposicion, plantilla=dis&&!d.fotos_borradas&&PLANTILLAS[d.disposicion.diseno];
   root.innerHTML=barra("")+'<main><a class="back" href="#/">'+I.back+'Pedidos</a>'+
@@ -746,12 +746,12 @@ async function componerFotos(p){
 }
 function pintarImprimirFotos(p){
   const d=p.datos, cf=d.cojin_fotos, pr=PRODUCTOS[p.producto]||{}, num=p.numero, cm=FC.CM;
-  const baja=cf.fotos.filter(f=>f.ppp<150), rech=Object.keys(p.fotos_ok||{}).filter(k=>p.fotos_ok[k]==="no");
+  const LIM=FC.TRAMOS[1], baja=cf.fotos.filter(f=>f.ppp<LIM), rech=Object.keys(p.fotos_ok||{}).filter(k=>p.fotos_ok[k]==="no");
   root.innerHTML=barra("")+'<main><div class="top"><div><h1>Vista previa · cojín con tus fotos</h1><p class="sub">Compruébalo con calma. No se imprime nada hasta que lo confirmes.</p></div><a class="back" href="#/pedido/'+num+'">'+I.back+'Volver a la ficha</a></div>'+
    '<div class="big"><div><div id="estadoGen" class="empty" style="padding:60px 0">Preparando el archivo a máxima calidad…</div><canvas id="prev" style="display:none;width:100%;max-width:640px;height:auto;box-shadow:0 2px 10px rgba(17,24,39,.15)"></canvas><div class="sm" style="margin-top:8px">'+cm+' × '+cm+' cm · 200 ppp · '+esc((FC.MODELOS[cf.modelo]||{}).nombre||cf.modelo)+'</div></div>'+
    '<div class="col"><section class="card"><h2>Pedido '+num+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>Cojín con tus fotos</span></div><div class="kv"><span>Modelo</span><span>'+esc((FC.MODELOS[cf.modelo]||{}).nombre||cf.modelo)+'</span></div><div class="kv"><span>Fotos</span><span>'+cf.fotos.length+'</span></div><div id="avisoTx"></div></section>'+
-   '<section class="card"><h2>Calidad de cada foto al imprimir</h2>'+cf.fotos.map(f=>'<div class="q"><span>'+esc(f.archivo)+'</span><span></span><span style="'+(f.ppp<150?"color:#7A4B00;font-weight:700":"")+'">'+f.ppp+' ppp</span></div>').join("")+
-   (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de 150 ppp y puede verse pixelada. Pídele al cliente otra o acepta el resultado.</div>':"")+
+   '<section class="card"><h2>Calidad de cada foto al imprimir</h2>'+cf.fotos.map(f=>'<div class="q"><span>'+esc(f.archivo)+'</span><span></span><span style="'+(f.ppp<LIM?"color:#7A4B00;font-weight:700":"")+'">'+f.ppp+' ppp</span></div>').join("")+
+   (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de '+LIM+' ppp (calidad baja o mala para un cojín) y puede verse blanda. Pídele al cliente otra o acepta el resultado.</div>':"")+
    (rech.length?'<div class="warn">⚠ Has rechazado '+rech.length+' foto'+(rech.length>1?"s":"")+' de este pedido ('+esc(rech.join(", "))+').</div>':"")+'</section>'+
    '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado la vista previa y quiero imprimirla.</span></label>'+
    '<button class="b pri" id="da3" disabled>Descargar en A3 (PDF)</button><div style="display:flex;gap:8px;margin-top:10px"><button class="b" id="dpng" disabled style="flex:1">PNG '+cm+'×'+cm+'</button><button class="b" id="dpdf" disabled style="flex:1">PDF '+cm+'×'+cm+'</button></div>'+

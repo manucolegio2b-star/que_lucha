@@ -7,6 +7,8 @@
 
 const CM=29;                 // zona impresa: 29 × 29 cm
 const PPP=200;               // resolución de impresión
+// Tramos de calidad del cojín (ppp): alta, media, baja; por debajo, mala. Más suaves que en los calendarios: la tela no da tanto detalle.
+const TRAMOS=[150,110,75];
 const PRECIO="19,50 €";      // IVA incluido (vacío = no se muestra)
 
 // Tipos de letra que puede elegir el cliente (alto = espacio entre líneas)
@@ -175,6 +177,6 @@ function dibujarMockup(cv,diseno,foto){
   g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
 }
 
-window.QLFotoCojin={CM,PPP,PRECIO,FUENTES,COLORES,TAM_DEG,COLORES_DEG,OP_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
+window.QLFotoCojin={CM,PPP,PRECIO,TRAMOS,FUENTES,COLORES,TAM_DEG,COLORES_DEG,OP_DEG,MODELOS,huecos,nFotos,lleva,cargarFuentes,recorte,ajustarEnc,ppp,dibujar,cargarMockup,dibujarMockup,
   porModelo:m=>Object.values(MODELOS).find(x=>x.modelo===m)||null};
 })();
