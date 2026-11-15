@@ -21,3 +21,8 @@ COJÍN CON TUS FOTOS (cojin-fotos.html)
 - Zona impresa 29 × 29 cm a 200 ppp (2283 × 2283 px). El panel lo genera en "Generar archivo" (A3, PNG o PDF).
 - Precio: en fotocojin.js, PRECIO (vacío = no se muestra).
 - Fotos de ejemplo: disenos/cojin_fotos/ejemplo1..8.jpg. Letras nuevas: Great Vibes, Dancing Script y Amatic SC (licencia OFL, en fuentes/).
+
+AVISOS DE PEDIDOS POR TELEGRAM
+- Cada pedido nuevo manda un mensaje al bot @quelucha_pedidos_bot (a tu chat de Telegram).
+- Lo hace la base de datos (Supabase), no la web: funciona aunque el panel esté cerrado.
+- Detalles en supabase_avisos.sql. El código del bot está guardado solo en Supabase.
