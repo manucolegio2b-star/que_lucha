@@ -66,6 +66,9 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .hu .q{position:absolute;left:4px;bottom:4px;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.92)}
 .hu .ed{position:absolute;right:4px;top:4px;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;background:rgba(17,24,39,.7);color:#fff}
 .hu.txt{background:#F4F6F8;color:#5B6472;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:default;border:2px solid #E5E8ED}
+.guia{display:flex;gap:10px;align-items:flex-start;background:#E6F6F6;border:1.5px solid #13A4AA;border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.45;color:#0B5F63}
+.guia .ic{font-size:22px;line-height:1;flex:none}
+.guia b{color:#0B7C82}
 .bad{background:#FFF5F4;border:1.5px solid #E8B4AE;color:#8A2A20;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.4}
 .naranja{color:#B45309}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
@@ -156,7 +159,7 @@ function vDiseno(){
   const pp=fotosAct().map((f,i)=>f?pppDe(i):null), malas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]<PPP_MAL), justas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]>=PPP_MAL&&pp[i]<PPP_BIEN);
   const fotos='<section class="card"><h2>2. Tus fotos <span class="small" style="font-weight:600">'+puestas+' de '+n+'</span></h2>'+
     (S.modelo==="collage"?'<div class="chips" role="group" aria-label="Texto en el centro"><button type="button" data-ct="1" aria-pressed="'+S.conTexto+'">Con texto · 8 fotos</button><button type="button" data-ct="0" aria-pressed="'+(!S.conTexto)+'">Sin texto · 9 fotos</button></div>':'')+
-    rej+'<p class="small">Toca un hueco vacío para poner fotos (puedes elegir varias a la vez). Toca una foto para moverla, acercarla o cambiarla.</p>'+
+    rej+'<div class="guia"><span class="ic" aria-hidden="true">👆</span><span><b>Toca un hueco vacío</b> para poner fotos (puedes elegir varias a la vez).<br><b>Toca una foto</b> para moverla, acercarla o cambiarla.</span></div>'+
     (malas.length?'<div class="bad">'+(malas.length===1?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(i=>i+1).join(", ")+" saldrán")+' con poca nitidez al imprimir (en rojo). Cámbiala'+(malas.length>1?"s":"")+' por otra de más calidad o aléjala un poco.</div>':
      (justas.length?'<p class="small naranja">'+(justas.length===1?"La foto "+(justas[0]+1)+" (en naranja) se verá":"Las fotos "+justas.map(i=>i+1).join(", ")+" (en naranja) se verán")+' bien, aunque de muy cerca algo suave.</p>':''))+
     '<input type="file" id="fileIn" accept="image/*" multiple hidden></section>';
