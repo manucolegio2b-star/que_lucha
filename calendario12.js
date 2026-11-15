@@ -10,11 +10,11 @@
     {id:"turquesa", nombre:"Turquesa y coral",       a:"#13A4AA", b:"#F2765A", suave:"#DDF1F3", fest:"#F5BE2E"},
     {id:"verde",    nombre:"Verde y naranja",        a:"#3E9B4F", b:"#F28C28", suave:"#E4F3E2", fest:"#E8505B"},
     {id:"rosa",     nombre:"Rosa y lila",            a:"#E35D9B", b:"#8E6CCF", suave:"#FBE3EF", fest:"#5CC2B0"},
-    {id:"burdeos",  nombre:"Burdeos y dorado",       a:"#8E2C48", b:"#D2A64A", suave:"#F6E4EA", fest:"#3E8E7E", tb:"#3A1420"},
+    {id:"celeste",  nombre:"Celeste y amarillo",     a:"#3DB5E6", b:"#FFC83D", suave:"#E1F4FC", fest:"#FF6F91", ta:"#12324A", tb:"#4A3500"},
     {id:"rojo",     nombre:"Rojo y azul",            a:"#D63A3A", b:"#2E5EAA", suave:"#FBE1E1", fest:"#F5BE2E"},
     {id:"naranja",  nombre:"Naranja y morado",       a:"#EF7D1A", b:"#7B3FA0", suave:"#FDEBD9", fest:"#3BAA6A"},
     {id:"agua",     nombre:"Verde agua y rosa",      a:"#22A699", b:"#EE6A9B", suave:"#DDF4F1", fest:"#F5BE2E"},
-    {id:"salvia",   nombre:"Verde salvia y terracota", a:"#5F8B6B", b:"#C9623F", suave:"#E5EEE7", fest:"#E2A33B", tf:"#3A2A10"},
+    {id:"lavanda",  nombre:"Lavanda y melocotón",    a:"#9B80E0", b:"#FF9E6E", suave:"#EFEAFB", fest:"#3CC6A0", tb:"#4A1F08"},
     {id:"lima",     nombre:"Azul y verde lima",      a:"#2563B8", b:"#7CB82F", suave:"#E1EAF7", fest:"#F28C28"}
   ];
   // Texto blanco u oscuro según lo claro que sea el fondo
