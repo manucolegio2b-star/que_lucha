@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu cojín con tus fotos · ¡Qué lucha!!</title>
+<meta name="theme-color" content="#F4F6F8">
+<link rel="icon" type="image/png" href="logo/icono.png">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F4F6F8;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+a,button,textarea{font-family:inherit}
+#app{max-width:1040px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:16px 20px 32px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.brand{display:flex;align-items:center;gap:10px}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:#0B7C82;font-weight:600;font-size:15px;text-decoration:none;background:none;border:0;cursor:pointer;padding:0}
+h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
+h2{margin:0;font-size:18px}
+.sub{margin:0;font-size:15px;line-height:1.45;color:#5B6472}
+.head{display:flex;flex-direction:column;gap:6px}
+.cols{display:flex;flex-direction:column;gap:18px}
+.prev{position:relative;background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(17,24,39,.08)}
+.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4}
+.vista{display:flex;width:max-content;margin:0 0 8px auto;background:#EEF1F4;border-radius:999px;padding:3px}
+.vista button{border:0;background:none;min-height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;color:#374151;cursor:pointer}
+.vista button[aria-pressed=true]{background:#13A4AA;color:#fff}
+.form{display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lab{font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.field label span{font-weight:400;color:#5B6472}
+input[type=text],input[type=tel],textarea{border:1.5px solid #B8C0CC;border-radius:12px;padding:0 14px;font-size:16px;color:#111827;background:#fff;width:100%}
+input[type=text],input[type=tel]{height:48px}
+textarea{padding:12px 14px;line-height:1.4;resize:vertical;min-height:76px}
+input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
+.errmsg{font-size:13px;color:#C0392B}
+.small{margin:0;font-size:13px;line-height:1.4;color:#5B6472}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.price{font-size:20px;font-weight:800;color:#0B7C82}
+.ficha{margin:2px 0 0;padding-left:18px;font-size:14.5px;line-height:1.5;color:#374151}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+.consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:#13A4AA}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:14px;background:#13A4AA;color:#fff;font-size:17px;font-weight:600;border:0;width:100%;cursor:pointer;text-decoration:none}
+.btn[disabled]{background:#B8C0CC;cursor:not-allowed}
+.btn2{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff;border:1.5px solid #13A4AA;color:#0B7C82;font-size:15px;font-weight:600;width:100%;cursor:pointer;text-decoration:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid #D0D5DD;background:#fff;font-size:14px;font-weight:600;color:#374151;cursor:pointer}
+.chips button[aria-pressed=true]{background:#13A4AA;border-color:#13A4AA;color:#fff}
+.chips.letra button{font-weight:400;font-size:21px;min-height:46px}
+.colores{display:flex;flex-wrap:wrap;gap:10px}
+.colores button{width:38px;height:38px;border-radius:50%;border:2px solid #D0D5DD;cursor:pointer;padding:0}
+.colores button[aria-pressed=true]{box-shadow:0 0 0 3px #fff,0 0 0 5px #13A4AA;border-color:#fff}
+.mods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modw{position:relative}
+.mod{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:8px 8px 10px;border-radius:14px;border:2px solid #E5E8ED;background:#fff;cursor:pointer;color:#374151}
+.mod img{width:100%;height:auto;aspect-ratio:1;border-radius:10px;display:block;object-fit:cover}
+.mod b{font-size:15px}.mod span{font-size:12.5px;color:#5B6472;line-height:1.3;text-align:center}
+.mod[aria-pressed=true]{border-color:#13A4AA;background:#E6F6F6}.mod[aria-pressed=true] b{color:#0B7C82}
+.modw .qlv-lupa{top:14px;right:14px}
+.huecos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.huecos.una{grid-template-columns:minmax(0,220px)}
+.hu{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:0;padding:0;cursor:pointer;background:#fff}
+.hu canvas{width:100%;height:100%;display:block}
+.hu.vac{border:2px dashed #9AA7C0;color:#0B7C82;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600}
+.hu .q{position:absolute;left:4px;bottom:4px;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.92)}
+.hu .ed{position:absolute;right:4px;top:4px;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;background:rgba(17,24,39,.7);color:#fff}
+.hu.txt{background:#F4F6F8;color:#5B6472;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:default;border:2px solid #E5E8ED}
+.bad{background:#FFF5F4;border:1.5px solid #E8B4AE;color:#8A2A20;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.4}
+.naranja{color:#B45309}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.over{position:fixed;inset:0;background:rgba(244,246,248,.97);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.over .bar{width:100%;max-width:340px;height:10px;border-radius:5px;background:#E5E8ED;overflow:hidden}.over .bar i{display:block;height:100%;background:#13A4AA;transition:width .3s}
+.center{text-align:center}
+.ok{width:72px;height:72px;border-radius:50%;background:#DCF5E6;display:flex;align-items:center;justify-content:center;margin:8px auto 4px}
+.codigo{font-size:30px;font-weight:800;letter-spacing:4px;color:#0B7C82}
+.toast{position:fixed;left:16px;right:16px;bottom:20px;max-width:440px;margin:0 auto;background:#111827;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;z-index:70}
+/* Encuadre de una foto */
+.enc{position:fixed;inset:0;z-index:60;background:rgba(17,24,39,.94);display:flex;align-items:center;justify-content:center;padding:14px}
+.enc .caja{background:#fff;border-radius:16px;padding:16px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:12px;max-height:100%;overflow:auto}
+.enc canvas{width:100%;aspect-ratio:1;display:block;border-radius:8px;touch-action:none;cursor:grab;background:#E5E8ED}
+.enc input[type=range]{width:100%;accent-color:#13A4AA}
+.enc .dos{display:flex;gap:8px}
+@media(max-width:899px){
+  .cols>.prev{position:sticky;top:0;z-index:5;padding:6px;border-radius:0 0 14px 14px;margin:0 -20px;box-shadow:0 4px 12px rgba(17,24,39,.12)}
+  .prev canvas{width:auto;max-width:100%;max-height:38vh;max-height:38dvh;margin:0 auto}
+}
+@media(min-width:900px){
+  .cols{flex-direction:row;align-items:flex-start}
+  .cols>.prev{flex:0 0 52%;position:sticky;top:16px}
+  .cols>.form{flex:1;min-width:0}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
+<script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
+<script src="fotocojin.js"></script>
+<script src="visor.js"></script>
+<script>
+(function(){
+"use strict";
+const C=window.CONFIG, F=window.QLFotoCojin;
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const ICO_BACK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+const CHECK='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const PLUS='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const LOGO='<a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a>';
+const cab='<div class="top">'+LOGO+'<a class="back" href="./#productos">'+ICO_BACK+'Productos</a></div>';
+const PRECIO=F.PRECIO;
+const PPP_BIEN=150, PPP_MAL=100;   // igual que en los calendarios
+const TEXTO_DEF={una:"Los mejores compañeros", collage:"Los mejores\ncompañeros"};
+const EJEMPLOS=[1,2,3,4,5,6,7,8].map(n=>"disenos/cojin_fotos/ejemplo"+n+".jpg");
+
+function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
+const l=deLista()||{};
+const ini=new URLSearchParams(location.search).get("m");
+const S={modelo:ini==="una"?"una":"collage", conTexto:true,
+  textos:Object.assign({},TEXTO_DEF), fuente:{una:F.MODELOS.una.fuente,collage:F.MODELOS.collage.fuente}, color:{una:F.MODELOS.una.color,collage:F.MODELOS.collage.color},
+  fotos:Array(9).fill(null), vista:"cojin", mk:null, listo:false, aviso:"", corto:false,
+  paso:"diseno", datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""}, E:{}, consent:false, resumen:null, enviado:null};
+
+const M=()=>F.MODELOS[S.modelo];
+const conTexto=()=>S.modelo==="una"||S.conTexto;
+const hs=()=>F.huecos(S.modelo,S.conTexto);
+const fotosAct=()=>S.fotos.slice(0,hs().length);
+const cfg=()=>({modelo:S.modelo, conTexto:S.conTexto, texto:S.textos[S.modelo], fuente:S.fuente[S.modelo], color:S.color[S.modelo], enc:fotosAct().map(f=>f&&f.enc)});
+const pppDe=i=>{ const f=S.fotos[i]; return f?F.ppp(hs()[i],f.enc,f.pw,f.ph):null; };
+const colorPpp=p=>p>=PPP_BIEN?"#1B7F4B":(p>=PPP_MAL?"#B45309":"#C0392B");
+
+// ---------- Vista previa ----------
+const plano=document.createElement("canvas");
+let pendiente=null;
+function repintar(){
+  if(pendiente) return;
+  pendiente=requestAnimationFrame(()=>{ pendiente=null; const cv=$("#cv"); if(!cv||!S.listo) return;
+    const imgs=fotosAct().map(f=>f&&f.img);
+    if(S.vista==="cojin"&&S.mk){ S.corto=!!F.dibujar(plano,cfg(),imgs,1000,true).corto; F.dibujarMockup(cv,plano,S.mk); }
+    else S.corto=!!F.dibujar(cv,cfg(),imgs,1000).corto;
+    const m=$("#avTexto"); if(m) m.textContent=S.corto?"El texto es demasiado largo y la letra quedaría muy pequeña. Acórtalo un poco.":"";
+    const t=$("#texto"); if(t) t.classList.toggle("err",S.corto);
+  });
+}
+
+// ---------- Pantallas ----------
+function vForm(){ return S.paso==="datos"?vDatos():vDiseno(); }
+function vDiseno(){
+  const m=M(), n=hs().length, puestas=fotosAct().filter(Boolean).length;
+  const modelos='<section class="card"><h2>1. Elige el modelo</h2><div class="mods">'+Object.values(F.MODELOS).map(x=>
+    '<div class="modw"><button type="button" class="mod" data-mod="'+x.id+'" aria-pressed="'+(S.modelo===x.id)+'"><img src="disenos/cojin_fotos/mini_'+x.id+'.jpg?v=1" alt="" width="300" height="300"><b>'+esc(x.nombre)+'</b><span>'+esc(x.desc)+'</span></button>'+QLVisor.lupa('data-ver="'+x.id+'"',x.nombre)+'</div>').join("")+
+    '</div><p class="small">Las fotos de los ejemplos son de muestra: irán las tuyas. Toca la lupa para verlo en grande.</p></section>';
+  let rej;
+  if(S.modelo==="una") rej='<div class="huecos una">'+hueco(0)+'</div>';
+  else { let k=0; rej='<div class="huecos">'; for(let c=0;c<9;c++){ if(S.conTexto&&c===4) rej+='<div class="hu txt">Tu texto</div>'; else rej+=hueco(k++); } rej+='</div>'; }
+  const pp=fotosAct().map((f,i)=>f?pppDe(i):null), malas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]<PPP_MAL), justas=pp.map((p,i)=>i).filter(i=>pp[i]!=null&&pp[i]>=PPP_MAL&&pp[i]<PPP_BIEN);
+  const fotos='<section class="card"><h2>2. Tus fotos <span class="small" style="font-weight:600">'+puestas+' de '+n+'</span></h2>'+
+    (S.modelo==="collage"?'<div class="chips" role="group" aria-label="Texto en el centro"><button type="button" data-ct="1" aria-pressed="'+S.conTexto+'">Con texto · 8 fotos</button><button type="button" data-ct="0" aria-pressed="'+(!S.conTexto)+'">Sin texto · 9 fotos</button></div>':'')+
+    rej+'<p class="small">Toca un hueco vacío para poner fotos (puedes elegir varias a la vez). Toca una foto para moverla, acercarla o cambiarla.</p>'+
+    (malas.length?'<div class="bad">'+(malas.length===1?"La foto "+(malas[0]+1)+" saldrá":"Las fotos "+malas.map(i=>i+1).join(", ")+" saldrán")+' con poca nitidez al imprimir (en rojo). Cámbiala'+(malas.length>1?"s":"")+' por otra de más calidad o aléjala un poco.</div>':
+     (justas.length?'<p class="small naranja">'+(justas.length===1?"La foto "+(justas[0]+1)+" (en naranja) se verá":"Las fotos "+justas.map(i=>i+1).join(", ")+" (en naranja) se verán")+' bien, aunque de muy cerca algo suave.</p>':''))+
+    '<input type="file" id="fileIn" accept="image/*" multiple hidden></section>';
+  const z=m.texto, tx=S.textos[S.modelo]||"";
+  const texto=conTexto()?'<section class="card"><h2>3. Tu texto</h2><div class="field"><label for="texto">'+(S.modelo==="una"?"Texto (abajo, encima de la foto)":"Texto del centro")+'<span id="nTexto">'+tx.length+'/'+z.max_car+'</span></label>'+
+    '<textarea id="texto" maxlength="'+z.max_car+'" rows="'+(S.modelo==="una"?2:3)+'">'+esc(tx)+'</textarea><div class="errmsg" id="avTexto"></div>'+
+    '<p class="small">La letra se ajusta sola para que quepa. Pulsa Intro para cambiar de línea.'+(S.modelo==="una"?' Si lo dejas vacío, la foto sale sola.':'')+'</p></div>'+
+    '<div class="field"><span class="lab">Tipo de letra</span><div class="chips letra" role="group" aria-label="Tipo de letra">'+Object.keys(F.FUENTES).map(k=>'<button type="button" data-fuente="'+k+'" aria-pressed="'+(S.fuente[S.modelo]===k)+'" style="font-family:\''+F.FUENTES[k].fam+'\',cursive">'+esc(F.FUENTES[k].n)+'</button>').join("")+'</div></div>'+
+    '<div class="field"><span class="lab">Color del texto</span><div class="colores" role="group" aria-label="Color del texto">'+m.colores.map(k=>'<button type="button" data-color="'+k+'" aria-pressed="'+(S.color[S.modelo]===k)+'" aria-label="'+esc(F.COLORES[k].n)+'" title="'+esc(F.COLORES[k].n)+'" style="background:'+F.COLORES[k].hex+'"></button>').join("")+'</div></div></section>':'';
+  return cab+'<div class="head"><h1>Tu cojín con tus fotos</h1><p class="sub">Elige el modelo, pon tus fotos y tu texto, y mira cómo queda al momento.</p>'+
+    (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'</span></div>':'')+
+    '<ul class="ficha"><li>Cojín de 40 × 40 cm, color blanco</li><li>Zona impresa: 29 × 29 cm</li></ul></div>'+
+    '<div class="cols"><div class="prev"><div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>'+
+    '<canvas id="cv" width="1000" height="'+(S.vista==="cojin"&&S.mk?1007:1000)+'" aria-label="Vista previa del cojín"></canvas></div>'+
+    '<div class="form">'+modelos+fotos+texto+(S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
+    '<button type="button" class="btn" id="pedir">Pedir este cojín'+(PRECIO?' · '+esc(PRECIO):'')+'</button></div></div>';
+}
+function hueco(i){
+  const f=S.fotos[i];
+  if(!f) return '<button type="button" class="hu vac" data-hu="'+i+'" aria-label="Poner la foto '+(i+1)+'">'+PLUS+'Foto '+(i+1)+'</button>';
+  const p=pppDe(i);
+  return '<button type="button" class="hu" data-hu="'+i+'" aria-label="Ajustar la foto '+(i+1)+'"><canvas data-mini="'+i+'" width="240" height="240"></canvas><span class="ed">Ajustar</span><span class="q" style="color:'+colorPpp(p)+'">'+p+' ppp</span></button>';
+}
+function pintarMinis(){
+  $$("[data-mini]").forEach(cv=>{ const i=+cv.dataset.mini, f=S.fotos[i]; if(!f) return;
+    const g=cv.getContext("2d"), r=F.recorte(f.img.naturalWidth,f.img.naturalHeight,{w:1,h:1},f.enc);
+    g.drawImage(f.img,r.sx,r.sy,r.vw,r.vh,0,0,cv.width,cv.height); });
+}
+function vDatos(){
+  const dat=(k,lab,extra,tipo,attrs)=>'<div class="field"><label for="d_'+k+'">'+lab+(extra?'<span>'+extra+'</span>':'')+'</label><input id="d_'+k+'" type="'+(tipo||"text")+'" '+(attrs||"")+' value="'+esc(S.datos[k])+'" class="'+(S.E[k]?"err":"")+'"><div class="errmsg">'+(S.E[k]||"")+'</div></div>';
+  const n=hs().length;
+  return '<div class="top">'+LOGO+'<button type="button" class="back" id="volver">'+ICO_BACK+'Cambiar el cojín</button></div>'+
+    '<div class="head"><h1>Tus datos</h1><p class="sub">Último paso: dinos quién eres para preparar tu pedido.</p></div>'+
+    '<div class="form" style="max-width:560px;width:100%;margin:0 auto">'+
+    '<section class="card" style="flex-direction:row;align-items:center;gap:14px">'+(S.resumen?'<img src="'+S.resumen+'" alt="Tu cojín" style="width:96px;height:auto;border-radius:8px;flex:none">':'')+'<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><strong>Tu cojín con tus fotos</strong><span class="small">'+esc(M().nombre)+' · '+n+' foto'+(n>1?"s":"")+'</span>'+(PRECIO?'<span class="price" style="font-size:17px">'+esc(PRECIO)+'</span>':'')+'<button type="button" class="back" id="volver2" style="min-height:32px;font-size:14px">Cambiar el cojín</button></div></section>'+
+    '<section class="card">'+
+      dat("nombre","Nombre","(sin apellidos)","text",'autocomplete="given-name" maxlength="40"')+
+      dat("servicio","Servicio","","text",'autocomplete="off" maxlength="60"')+
+      dat("categoria","Categoría profesional","","text",'autocomplete="off" maxlength="60"')+
+      dat("movil","Teléfono móvil","(para avisarte cuando esté listo)","tel",'inputmode="tel" placeholder="6XX XXX XXX" autocomplete="tel" maxlength="20"')+
+      '<input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true"></section>'+
+    (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
+    '<label class="consent"><input type="checkbox" id="consent"'+(S.consent?" checked":"")+'><span>He revisado la vista previa y acepto el uso de mis fotos para hacer el cojín y que se borren al terminar el pedido.</span></label>'+
+    '<button type="button" class="btn" id="enviar"'+(S.consent?"":" disabled")+'>Confirmar y enviar</button></div>';
+}
+function vGracias(){
+  const e=S.enviado;
+  return '<div class="top">'+LOGO+'</div><div class="center"><div class="ok">'+CHECK+'</div><h1>¡Gracias, '+esc(e.nombre)+'!</h1><p class="sub" style="margin-top:8px">Hemos recibido tu pedido y tus fotos. Lo revisaremos antes de imprimir.</p>'+
+    '<p style="margin:14px 0 0;font-size:14px;color:#5B6472">Tu código de pedido</p><div class="codigo">'+esc(e.codigo)+'</div></div>'+
+    '<div class="prev" style="max-width:520px;width:100%;margin:0 auto"><img src="'+e.url+'" alt="Tu cojín" style="display:block;width:100%;border-radius:10px"></div>'+
+    '<a class="btn2" href="./#productos" style="max-width:520px;margin:0 auto">Ver más productos</a><p class="small center">Tus fotos se borrarán cuando tengas tu pedido.</p>';
+}
+
+function render(){
+  if(S.enviado){ $("#app").innerHTML=vGracias(); return; }
+  $("#app").innerHTML=vForm();
+  if(S.paso==="datos"){
+    ["nombre","servicio","categoria","movil"].forEach(k=>{ const f=$("#d_"+k); f.addEventListener("input",()=>{ S.datos[k]=f.value; f.classList.remove("err"); }); });
+    const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!S.consent; });
+    $("#enviar").addEventListener("click",enviar);
+    const atras=()=>history.back(); $("#volver").addEventListener("click",atras); $("#volver2").addEventListener("click",atras);
+    return;
+  }
+  $$("[data-mod]").forEach(b=>b.addEventListener("click",()=>{ if(S.modelo===b.dataset.mod) return; S.modelo=b.dataset.mod; S.aviso=""; render(); }));
+  $$("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
+  $$("[data-ct]").forEach(b=>b.addEventListener("click",()=>{ S.conTexto=b.dataset.ct==="1"; S.aviso=""; render(); }));
+  $$("[data-vista]").forEach(b=>b.addEventListener("click",()=>{ S.vista=b.dataset.vista; $$("[data-vista]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  const t=$("#texto"); if(t) t.addEventListener("input",()=>{ S.textos[S.modelo]=t.value; $("#nTexto").textContent=t.value.length+"/"+t.maxLength; repintar(); });
+  $$("[data-fuente]").forEach(b=>b.addEventListener("click",()=>{ S.fuente[S.modelo]=b.dataset.fuente; $$("[data-fuente]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  $$("[data-color]").forEach(b=>b.addEventListener("click",()=>{ S.color[S.modelo]=b.dataset.color; $$("[data-color]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  const inp=$("#fileIn"); let desde=0;
+  inp.addEventListener("change",()=>{ const fs=inp.files; aniadir(fs,desde); inp.value=""; });
+  $$("[data-hu]").forEach(b=>b.addEventListener("click",()=>{ const i=+b.dataset.hu; if(S.fotos[i]) encuadrar(i); else { desde=i; inp.click(); } }));
+  $("#pedir").addEventListener("click",irADatos);
+  pintarMinis(); repintar();
+}
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3500); }
+
+// ---------- Lupa: los dos modelos en grande, con fotos de muestra y el texto del cliente ----------
+let ejemplos=null;
+function cargarImg(src){ return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; }); }
+function verGrande(id){
+  const L=Object.values(F.MODELOS);
+  const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id]};
+    return {nombre:x.nombre, clave:JSON.stringify(c)+S.vista, crear:async()=>{
+      if(!ejemplos) ejemplos=Promise.all(EJEMPLOS.map(cargarImg)).catch(e=>{ ejemplos=null; throw e; });
+      const ej=await ejemplos, n=F.nFotos(c.modelo,c.conTexto), imgs=x.id==="una"?[ej[1]]:Array.from({length:n},(_,i)=>ej[i%ej.length]);
+      await F.cargarFuentes();
+      const pl=document.createElement("canvas");
+      if(S.vista==="cojin"&&S.mk){ F.dibujar(pl,c,imgs,1000,true); const cv=document.createElement("canvas"); F.dibujarMockup(cv,pl,S.mk); return QLVisor.marca(cv); }
+      F.dibujar(pl,c,imgs,1000); return QLVisor.marca(pl); }}; });
+  QLVisor.abrir({items, idx:Math.max(0,L.findIndex(x=>x.id===id)), elegido:L.findIndex(x=>x.id===S.modelo),
+    boton:"Elegir este modelo", botonYa:"✓ Modelo elegido", onElegir:j=>{ S.modelo=L[j].id; render(); }});
+}
+
+// ---------- Fotos ----------
+async function cargarBitmap(file){
+  if(window.createImageBitmap){ try{ return await createImageBitmap(file,{imageOrientation:"from-image"}); }catch(e){} }
+  return await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{URL.revokeObjectURL(u);res(im);}; im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("No se pudo leer la imagen"));}; im.src=u; });
+}
+function aBlob(canvas,q){ return new Promise(r=>canvas.toBlob(r,"image/jpeg",q)); }
+async function procesar(file){
+  const bmp=await cargarBitmap(file), w0=bmp.width, h0=bmp.height;
+  const k=Math.min(1,(C.MAX_PX||3000)/Math.max(w0,h0));
+  const cv=document.createElement("canvas"); cv.width=Math.round(w0*k); cv.height=Math.round(h0*k);
+  const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(bmp,0,0,cv.width,cv.height);
+  const blob=await aBlob(cv,C.CALIDAD||0.85), pw=cv.width, ph=cv.height;
+  const kp=Math.min(1,900/Math.max(w0,h0)), cp=document.createElement("canvas"); cp.width=Math.round(w0*kp); cp.height=Math.round(h0*kp);
+  cp.getContext("2d").drawImage(bmp,0,0,cp.width,cp.height);
+  const pb=await aBlob(cp,0.85);
+  if(bmp.close) bmp.close(); cv.width=cv.height=cp.width=cp.height=1;
+  if(!blob||!pb) throw new Error("No se pudo procesar la foto");
+  const preview=URL.createObjectURL(pb), img=await cargarImg(preview);
+  return {nombre:file.name||"foto.jpg", blob, pw, ph, preview, img, enc:{z:1,x:.5,y:.5}};
+}
+function quitar(i){ const f=S.fotos[i]; if(f) URL.revokeObjectURL(f.preview); S.fotos[i]=null; }
+async function aniadir(files,desde){
+  files=Array.from(files||[]).filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name));
+  if(!files.length) return;
+  const n=hs().length, libres=[]; for(let k=0;k<n;k++){ const i=(desde+k)%n; if(!S.fotos[i]) libres.push(i); }
+  if(files.length>libres.length) toast(libres.length===1?"Solo quedaba un hueco: hemos usado la primera foto.":"Solo quedaban "+libres.length+" huecos: hemos usado las primeras fotos.");
+  files=files.slice(0,libres.length);
+  const ov=document.createElement("div"); ov.className="over"; ov.innerHTML='<div style="font-size:17px;font-weight:600" id="ovt">Preparando tus fotos…</div><div class="bar"><i id="ovb" style="width:0"></i></div>'; document.body.appendChild(ov);
+  let fallo=0;
+  for(let k=0;k<files.length;k++){
+    try{ S.fotos[libres[k]]=await procesar(files[k]); }catch(e){ fallo++; }
+    $("#ovb").style.width=Math.round((k+1)/files.length*100)+"%"; $("#ovt").textContent="Preparando tus fotos… "+(k+1)+" de "+files.length;
+  }
+  ov.remove();
+  if(fallo) toast(fallo+" foto"+(fallo>1?"s":"")+" no se pudo"+(fallo>1?"ieron":"")+" leer. Prueba con otra.");
+  S.aviso=""; render();
+}
+
+// ---------- Encuadre: mover y acercar la foto dentro de su hueco ----------
+function encuadrar(i){
+  const f=S.fotos[i], h=hs()[i]; if(!f) return;
+  const iw=f.img.naturalWidth, ih=f.img.naturalHeight;
+  let enc=Object.assign({},f.enc);
+  const ov=document.createElement("div"); ov.className="enc"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true");
+  ov.innerHTML='<div class="caja"><h2>Foto '+(i+1)+'</h2><p class="small">Arrastra la foto para moverla. Usa la barra (o dos dedos) para acercarla.</p>'+
+    '<canvas id="ecv" width="700" height="700" aria-label="Encuadre de la foto"></canvas>'+
+    '<div class="row" style="gap:8px"><span aria-hidden="true">−</span><input type="range" id="ez" min="1" max="4" step="0.01" aria-label="Acercar" style="flex:1"><span aria-hidden="true">+</span></div>'+
+    '<p class="small" id="eq"></p>'+
+    '<div class="dos"><button type="button" class="btn2" id="ecam">Cambiar foto</button><button type="button" class="btn2" id="equi">Quitar</button></div>'+
+    '<button type="button" class="btn" id="eok">Listo</button><input type="file" id="euno" accept="image/*" hidden></div>';
+  document.body.appendChild(ov);
+  const cv=ov.querySelector("#ecv"), g=cv.getContext("2d"), z=ov.querySelector("#ez"), q=ov.querySelector("#eq");
+  const pintar=()=>{ enc=F.ajustarEnc(iw,ih,h,enc); const r=F.recorte(iw,ih,h,enc);
+    g.imageSmoothingQuality="high"; g.drawImage(f.img,r.sx,r.sy,r.vw,r.vh,0,0,cv.width,cv.height); z.value=enc.z;
+    const p=F.ppp(h,enc,f.pw,f.ph); q.innerHTML='<b style="color:'+colorPpp(p)+'">'+p+' ppp</b> · '+(p>=PPP_BIEN?"Se verá nítida.":(p>=PPP_MAL?"Se verá bien; de muy cerca, algo suave.":"Saldrá con poca nitidez: aléjala o usa otra foto.")); };
+  pintar();
+  z.addEventListener("input",()=>{ enc.z=+z.value; pintar(); });
+  const ptrs=new Map(); let dist0=0, z0=1;
+  const mover=(dx,dy)=>{ const r=F.recorte(iw,ih,h,enc), k=r.vw/cv.getBoundingClientRect().width; enc.x-=dx*k/iw; enc.y-=dy*k/ih; pintar(); };
+  cv.addEventListener("pointerdown",e=>{ cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; dist0=Math.hypot(a.x-b.x,a.y-b.y); z0=enc.z; } });
+  cv.addEventListener("pointermove",e=>{ const p=ptrs.get(e.pointerId); if(!p) return;
+    if(ptrs.size===1){ mover(e.clientX-p.x,e.clientY-p.y); }
+    p.x=e.clientX; p.y=e.clientY;
+    if(ptrs.size===2&&dist0){ const [a,b]=[...ptrs.values()]; enc.z=Math.min(4,Math.max(1,z0*Math.hypot(a.x-b.x,a.y-b.y)/dist0)); pintar(); } });
+  const fin=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) dist0=0; };
+  cv.addEventListener("pointerup",fin); cv.addEventListener("pointercancel",fin);
+  cv.addEventListener("wheel",e=>{ e.preventDefault(); enc.z=Math.min(4,Math.max(1,enc.z*(e.deltaY<0?1.08:1/1.08))); pintar(); },{passive:false});
+  const cerrar=()=>{ ov.remove(); document.removeEventListener("keydown",tecla); render(); };
+  const tecla=e=>{ if(e.key==="Escape"){ f.enc=enc; cerrar(); } };
+  document.addEventListener("keydown",tecla);
+  ov.querySelector("#eok").addEventListener("click",()=>{ f.enc=enc; cerrar(); });
+  ov.querySelector("#equi").addEventListener("click",()=>{ quitar(i); cerrar(); });
+  const uno=ov.querySelector("#euno");
+  ov.querySelector("#ecam").addEventListener("click",()=>uno.click());
+  uno.addEventListener("change",async()=>{ const fl=uno.files[0]; uno.value=""; if(!fl) return;
+    try{ const r=await procesar(fl); quitar(i); S.fotos[i]=r; }catch(e){ toast("No se ha podido leer esa foto. Prueba con otra."); }
+    cerrar(); });
+}
+
+// ---------- Paso 1 -> paso 2 ----------
+function comprobar(){
+  const n=hs().length, faltan=fotosAct().map((f,i)=>f?null:i+1).filter(Boolean);
+  if(faltan.length) return faltan.length===n?"Pon tus fotos en el cojín.":(faltan.length===1?"Falta la foto "+faltan[0]+".":"Faltan "+faltan.length+" fotos ("+faltan.join(", ")+").");
+  if(S.modelo==="collage"&&S.conTexto&&!(S.textos.collage||"").trim()) return "Escribe el texto del centro, o elige «Sin texto · 9 fotos».";
+  const pl=document.createElement("canvas"); S.corto=!!F.dibujar(pl,cfg(),fotosAct().map(f=>f.img),400).corto;
+  if(conTexto()&&S.corto) return "El texto es demasiado largo. Acórtalo para que se lea bien.";
+  return "";
+}
+function irADatos(){
+  if(!S.listo) return;
+  S.aviso=comprobar();
+  if(S.aviso){ render(); const b=document.querySelector(".bad:last-of-type,.form .bad"); if(b) b.scrollIntoView({block:"center"}); return; }
+  const pl=document.createElement("canvas"), imgs=fotosAct().map(f=>f.img);
+  let src=pl;
+  if(S.mk){ F.dibujar(pl,cfg(),imgs,1000,true); src=document.createElement("canvas"); F.dibujarMockup(src,pl,S.mk); } else F.dibujar(pl,cfg(),imgs,1000);
+  const r=document.createElement("canvas"); r.width=300; r.height=Math.round(300*src.height/src.width); r.getContext("2d").drawImage(src,0,0,r.width,r.height);
+  S.resumen=r.toDataURL("image/jpeg",.85); S.paso="datos"; S.E={}; history.pushState({paso:"datos"},""); render(); window.scrollTo(0,0);
+}
+window.addEventListener("popstate",()=>{ if(S.enviado) return; if(S.paso==="datos"){ S.paso="diseno"; S.aviso=""; render(); window.scrollTo(0,0); } });
+
+// ---------- Envío ----------
+function codigoPedido(){ const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=new Uint8Array(4); crypto.getRandomValues(r); r.forEach(x=>s+=a[x%a.length]); return s; }
+async function http(url,opts){ const r=await fetch(url,opts); if(!r.ok){ let t=""; try{t=await r.text();}catch(e){} throw new Error("HTTP "+r.status+" "+t.slice(0,200)); } return r; }
+let envio=null;
+async function enviar(){
+  if(!S.consent||$("#web").value) return;
+  ["nombre","servicio","categoria","movil"].forEach(k=>S.datos[k]=$("#d_"+k).value.trim());
+  const d=S.datos; S.E={}; S.aviso="";
+  if(d.nombre.length<2) S.E.nombre="Escribe tu nombre.";
+  if(d.servicio.length<2) S.E.servicio="Escribe tu servicio.";
+  if(d.categoria.length<2) S.E.categoria="Escribe tu categoría profesional.";
+  const tel=d.movil.replace(/[\s.\-()]/g,"").replace(/^(\+34|0034)/,"");
+  if(!/^[6-9]\d{8}$/.test(tel)) S.E.movil="Escribe un móvil de 9 cifras.";
+  if(Object.keys(S.E).length){ render(); const f=document.querySelector("input.err"); if(f){ f.scrollIntoView({block:"center"}); f.focus(); } return; }
+  const fotos=fotosAct(), total=fotos.length, c=cfg();
+  if(!envio) envio={id:crypto.randomUUID(), codigo:codigoPedido(), subidas:{}};
+  const ov=document.createElement("div"); ov.className="over"; document.body.appendChild(ov);
+  const pintar=(msg,pct,err)=>{ ov.innerHTML='<div style="font-size:18px;font-weight:700">'+esc(msg)+'</div>'+(err?'':'<div class="bar"><i style="width:'+pct+'%"></i></div><div class="small">No cierres esta pantalla.</div>');
+    if(err){ ov.insertAdjacentHTML("beforeend",'<div class="bad" style="max-width:340px">'+esc(err)+'</div><button class="btn" style="max-width:340px" id="reint">Reintentar</button><button class="btn2" style="max-width:340px" id="cancel">Volver</button>'); $("#reint").onclick=()=>{ov.remove();enviar();}; $("#cancel").onclick=()=>ov.remove(); } };
+  const subir=async(ruta,blob)=>{ if(envio.subidas[ruta]) return; await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+ruta,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:blob}); envio.subidas[ruta]=true; };
+  try{
+    pintar("Enviando tus fotos… 0 de "+total,2);
+    // Montaje de referencia (lo que ha visto el cliente)
+    const mc=document.createElement("canvas"); F.dibujar(mc,c,fotos.map(f=>f.img),1000);
+    const rutaMontaje=envio.id+"/montaje.jpg"; await subir(rutaMontaje,await aBlob(mc,.86));
+    const rutas=[];
+    for(let i=0;i<total;i++){
+      const ruta=envio.id+"/"+String(i+1).padStart(2,"0")+".jpg"; rutas.push(ruta);
+      await subir(ruta,fotos[i].blob);
+      pintar("Enviando tus fotos… "+(i+1)+" de "+total,Math.round((i+1)/total*92));
+    }
+    pintar("Guardando tu pedido…",96);
+    const hu=hs();
+    const fila={id:envio.id,producto:"cojin",modelo:M().modelo,anio:null,
+      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:tel,codigo:envio.codigo,n_fotos:total,montaje:rutaMontaje,
+        etiquetas:fotos.map((f,i)=>"Foto "+(i+1)),
+        cojin_fotos:{modelo:S.modelo,con_texto:conTexto(),texto:conTexto()?(S.textos[S.modelo]||"").trim():"",fuente:c.fuente,color:c.color,
+          fotos:fotos.map((f,i)=>({archivo:String(i+1).padStart(2,"0")+".jpg",z:+f.enc.z.toFixed(4),x:+f.enc.x.toFixed(4),y:+f.enc.y.toFixed(4),ppp:F.ppp(hu[i],f.enc,f.pw,f.ph)}))}},
+      fotos:rutas};
+    if(!envio.guardado){
+      for(let t=0;;t++){
+        try{ await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)}); break; }
+        catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
+      }
+      envio.guardado=true;
+    }
+    let url=mc.toDataURL("image/jpeg",.85);
+    if(S.mk){ const tr=document.createElement("canvas"), mk=document.createElement("canvas"); F.dibujar(tr,c,fotos.map(f=>f.img),1000,true); F.dibujarMockup(mk,tr,S.mk); url=mk.toDataURL("image/jpeg",.85); }
+    S.enviado={nombre:d.nombre,codigo:envio.codigo,url};
+    envio=null; ov.remove(); render(); window.scrollTo(0,0);
+  }catch(e){ console.error(e); const off=!navigator.onLine||/Failed to fetch|NetworkError|Load failed/i.test(String(e));
+    pintar("No se ha podido enviar",0,off?"Parece que no hay conexión. Revisa tu internet y pulsa Reintentar. Lo que ya se subió no se pierde.":"Ha ocurrido un error al enviar. Pulsa Reintentar; si sigue fallando, avísanos."); }
+}
+
+history.replaceState({paso:"diseno"},"");
+render();
+Promise.all([F.cargarFuentes(),F.cargarMockup().catch(()=>null)]).then(([,mk])=>{ S.mk=mk; if(!mk) S.vista="plano"; S.listo=true; render(); })
+  .catch(()=>{ S.listo=true; render(); });
+})();
+</script>
+</body>
+</html>

@@ -13,3 +13,11 @@ ARCHIVOS DE IMPRENTA (base_full, marco_full y los _full del cojín)
 - Para añadir uno nuevo: subirlo a la web con su ruta, añadirlo a ARCH_IMPRENTA en admin.html y abrir el panel
   (se copia solo al almacén). Después, borrarlo de la web.
 - La lupa de la web usa disenos/<diseño>/grande.jpg (imagen reducida, con fotos de ejemplo). Al cambiarla, subir el ?v= en pedir.html e index.html.
+
+COJÍN CON TUS FOTOS (cojin-fotos.html)
+- Dos modelos: "Una foto" (foto grande y texto abajo) y "Collage" (8 fotos con texto en el centro, o 9 sin texto).
+- El cliente encuadra cada foto (mover y acercar), escribe su texto y elige letra y color.
+- El dibujo está en fotocojin.js: lo usan la página del cliente y el panel, así lo impreso sale igual que lo que vio el cliente.
+- Zona impresa 29 × 29 cm a 200 ppp (2283 × 2283 px). El panel lo genera en "Generar archivo" (A3, PNG o PDF).
+- Precio: en fotocojin.js, PRECIO (vacío = no se muestra).
+- Fotos de ejemplo: disenos/cojin_fotos/ejemplo1..8.jpg. Letras nuevas: Great Vibes, Dancing Script y Amatic SC (licencia OFL, en fuentes/).
