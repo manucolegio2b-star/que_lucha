@@ -112,6 +112,16 @@ section{padding:44px 0 10px}
 .regalo p{margin:8px auto 0;max-width:520px;font-size:17px;line-height:1.5}
 .gracias{display:inline-block;margin-top:16px;background:var(--ac);color:#fff;border-radius:14px 22px 16px 24px;padding:14px 24px;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-weight:700;font-style:italic;font-size:20px;line-height:1.25;transform:rotate(-3deg)}
 
+/* Cómo comprar */
+.pasos{list-style:none;margin:0 auto;padding:0;max-width:960px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;counter-reset:paso}
+.pasos li{background:#fff;border-radius:18px;box-shadow:0 8px 22px rgba(12,43,75,.08);padding:18px 16px 16px;counter-increment:paso;position:relative}
+.pasos li:before{content:counter(paso);display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--ac);color:#fff;font-weight:800;font-size:17px;margin-bottom:8px}
+.pasos b{display:block;color:var(--navy);font-size:17px;margin-bottom:4px}
+.pasos span{color:var(--mute);font-size:14.5px;line-height:1.45}
+.falta{background:#FFF1A8;color:#5C4400!important;border-radius:4px;padding:0 4px}
+.nota-lista{max-width:880px;margin:14px auto 0;text-align:center;color:var(--mute);font-size:14.5px;line-height:1.45}
+.nota-lista a{color:var(--ac-d);font-weight:700}
+
 /* Contacto y pie */
 .contacto{text-align:center}
 .contacto p{max-width:520px;margin:0 auto;color:var(--mute);font-size:17px;line-height:1.5}
@@ -139,6 +149,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
       <ul>
         <li><a href="#inicio" class="on">Inicio</a></li>
         <li><a href="#productos">Productos</a></li>
+        <li><a href="#como-comprar">Cómo comprar</a></li>
         <li><a href="#contacto">Contacto</a></li>
       </ul>
     </nav>
@@ -221,6 +232,20 @@ footer small{display:block;margin-top:14px;opacity:.92}
     </div>
   </section>
 
+  <section id="como-comprar">
+    <div class="wrap">
+      <div class="tit"><h2 class="display">Cómo comprar</h2><p>Hacer tu pedido es muy fácil.</p></div>
+      <ol class="pasos">
+        <li><b>Elige tu producto</b><span>En <a href="#productos" style="color:var(--ac-d)">Productos</a>, toca el que quieras.</span></li>
+        <li><b>Personalízalo</b><span>Sube tus fotos o escribe tus textos. Verás cómo queda antes de enviar nada.</span></li>
+        <li><b>Envía tu pedido</b><span>Pon tu nombre, servicio y móvil. Te daremos un código de pedido.</span></li>
+        <li><b>Lo preparamos</b><span>Revisamos tu pedido antes de imprimir y te avisamos al móvil cuando esté listo.</span></li>
+        <li><b>Pago y entrega</b><span class="falta">[Pendiente: cómo se paga y dónde se entrega]</span></li>
+      </ol>
+      <p class="nota-lista">Algunos productos solo los pueden pedir los apuntados a la lista ¡Qué lucha!!. Apuntarse es gratis: <a href="apuntarse.html">apúntate aquí</a>.</p>
+    </div>
+  </section>
+
   <section id="contacto" class="contacto">
     <div class="wrap">
       <div class="tit"><h2 class="display">Contacto</h2></div>
@@ -235,6 +260,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
   <ul>
     <li><a href="#inicio">Inicio</a></li>
     <li><a href="#productos">Productos</a></li>
+    <li><a href="#como-comprar">Cómo comprar</a></li>
     <li><a href="#contacto">Contacto</a></li>
   </ul>
   <small>© 2026 ¡Qué lucha!! &nbsp;|&nbsp; Hecho con mucho cariño ♥</small>
