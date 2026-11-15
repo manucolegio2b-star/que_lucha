@@ -455,7 +455,7 @@ function hoja12Grande(v){
     const img=await cargarImg("img/ejemplo-12hojas.jpg");
     const z=QLCal12.zona(false), r=Math.max(z.w/img.width, z.h/img.height), w=img.width*r, h=img.height*r;
     const cv=QLCal12.hojaCanvas({anio, mes:0, paleta:v.id, fotos:[{img, x:(z.w-w)/2, y:(z.h-h)/2, w, h}]}, 0.4);
-    return cv.toDataURL("image/jpeg",.88); }};
+    return QLVisor.marca(cv); }};
 }
 function verGrande(id){
   const p=prod();

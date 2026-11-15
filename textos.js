@@ -54,7 +54,9 @@ function personaje(d,pid){ const l=d.personajes||[]; return l.find(p=>p.id===pid
 function cargar(d,full,pid){
   const logo=d.logo&&!d.logoImg?cargarImagen(d.logo.src).then(i=>{ d.logoImg=i; }).catch(()=>{}):null;
   const pj=personaje(d,pid), src=pj?(full?pj.baseFull:pj.base):(full?d.baseFull:d.base);
-  return Promise.all([cargarFuentes(),cargarImagen(src),logo]).then(r=>r[1]);
+  // Los archivos de imprenta (full) están en el almacén privado: el panel pone QLTextos.resolver para leerlos
+  const R=window.QLTextos&&QLTextos.resolver, img=(full&&R)?R(src).then(cargarImagen):cargarImagen(src);
+  return Promise.all([cargarFuentes(),img,logo]).then(r=>r[1]);
 }
 
 const FAM={azul:"QL Titulo",rojo:"QL Destacado",mano:"QL Mano"};

@@ -6,7 +6,7 @@
     '.qlv-tit{font-size:17px;font-weight:700}.qlv-tit small{font-weight:400;opacity:.75;margin-left:6px;font-size:14px}'+
     '.qlv-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;line-height:1;cursor:pointer;flex:none}'+
     '.qlv-zona{position:relative;flex:1;min-height:0;width:100%;max-width:720px;display:flex;align-items:center;justify-content:center}'+
-    '.qlv-zona img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 6px 28px rgba(0,0,0,.5);background:#fff;user-select:none;-webkit-user-drag:none}'+
+    '.qlv-zona img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 6px 28px rgba(0,0,0,.5);background:#fff;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;pointer-events:none}'+
     '.qlv-cargando{font-size:14px;opacity:.8}'+
     '.qlv-fl{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#111827;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:0 0 3px}'+
     '.qlv-fl.i{left:4px}.qlv-fl.d{right:4px}'+
@@ -18,6 +18,18 @@
 
   var LUPA='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B7C82" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
   function lupa(attr,nombre){ return '<button type="button" class="qlv-lupa" '+attr+' aria-label="Ver '+(nombre||"")+' en grande">'+LUPA+'</button>'; }
+
+  // Copia reducida (760 px de ancho) con la marca de agua "¡Qué lucha!! · MUESTRA" en diagonal. Devuelve un JPG.
+  function marca(src){
+    var W=760, H=Math.round(W*src.height/src.width), cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    var g=cv.getContext("2d"); g.imageSmoothingQuality="high"; g.drawImage(src,0,0,W,H);
+    var txt="¡Qué lucha!! · MUESTRA"; g.font='34px "QL Titulo","Lilita One",system-ui,sans-serif';
+    var tw=g.measureText(txt).width, px=tw+60, py=150, D=Math.hypot(W,H);
+    g.save(); g.translate(W/2,H/2); g.rotate(-Math.PI/6);
+    g.lineWidth=1.5; g.strokeStyle="rgba(17,24,39,.24)"; g.fillStyle="rgba(255,255,255,.42)"; g.textBaseline="top";
+    for(var f=0,y=-D/2; y<D/2; y+=py,f++) for(var x=-D/2-(f%2)*px/2; x<D/2; x+=px){ g.strokeText(txt,x,y); g.fillText(txt,x,y); }
+    g.restore(); return cv.toDataURL("image/jpeg",.8);
+  }
 
   var cache={};
   function url(it){
@@ -55,6 +67,7 @@
     function mover(d){ if(n<2) return; i=(i+d+n)%n; pinta(); }
     function cerrar(){ document.removeEventListener("keydown",tecla); document.body.style.overflow=ov; el.remove(); if(previo&&previo.focus) previo.focus(); }
     function tecla(e){ if(e.key==="Escape") cerrar(); else if(e.key==="ArrowLeft") mover(-1); else if(e.key==="ArrowRight") mover(1); }
+    el.addEventListener("contextmenu",function(e){ e.preventDefault(); });   // sin "Guardar imagen"
     el.querySelector(".qlv-x").onclick=cerrar;
     if(n>1){ el.querySelector(".qlv-fl.i").onclick=function(){ mover(-1); }; el.querySelector(".qlv-fl.d").onclick=function(){ mover(1); }; }
     if(ok) ok.onclick=function(){ var j=i; cerrar(); if(o.elegido!==j) o.onElegir(j); };
@@ -66,5 +79,5 @@
     document.addEventListener("keydown",tecla);
     document.body.appendChild(el); pinta(); el.querySelector(".qlv-x").focus();
   }
-  window.QLVisor={abrir:abrir,lupa:lupa};
+  window.QLVisor={abrir:abrir,lupa:lupa,marca:marca};
 })();

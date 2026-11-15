@@ -172,6 +172,44 @@ async function cargar(){
   catch(e){ errorCarga=e.message; }
   await cargarApuntados();
   cargando=false; pintar();
+  migrarPlantillas();
+}
+// ---------- Archivos de imprenta en el almacén privado de Supabase (bucket "plantillas") ----------
+// No están en la web pública. Solo el panel (con sesión) puede leerlos.
+// Para añadir uno nuevo: subirlo a la web con la misma ruta y añadirlo a esta lista; al abrir el panel se pasa
+// solo al almacén privado. Después se borra de la web.
+const ARCH_IMPRENTA=["disenos/quelucha/base_full.jpg","disenos/colores/base_full.jpg",
+  "disenos/conejo/base_full.jpg","disenos/conejo/marco_full.png","disenos/raton/base_full.jpg","disenos/raton/marco_full.png",
+  "disenos/nido/base_full.jpg","disenos/nido/marco_full.png",
+  "disenos/cojin_jubilacion/base_full.png","disenos/cojin_jubilacion/jubilada_morena_full.png","disenos/cojin_jubilacion/jubilada_rubia_full.png"];
+const _plant={};
+function urlPlantilla(ruta){
+  if(!_plant[ruta]) _plant[ruta]=api("/storage/v1/object/authenticated/plantillas/"+ruta)
+    .then(r=>r.blob()).then(b=>URL.createObjectURL(b))
+    .catch(e=>{ delete _plant[ruta]; throw new Error("No se encuentra el archivo de imprenta "+ruta+" en el almacén privado"); });
+  return _plant[ruta];
+}
+if(window.QLTextos) QLTextos.resolver=urlPlantilla;
+let migrando=false;
+async function migrarPlantillas(){
+  if(migrando) return; migrando=true;
+  try{
+    const carpetas=[...new Set(ARCH_IMPRENTA.map(r=>r.slice(0,r.lastIndexOf("/")+1)))], hay=new Set();
+    for(const c of carpetas){
+      const l=await (await api("/storage/v1/object/list/plantillas",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prefix:c,limit:1000})})).json();
+      (l||[]).forEach(o=>hay.add(c+o.name));
+    }
+    let n=0;
+    for(const r of ARCH_IMPRENTA){
+      if(hay.has(r)) continue;
+      const w=await fetch(r,{cache:"no-store"}); if(!w.ok) continue;   // ya no está en la web: nada que pasar
+      const b=await w.blob(); if(!/^image\//.test(b.type)) continue;
+      await api("/storage/v1/object/plantillas/"+r,{method:"POST",headers:{"Content-Type":b.type,"x-upsert":"true"},body:b});
+      n++;
+    }
+    if(n) aviso(n+" archivo"+(n>1?"s":"")+" de imprenta guardado"+(n>1?"s":"")+" en el almacén privado.");
+  }catch(e){ console.warn("Plantillas:",e); }
+  migrando=false;
 }
 async function guardarCambios(p,cambios){
   Object.assign(p,cambios);
@@ -508,7 +546,7 @@ let generado=null; // {num, canvas}
 function cargarImg(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error("No se pudo cargar "+src)); i.src=src; }); }
 async function componerFinal(p){
   const d=p.datos.disposicion, pl=PLANTILLAS[d.diseno];
-  const [bi,mi]=await Promise.all([cargarImg(pl.base),pl.marco?cargarImg(pl.marco):null]);
+  const [bi,mi]=await Promise.all([urlPlantilla(pl.base).then(cargarImg),pl.marco?urlPlantilla(pl.marco).then(cargarImg):null]);
   const W=bi.naturalWidth, H=Math.round(W*HC/WC), k=W/WC, z=d.zona_cm;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const g=cv.getContext("2d");
   g.drawImage(bi,0,0,W,H);

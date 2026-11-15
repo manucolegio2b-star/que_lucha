@@ -178,8 +178,8 @@ function verGrande(id){
   const items=L.map(pj=>({nombre:pj.nombre, clave:pj.id+firma, crear:async()=>{
     const img=S.imgs[pj.id]||(S.imgs[pj.id]=await T.cargar(D,false,pj.id));
     const plano=document.createElement("canvas");
-    if(S.vista==="cojin"&&S.foto){ T.dibujar(plano,D,S.textos,img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,plano,S.foto); return cv.toDataURL("image/jpeg",.9); }
-    T.dibujar(plano,D,S.textos,img,1000,S.formas); return plano.toDataURL("image/jpeg",.9); }}));
+    if(S.vista==="cojin"&&S.foto){ T.dibujar(plano,D,S.textos,img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,plano,S.foto); return QLVisor.marca(cv); }
+    T.dibujar(plano,D,S.textos,img,1000,S.formas); return QLVisor.marca(plano); }}));
   QLVisor.abrir({items, idx:Math.max(0,L.findIndex(p=>p.id===id)), elegido:L.findIndex(p=>p.id===S.personaje),
     boton:"Elegir este personaje", botonYa:"✓ Personaje elegido",
     onElegir:j=>{ const b=document.querySelector('[data-pj="'+L[j].id+'"]'); if(b) b.click(); }});
