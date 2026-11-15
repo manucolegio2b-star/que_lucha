@@ -185,12 +185,24 @@ const ARCH_IMPRENTA=["disenos/quelucha/base_full.jpg","disenos/colores/base_full
 const _plant={};
 function urlPlantilla(ruta){
   if(!_plant[ruta]) _plant[ruta]=api("/storage/v1/object/authenticated/plantillas/"+ruta)
-    .then(r=>r.blob()).then(b=>URL.createObjectURL(b))
-    .catch(e=>{ delete _plant[ruta]; throw new Error("No se encuentra el archivo de imprenta "+ruta+" en el almacén privado"); });
+    .then(r=>r.blob())
+    .catch(async()=>{   // aún no está en el almacén: mientras siga en la web, se usa de ahí
+      const w=await fetch(ruta,{cache:"no-store"}).catch(()=>null);
+      if(w&&w.ok){ migrarPlantillas(); return w.blob(); }
+      throw new Error("No se encuentra el archivo de imprenta "+ruta+" en el almacén privado");
+    })
+    .then(b=>URL.createObjectURL(b))
+    .catch(e=>{ delete _plant[ruta]; throw e; });
   return _plant[ruta];
 }
 if(window.QLTextos) QLTextos.resolver=urlPlantilla;
 let migrando=false;
+function estadoCopia(t,error){
+  let d=document.getElementById("copiaPl");
+  if(!t){ if(d) d.remove(); return; }
+  if(!d){ d=document.createElement("div"); d.id="copiaPl"; d.style.cssText="position:fixed;left:12px;bottom:12px;z-index:50;max-width:360px;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.18)"; document.body.appendChild(d); }
+  d.style.background=error?"#FDECEA":"#FFF8E1"; d.style.color=error?"#8A1C12":"#5C4400"; d.textContent=t;
+}
 async function migrarPlantillas(){
   if(migrando) return; migrando=true;
   try{
@@ -199,16 +211,18 @@ async function migrarPlantillas(){
       const l=await (await api("/storage/v1/object/list/plantillas",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prefix:c,limit:1000})})).json();
       (l||[]).forEach(o=>hay.add(c+o.name));
     }
+    const faltan=ARCH_IMPRENTA.filter(r=>!hay.has(r));
     let n=0;
-    for(const r of ARCH_IMPRENTA){
-      if(hay.has(r)) continue;
-      const w=await fetch(r,{cache:"no-store"}); if(!w.ok) continue;   // ya no está en la web: nada que pasar
-      const b=await w.blob(); if(!/^image\//.test(b.type)) continue;
+    for(const r of faltan){
+      estadoCopia("Guardando los archivos de imprenta en el almacén privado: "+(n+1)+" de "+faltan.length+"… No cierres ni recargues el panel.");
+      const w=await fetch(r,{cache:"no-store"}); if(!w.ok){ n++; continue; }   // ya no está en la web: nada que pasar
+      const b=await w.blob(); if(!/^image\//.test(b.type)){ n++; continue; }
       await api("/storage/v1/object/plantillas/"+r,{method:"POST",headers:{"Content-Type":b.type,"x-upsert":"true"},body:b});
       n++;
     }
+    estadoCopia(null);
     if(n) aviso(n+" archivo"+(n>1?"s":"")+" de imprenta guardado"+(n>1?"s":"")+" en el almacén privado.");
-  }catch(e){ console.warn("Plantillas:",e); }
+  }catch(e){ console.warn("Plantillas:",e); estadoCopia("No se pudieron guardar los archivos de imprenta: "+e.message+". Se reintentará la próxima vez que abras el panel.",true); setTimeout(()=>estadoCopia(null),15000); }
   migrando=false;
 }
 async function guardarCambios(p,cambios){
