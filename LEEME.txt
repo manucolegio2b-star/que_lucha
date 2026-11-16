@@ -22,6 +22,12 @@ COJÍN CON TUS FOTOS (cojin-fotos.html)
 - Precio: en fotocojin.js, PRECIO (vacío = no se muestra).
 - Fotos de ejemplo: disenos/cojin_fotos/ejemplo1..8.jpg. Letras nuevas: Great Vibes, Dancing Script y Amatic SC (licencia OFL, en fuentes/).
 
+COJINES DE NACIMIENTO (personalizar.html?d=erizo y ?d=animales)
+- Funcionan igual que el de jubilación: el cliente cambia los textos y el panel genera el archivo a 29 × 29 cm a 200 ppp (2283 px).
+- Diseños y zonas de texto en textos.js. Arte limpio (sin textos) en disenos/cojin_erizo y disenos/cojin_animales (base_full.jpg = imprenta).
+- Letras: Great Vibes (nombre y apellidos), Dancing Script (datos, "Mis papis", papás) y Patrick Hand (fecha, hora, medida, peso). Todas gratuitas (OFL).
+- En personalizar.html sale "Elige el diseño" con todos los cojines de texto (los que tienen "mini" en textos.js).
+
 AVISOS DE PEDIDOS POR TELEGRAM
 - Cada pedido nuevo manda un mensaje al bot @quelucha_pedidos_bot (a tu chat de Telegram).
 - Lo hace la base de datos (Supabase), no la web: funciona aunque el panel esté cerrado.
