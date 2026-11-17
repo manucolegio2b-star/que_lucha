@@ -9,7 +9,9 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
   ["QL Elegante","fuentes/GreatVibes-Regular.ttf"],["QL Script","fuentes/DancingScript.ttf",{weight:"400 700"}]];
 // Cojines de nacimiento: misma ficha que el de jubilación
 const COJIN_FICHA=["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"];
-const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]};
+// Foto del cojín generada con relieve (herramientas/mockup_cojin.py): c = centro, s = semilado, a = pellizco de los lados,
+// t = parte impresa (29 de 40 cm), alb = blanco de la tela en la foto. dibujarMockup curva y sombrea el diseño con esa misma forma.
+const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup2.jpg", w:1000, h:1000, cojin:{c:500, s:452, a:0.06, t:0.725, alb:236}};
 
 // Cojín perrito con globos (niña rosa / niño azul): mismos textos, cambia el color de los datos
 const CAMPOS_PERRITO=nom=>[
@@ -54,7 +56,7 @@ const DISENOS={
     proximamente:"Próximamente, más personajes y diseños de otros servicios.",
     logo:{src:"logo/rotulo_grande.png", der:968, abajo:972, w:150},   // logo ¡Qué lucha!! abajo a la derecha (unidades)
     // Maqueta: foto del cojín en blanco y dónde va el diseño encima (matriz de canvas, diseño de 1000 px)
-    mockup:{src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]},
+    mockup:MOCKUP_COJIN,
     campos:[
       {id:"t1", etiqueta:"Título (arriba, en azul)", def:"Intervención finalizada:", max:40, formas:true, quitar:true, ayuda:"Si dejas solo un título, saldrá más grande."},
       {id:"t2", etiqueta:"Título destacado (en rojo)", def:"Jubilación con éxito", max:36, formas:true, quitar:true, ayuda:"Si dejas solo un título, saldrá más grande."},
@@ -316,11 +318,42 @@ function cargarMockup(d){ return d.mockup?cargarImagen(d.mockup.src):Promise.res
 function dibujarMockup(cv,d,diseno,foto){
   const mk=d.mockup; cv.width=mk.w; cv.height=mk.h;
   const g=cv.getContext("2d"); g.drawImage(foto,0,0,mk.w,mk.h);
-  const k=1000/diseno.width, m=mk.m;
-  g.save(); g.globalCompositeOperation="multiply"; g.setTransform(m[0]*k,m[1]*k,m[2]*k,m[3]*k,m[4],m[5]);
-  g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0);
-  // El cojín de la foto es gris claro: se mezcla con el diseño normal para no oscurecer los colores
-  g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore();
+  const k=mk.cojin;
+  if(!k){ // foto antigua: diseño plano superpuesto
+    const f=1000/diseno.width, m=mk.m;
+    g.save(); g.globalCompositeOperation="multiply"; g.setTransform(m[0]*f,m[1]*f,m[2]*f,m[3]*f,m[4],m[5]);
+    g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0);
+    g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore(); return;
+  }
+  // 1) Diseño al tamaño impreso en la foto
+  const P=Math.round(2*k.t*k.s), dc=document.createElement("canvas"); dc.width=dc.height=P;
+  const dg=dc.getContext("2d"); dg.imageSmoothingQuality="high"; dg.drawImage(diseno,0,0,P,P);
+  const D=dg.getImageData(0,0,P,P).data;
+  // 2) Curvarlo como la tela (los lados se meten hacia dentro) y sombrearlo con las luces y arrugas de la foto
+  const x0=Math.max(0,Math.floor(k.c-k.s*k.t-2)), x1=Math.min(mk.w,Math.ceil(k.c+k.s*k.t+2)), W=x1-x0;
+  const Fi=g.getImageData(x0,x0,W,W), F=Fi.data, T=k.t, A=k.a, inv=1/k.alb;
+  for(let py=0;py<W;py++){
+    const Y=(x0+py+0.5-k.c)/k.s;
+    for(let px=0;px<W;px++){
+      const X=(x0+px+0.5-k.c)/k.s;
+      let u=X, v=Y;
+      for(let i=0;i<4;i++){ u=X/(1-A*(1-v*v)); v=Y/(1-A*(1-u*u)); }
+      const e=Math.max(Math.abs(u),Math.abs(v)); if(e>T+2/k.s) continue;
+      const cov=Math.min(1,Math.max(0,(T-e)*k.s+0.5)); if(cov<=0) continue;
+      const sx=Math.min(P-1.001,Math.max(0,(u/T+1)/2*P-0.5)), sy=Math.min(P-1.001,Math.max(0,(v/T+1)/2*P-0.5));
+      const ix=sx|0, iy=sy|0, fx=sx-ix, fy=sy-iy, i00=(iy*P+ix)*4, i10=i00+4, i01=i00+P*4, i11=i01+4;
+      const w00=(1-fx)*(1-fy)*D[i00+3], w10=fx*(1-fy)*D[i10+3], w01=(1-fx)*fy*D[i01+3], w11=fx*fy*D[i11+3], ws=w00+w10+w01+w11;
+      const da=ws/255; if(da<=0) continue;
+      const o=(py*W+px)*4, r0=F[o], g0=F[o+1], b0=F[o+2];
+      const sh=(r0+g0+b0)/3*inv, lo=Math.min(sh,1)*k.alb/255, hi=Math.max(sh-1,0)*1.2, al=da*cov;
+      for(let c=0;c<3;c++){
+        const dv=(D[i00+c]*w00+D[i10+c]*w10+D[i01+c]*w01+D[i11+c]*w11)/ws;   // media ponderada por la opacidad
+        const out=dv*lo+(255-dv*lo)*hi;
+        F[o+c]=F[o+c]*(1-al)+out*al;
+      }
+    }
+  }
+  g.putImageData(Fi,x0,x0);
 }
 window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
 })();
