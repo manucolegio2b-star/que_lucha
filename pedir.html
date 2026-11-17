@@ -222,6 +222,8 @@ function nuevoEstado(){
 function nuevasHojas(){ return Array.from({length:13},()=>({fotos:[],disp:null,prev:null})); }
 const NOMBRE_HOJA = i => i===0 ? "Portada" : MESES[i-1];
 let S = nuevoEstado();
+(function(){ const q=new URLSearchParams(location.search), p=q.get("p");
+  if(p&&PRODUCTOS[p]){ S.producto=p; const P=PRODUCTOS[p]; if(P.variantes&&P.variantes.length) S.variante=(P.variantes.find(v=>v.id===q.get("v"))||P.variantes[0]).id; S.step="config"; } })();
 const prod = () => PRODUCTOS[S.producto];
 const variante = () => { const p=prod(); return p && p.variantes ? (p.variantes.find(v=>v.id===S.variante)||p.variantes[0]) : null; };
 const tema = () => { const p=prod(); return variante() || p.tema; };
@@ -249,6 +251,7 @@ window.addEventListener("popstate", e=>{
   S.step=st; render();
 });
 history.replaceState({step:"producto"},"");
+if(S.step==="config") history.pushState({step:"config"},"");   // viene de la portada con el producto ya elegido: "atrás" lleva a la lista
 
 // ---------- Utilidades de calendario ----------
 function mesHTML(anio, m, opts){

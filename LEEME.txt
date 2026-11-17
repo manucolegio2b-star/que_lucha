@@ -27,6 +27,8 @@ COJINES DE NACIMIENTO (personalizar.html?d=erizo, ?d=animales, ?d=perrito_nina, 
 - Diseños y zonas de texto en textos.js. Arte limpio (sin textos) en disenos/cojin_erizo, cojin_animales (base_full_v2.jpg), cojin_perrito_nina, cojin_perrito_nino, cojin_conejo y cojin_acuarela (base_full.jpg = imprenta).
 - Si se cambia un arte que ya estaba en el almacén privado, ponerle otro nombre (p. ej. _v2): el panel no vuelve a copiar un archivo que ya tiene.
 - Letras: Great Vibes (nombre y apellidos), Dancing Script (datos, "Mis papis", papás) y Patrick Hand (fecha, hora, medida, peso). Todas gratuitas (OFL).
+- index.html: "Nuestros productos" enseña 6 productos al azar (2 calendarios y 4 cojines) y el botón "Ver más productos" lleva a productos.html (las categorías).
+- pedir.html acepta ?p=producto&v=diseño para abrir con un calendario ya elegido.
 - cojines.html: cuadrícula de todos los cojines con filtros (Todos, Nacimiento, Jubilación, Parejas, Con tus fotos; también por #categoría en la dirección). Las tarjetas salen solas de textos.js según "cat" y "foto" (img/cojines/<id>.jpg, vista del cojín 640 px).
 - En personalizar.html, "Elige el diseño" muestra los cojines de la misma categoría.
 - Diseños con foto del cliente (p. ej. pareja_marco): en textos.js llevan "ventana" (hueco de la foto, máscara, capa del marco y colores).

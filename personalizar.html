@@ -107,7 +107,7 @@ const CHECK='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke=
 
 const id=new URLSearchParams(location.search).get("d")||"jubilacion";
 const D=T.DISENOS[id];
-const cab='<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><a class="back" href="'+(D&&D.producto==="cojin"?"cojines.html#"+(D.cat||""):"./#productos")+'">'+ICO_BACK+(D&&D.producto==="cojin"?"Cojines":"Productos")+'</a></div>';
+const cab='<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><a class="back" href="'+(D&&D.producto==="cojin"?"cojines.html#"+(D.cat||""):"productos.html")+'">'+ICO_BACK+(D&&D.producto==="cojin"?"Cojines":"Productos")+'</a></div>';
 if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'; return; }
 
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }

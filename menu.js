@@ -17,7 +17,7 @@
   var h=document.createElement("header"); h.className="qlm";
   h.innerHTML='<div class="w"><a class="marca" href="./" aria-label="¡Qué lucha!! · Inicio"><img src="logo/hexagono.png" alt=""><img src="logo/rotulo.png" alt="¡Qué lucha!!"></a>'+
     '<button class="burger" type="button" aria-label="Abrir el menú" aria-expanded="false" aria-controls="qlmMenu"><span></span><span></span><span></span></button>'+
-    '<nav id="qlmMenu" aria-label="Principal"><ul><li><a href="./">Inicio</a></li><li><a href="./#productos">Productos</a></li><li><a href="./#como-comprar">Cómo comprar</a></li><li><a href="./#contacto">Contacto</a></li></ul></nav></div>';
+    '<nav id="qlmMenu" aria-label="Principal"><ul><li><a href="./">Inicio</a></li><li><a href="productos.html">Productos</a></li><li><a href="./#como-comprar">Cómo comprar</a></li><li><a href="./#contacto">Contacto</a></li></ul></nav></div>';
   document.body.insertBefore(h,document.body.firstChild);
   var b=h.querySelector(".burger"), m=h.querySelector("nav");
   b.addEventListener("click",function(){ var a=m.classList.toggle("abierto"); b.setAttribute("aria-expanded",a); });
