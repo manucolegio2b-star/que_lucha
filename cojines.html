@@ -81,7 +81,8 @@ footer a{color:#fff;font-weight:700}
   });
   L.push({cat:"fotos", nombre:"Una foto grande", img:"img/ejemplo-cojin-fotos-una.jpg?v=2", href:"cojin-fotos.html", precio:"19,50 €"});
   L.push({cat:"fotos", nombre:"Collage de fotos", img:"img/ejemplo-cojin-fotos-collage.jpg?v=2", href:"cojin-fotos.html", precio:"19,50 €"});
-  L.sort(function(a,b){ return ORDEN.indexOf(a.cat)-ORDEN.indexOf(b.cat); });
+  L.forEach(function(x,i){ x.n=i; });
+  L.sort(function(a,b){ return (ORDEN.indexOf(a.cat)-ORDEN.indexOf(b.cat))||(a.n-b.n); });   // mismo orden en todos los navegadores
   var LUPA='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B7C82" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
   var rej=document.getElementById("rejilla"), vis=[];
   function pinta(f){
