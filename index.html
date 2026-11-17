@@ -256,7 +256,7 @@ footer small{display:block;margin-top:14px;opacity:.92}
     {tipo:"Calendario",nombre:"Póster Premium Nido",img:"disenos/nido/miniatura.jpg?v=10",precio:"3 €",href:"pedir.html?p=premium&v=nido",boton:"Pedir calendario",cal:1},
     {tipo:"Calendario",nombre:"Póster Premium Conejo",img:"disenos/conejo/miniatura.jpg?v=10",precio:"3 €",href:"pedir.html?p=premium&v=conejo",boton:"Pedir calendario",cal:1},
     {tipo:"Calendario",nombre:"Póster Premium Colores",img:"disenos/colores/miniatura.jpg?v=10",precio:"3 €",href:"pedir.html?p=premium&v=colores",boton:"Pedir calendario",cal:1},
-    {tipo:"Calendario",nombre:"Calendario de 12 hojas",img:"img/ejemplo-12hojas.jpg",precio:"12,50 €",href:"pedir.html?p=12hojas",boton:"Pedir calendario",cal:1}];
+    {tipo:"Calendario",nombre:"Calendario de portada y 12 páginas",img:"img/ejemplo-12hojas.jpg",precio:"12,50 €",href:"pedir.html?p=12hojas",boton:"Pedir calendario",cal:1}];
   var coj=Object.values((window.QLTextos&&QLTextos.DISENOS)||{}).filter(function(d){return d.producto==="cojin"&&d.cat&&d.foto;}).map(function(d){
     return {tipo:CAT[d.cat]||"Cojín",nombre:d.nombre,img:d.foto,precio:d.precio,href:"personalizar.html?d="+encodeURIComponent(d.id),boton:"Personalizar"}; });
   coj.push({tipo:"Cojín · Con tus fotos",nombre:"Cojín con una foto grande",img:"img/ejemplo-cojin-fotos-una.jpg?v=2",precio:"19,50 €",href:"cojin-fotos.html",boton:"Crear mi cojín"});

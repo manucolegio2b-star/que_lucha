@@ -191,9 +191,9 @@ const PRODUCTOS = {
                {id:"nido",nombre:"Nido",thumb:"disenos/nido/miniatura.jpg?v=10",bg:"#F3EBDD",ac:"#8A6A3B",ln:"#CDBB9A"},
                {id:"conejo",nombre:"Conejo",thumb:"disenos/conejo/miniatura.jpg?v=10",bg:"#FBEAF0",ac:"#C2577F",ln:"#E3B4C6"},
                {id:"colores",nombre:"Colores",thumb:"disenos/colores/miniatura.jpg?v=10",bg:"#EAF3FB",ac:"#4197E0",ln:"#A9CDEF"}]},
-  "12hojas":{id:"12hojas",nombre:"Calendario de 12 hojas",precio:"12,50 €",
+  "12hojas":{id:"12hojas",nombre:"Calendario de portada y 12 páginas",precio:"12,50 €",
     desc:"Portada y una hoja por mes, con hasta 6 fotos en cada una. Cartulina 300 g, 32 × 45 cm, a dos caras, anillado y con colgador.",
-    corto:"12 hojas", max:6,
+    corto:"Portada y 12 páginas", max:6,
     variantes:((window.QLCal12&&QLCal12.PALETAS)||[]).map(v=>Object.assign({},v))}
 };
 
@@ -230,7 +230,7 @@ const tema = () => { const p=prod(); return variante() || p.tema; };
 const es12 = () => S.producto==="12hojas";
 
 function tituloResumen(){
-  const p=prod(); let t = es12() ? "12 hojas" : p.corto;
+  const p=prod(); let t = es12() ? "Portada y 12 páginas" : p.corto;
   t += " · "+S.anio;
   t += es12() ? " · hasta 6 fotos por hoja" : " · hasta 6 fotos";
   return t;
@@ -486,7 +486,7 @@ function vProducto(){
   const miniPoster = (bg,ln)=>'<div class="thumb"><div class="mini" style="width:78px;height:110px;background:'+bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+ln+' 0,'+ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+ln+' 0,'+ln+' 1px,transparent 1px,transparent 13px)"></div></div></div>';
   // Calendario de 12 hojas: abanico de 3 hojas reales en colores distintos (se dibujan en pintarMini12)
   const h12=i=>'<img data-mini12="'+i+'" alt=""'+(MINI12_URL[i]?' src="'+MINI12_URL[i]+'"':'')+' style="position:absolute;'+MINI12_POS[i]+';width:58px;height:82px;border-radius:4px;background:#fff;box-shadow:0 '+(i===2?'2px 6px rgba(0,0,0,.35)':'1px 4px rgba(0,0,0,.3)')+'">';
-  const mini12 = '<div class="thumb"><div style="position:relative;width:104px;height:112px" role="img" aria-label="Calendario de 12 hojas en varios colores">'+h12(0)+h12(1)+h12(2)+'</div></div>';
+  const mini12 = '<div class="thumb"><div style="position:relative;width:104px;height:112px" role="img" aria-label="Calendario de portada y 12 páginas en varios colores">'+h12(0)+h12(1)+h12(2)+'</div></div>';
   const card=(pr,mini,extra)=>'<button type="button" class="card" data-prod="'+pr.id+'">'+mini+'<div class="info"><div class="t">'+pr.nombre+'</div><div class="d">'+pr.desc+'</div><div class="row"><span style="font-size:16px;font-weight:700;color:#0B7C82">'+pr.precio+'<span class="iva">IVA incluido</span></span>'+(extra||"")+'</div></div>'+I.chev+'</button>';
   return cab()+'<div class="head"><h1>¿Qué quieres pedir?</h1><p class="sub">Verás cómo queda antes de enviar nada.</p></div>'+
     '<div class="prods">'+card(q,'<div class="thumb"><img src="disenos/quelucha/miniatura.jpg?v=10" alt="Diseño del calendario Que Lucha!" width="78" height="110" style="width:78px;height:110px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>','<span class="badge">'+q.badge+'</span>')+
