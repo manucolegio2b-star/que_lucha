@@ -11,7 +11,7 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
 const COJIN_FICHA=["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"];
 // Foto del cojín generada con relieve (herramientas/mockup_cojin.py): c = centro, s = semilado, a = pellizco de los lados,
 // t = parte impresa (29 de 40 cm), alb = blanco de la tela en la foto. dibujarMockup curva y sombrea el diseño con esa misma forma.
-const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup2.jpg", w:1000, h:1000, cojin:{c:500, s:452, a:0.06, t:0.725, alb:236}};
+const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup3.jpg", w:1000, h:1000, cojin:{c:500, s:452, a:0.04, t:0.725, alb:236}};
 
 // Cojín perrito con globos (niña rosa / niño azul): mismos textos, cambia el color de los datos
 const CAMPOS_PERRITO=nom=>[
