@@ -25,28 +25,25 @@ a{color:inherit}
 .cab p{margin:8px auto 0;max-width:560px;color:var(--mute);font-size:16.5px;line-height:1.45}
 .cab .precio{display:inline-block;margin-top:12px;background:#fff;border-radius:999px;padding:6px 16px;font-weight:800;color:var(--ac-d);box-shadow:0 4px 12px rgba(12,43,75,.08)}
 .cab .precio span{font-weight:500;color:var(--mute);font-size:13px;margin-left:4px}
-.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 10px;padding:0;list-style:none}
-.chips a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;background:#fff;border:2px solid #CDE8EA;color:var(--navy);font-weight:700;text-decoration:none}
-.chips a:hover{border-color:var(--ac);color:var(--ac-d)}
-section{padding:26px 0 6px}
-section h2{margin:0;font-size:clamp(24px,5vw,32px)}
-section > .wrap > p{margin:4px 0 16px;color:var(--mute);font-size:15.5px}
-.rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-@media(max-width:900px){.rejilla{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:680px){.rejilla{grid-template-columns:1fr 1fr;gap:12px}}
-.prod{position:relative;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px rgba(12,43,75,.09);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
-.prod:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(12,43,75,.15)}
-.prod .foto{position:relative;z-index:3;aspect-ratio:1/1;background:#A6F4E4;overflow:hidden;cursor:zoom-in}
-.prod .foto img{width:100%;height:100%;object-fit:cover}
-.prod .cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
-.prod h3{margin:0;font-size:17px;color:var(--navy)}
-.prod p{margin:4px 0 0;color:var(--mute);font-size:14px;line-height:1.4}
-.prod a.ir{margin-top:auto}
-.prod h3{margin-bottom:10px}
-.prod a.ir{margin-top:10px;min-height:42px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:var(--ac);color:#fff;font-weight:800;font-size:15px;text-decoration:none}
-.prod a.ir::after{content:"";position:absolute;inset:0;border-radius:18px}
-.prod:hover a.ir{background:var(--ac-d)}
-@media(max-width:560px){.prod .cuerpo{padding:10px 10px 12px}.prod h3{font-size:15.5px}.prod p{font-size:13px}.prod a.ir{font-size:14px}}
+.filtros{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 18px}
+.filtros button{min-height:42px;padding:0 16px;border-radius:999px;background:#fff;border:2px solid #CDE8EA;color:var(--navy);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+.filtros button:hover{border-color:var(--ac)}
+.filtros button[aria-selected=true]{background:var(--ac);border-color:var(--ac);color:#fff}
+@media(max-width:560px){.filtros{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;margin:4px -20px 14px;padding:0 20px 4px;scrollbar-width:none}.filtros::-webkit-scrollbar{display:none}.filtros button{flex:none;font-size:14px;padding:0 14px}}
+.rejilla{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+@media(max-width:980px){.rejilla{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:1100px) and (min-width:981px){.rejilla{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:760px){.rejilla{grid-template-columns:repeat(3,1fr);gap:10px}}
+@media(max-width:420px){.rejilla{grid-template-columns:repeat(2,1fr)}}
+.prod{position:relative;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 16px rgba(12,43,75,.08);text-decoration:none;color:inherit;display:block;transition:transform .15s,box-shadow .15s}
+.prod:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(12,43,75,.14)}
+.prod .foto{position:relative;aspect-ratio:1/1;background:#A6F4E4}
+.prod .foto img{width:100%;height:100%;object-fit:cover;display:block}
+.prod .cat{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.94);color:var(--ac-d);font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 9px}
+.prod .lupa{position:absolute;right:8px;bottom:8px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.95);box-shadow:0 1px 5px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:zoom-in;padding:0}
+.prod .nom{padding:9px 10px 11px;font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.25}
+.prod .nom small{display:block;font-weight:600;color:var(--ac-d);font-size:12.5px;margin-top:2px}
+@media(max-width:560px){.prod .nom{font-size:13px;padding:7px 8px 9px}.prod .cat{font-size:10.5px;padding:2px 7px}.prod .lupa{width:30px;height:30px}}
 footer{margin-top:44px;background:var(--ac);color:#fff;text-align:center;padding:26px 20px;border-radius:40px 40px 0 0}
 footer a{color:#fff;font-weight:700}
 </style>
@@ -57,73 +54,54 @@ footer a{color:#fff;font-weight:700}
   <p class="miga"><a href="./#productos">Productos</a> › Cojines personalizados</p>
   <div class="cab">
     <h1 class="display">Cojines personalizados</h1>
-    <p>Cojín blanco de 40 × 40 cm. Elige un diseño y escribe tus textos, o crea el tuyo con tus fotos.</p>
+    <p>Cojín blanco de 40 × 40 cm. Elige un diseño y personalízalo con tus textos y tus fotos.</p>
     <div class="precio">19,50 € <span>IVA incluido</span></div>
   </div>
-  <ul class="chips" aria-label="Tipos de cojín">
-    <li><a href="#jubilacion">Jubilación</a></li>
-    <li><a href="#nacimiento">Nacimiento</a></li>
-    <li><a href="#parejas">Parejas</a></li>
-    <li><a href="#fotos">Con tus fotos</a></li>
-  </ul>
-</main>
-
-<section id="jubilacion"><div class="wrap">
-  <h2 class="display">Jubilación</h2>
-  <p>Para despedir a un compañero como se merece. Cambia los textos a tu gusto.</p>
-  <div class="rejilla" data-cat="jubilacion"></div>
-</div></section>
-
-<section id="nacimiento"><div class="wrap">
-  <h2 class="display">Nacimiento</h2>
-  <p>Con el nombre del bebé, los papás, la fecha, la hora, la medida y el peso.</p>
-  <div class="rejilla" data-cat="nacimiento"></div>
-</div></section>
-
-<section id="parejas"><div class="wrap">
-  <h2 class="display">Parejas</h2>
-  <p>Vuestra foto, una frase, vuestros nombres y la fecha. Para San Valentín, aniversarios…</p>
-  <div class="rejilla" data-cat="parejas"></div>
-</div></section>
-
-<section id="fotos"><div class="wrap">
-  <h2 class="display">Con tus fotos</h2>
-  <p>Una foto grande o un collage de 8 o 9 fotos, con tu texto.</p>
-  <div class="rejilla">
-    <article class="prod"><div class="foto"><img src="img/ejemplo-cojin-fotos-una.jpg?v=2" alt="Cojín con una foto grande y un texto abajo" loading="lazy"></div>
-      <div class="cuerpo"><h3>Una foto grande</h3><p>Tu mejor foto, con un texto encima.</p><a class="ir" href="cojin-fotos.html">Crear mi cojín <span aria-hidden="true">→</span></a></div></article>
-    <article class="prod"><div class="foto"><img src="img/ejemplo-cojin-fotos-collage.jpg?v=2" alt="Cojín con un collage de fotos y un texto en el centro" loading="lazy"></div>
-      <div class="cuerpo"><h3>Collage de fotos</h3><p>8 o 9 fotos y un texto en el centro.</p><a class="ir" href="cojin-fotos.html">Crear mi cojín <span aria-hidden="true">→</span></a></div></article>
+  <div class="filtros" role="tablist" aria-label="Tipo de cojín">
+    <button type="button" role="tab" data-f="todos">Todos</button>
+    <button type="button" role="tab" data-f="nacimiento">Nacimiento</button>
+    <button type="button" role="tab" data-f="jubilacion">Jubilación</button>
+    <button type="button" role="tab" data-f="parejas">Parejas</button>
+    <button type="button" role="tab" data-f="fotos">Con tus fotos</button>
   </div>
-</div></section>
+  <div class="rejilla" id="rejilla" aria-live="polite"></div>
+</main>
 
 <footer><a href="./">¡Qué lucha!!</a> · Regalos personalizados hechos por un celador</footer>
 
 <script src="visor.js?v=2"></script>
 <script src="textos.js?v=14"></script>
 <script>
-// Las tarjetas de jubilación y nacimiento salen solas de textos.js (cada diseño con cat y foto)
+// Cuadrícula de cojines: los de textos salen de textos.js (cat y foto); los de fotos van aparte
 (function(){
   var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
-  var L=Object.values(QLTextos.DISENOS);
-  document.querySelectorAll(".rejilla[data-cat]").forEach(function(r){
-    r.innerHTML=L.filter(function(d){return d.producto==="cojin"&&d.cat===r.dataset.cat}).map(function(d){
-      return '<article class="prod"><div class="foto"><img src="'+esc(d.foto||d.mini)+'" alt="'+esc(d.nombre)+'" loading="lazy"></div>'+
-        '<div class="cuerpo"><h3>'+esc(d.nombre.replace(/^Cojín (Nacimiento )?/,""))+'</h3>'+
-        '<a class="ir" href="personalizar.html?d='+encodeURIComponent(d.id)+'">Personalizar <span aria-hidden="true">→</span></a></div></article>';
+  var CATS={nacimiento:"Nacimiento",jubilacion:"Jubilación",parejas:"Parejas",fotos:"Con tus fotos"}, ORDEN=["nacimiento","jubilacion","parejas","fotos"];
+  var L=Object.values(QLTextos.DISENOS).filter(function(d){return d.producto==="cojin"&&d.cat;}).map(function(d){
+    return {cat:d.cat, nombre:d.nombre.replace(/^Cojín (Nacimiento )?/,""), img:d.foto||d.mini, href:"personalizar.html?d="+encodeURIComponent(d.id), precio:d.precio};
+  });
+  L.push({cat:"fotos", nombre:"Una foto grande", img:"img/ejemplo-cojin-fotos-una.jpg?v=2", href:"cojin-fotos.html", precio:"19,50 €"});
+  L.push({cat:"fotos", nombre:"Collage de fotos", img:"img/ejemplo-cojin-fotos-collage.jpg?v=2", href:"cojin-fotos.html", precio:"19,50 €"});
+  L.sort(function(a,b){ return ORDEN.indexOf(a.cat)-ORDEN.indexOf(b.cat); });
+  var LUPA='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B7C82" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
+  var rej=document.getElementById("rejilla"), vis=[];
+  function pinta(f){
+    vis=L.filter(function(x){ return f==="todos"||x.cat===f; });
+    rej.innerHTML=vis.map(function(x,i){
+      return '<a class="prod" href="'+x.href+'"><div class="foto"><img src="'+esc(x.img)+'" alt="Cojín '+esc(x.nombre)+'" loading="lazy">'+
+        (f==="todos"?'<span class="cat">'+CATS[x.cat]+'</span>':'')+
+        '<button type="button" class="lupa" data-i="'+i+'" aria-label="Ver '+esc(x.nombre)+' en grande">'+LUPA+'</button></div>'+
+        '<div class="nom">'+esc(x.nombre)+'<small>'+esc(x.precio)+'</small></div></a>';
     }).join("");
+    document.querySelectorAll(".filtros button").forEach(function(b){ b.setAttribute("aria-selected",String(b.dataset.f===f)); });
+  }
+  // La lupa abre la foto en grande (copia reducida) y se pueden pasar las demás
+  rej.addEventListener("click",function(e){
+    var b=e.target.closest(".lupa"); if(!b) return; e.preventDefault();
+    QLVisor.abrir({items:vis.map(function(x){ return {nombre:x.nombre, src:x.img}; }), idx:+b.dataset.i, elegido:-1, boton:"Personalizar este cojín",
+      onElegir:function(j){ location.href=vis[j].href; }});
   });
-  // Tocar la foto: se ve en grande y se puede pasar a las demás de su apartado (fotos reducidas, no sirven para imprimir)
-  document.querySelectorAll(".rejilla").forEach(function(r){
-    var cards=[].slice.call(r.querySelectorAll(".prod"));
-    var items=cards.map(function(c){ return {nombre:c.querySelector("h3").textContent, src:c.querySelector(".foto img").getAttribute("src")}; });
-    cards.forEach(function(c,i){
-      c.querySelector(".foto").addEventListener("click",function(){
-        QLVisor.abrir({items:items, idx:i, elegido:-1, boton:"Personalizar este cojín",
-          onElegir:function(j){ location.href=cards[j].querySelector("a.ir").getAttribute("href"); }});
-      });
-    });
-  });
+  document.querySelectorAll(".filtros button").forEach(function(b){ b.addEventListener("click",function(){ pinta(b.dataset.f); history.replaceState(null,"",b.dataset.f==="todos"?location.pathname:"#"+b.dataset.f); }); });
+  var h=location.hash.slice(1); pinta(CATS[h]?h:"todos");
 })();
 </script>
 </body>
