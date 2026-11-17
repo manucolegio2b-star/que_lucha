@@ -9,9 +9,9 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
   ["QL Elegante","fuentes/GreatVibes-Regular.ttf"],["QL Script","fuentes/DancingScript.ttf",{weight:"400 700"}]];
 // Cojines de nacimiento: misma ficha que el de jubilación
 const COJIN_FICHA=["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"];
-// Foto del cojín generada con relieve (herramientas/mockup_cojin.py): c = centro, s = semilado, a = pellizco de los lados,
-// t = parte impresa (29 de 40 cm), alb = blanco de la tela en la foto. dibujarMockup curva y sombrea el diseño con esa misma forma.
-const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup3.jpg", w:1000, h:1000, cojin:{c:500, s:452, a:0.04, t:0.725, alb:236}};
+// Foto real de cojín (fondo cambiado a verde menta). q = esquinas de la zona impresa (29 cm) en la foto,
+// a = cuánto se meten los lados hacia dentro, ref = gris de la tela más iluminada. El diseño se curva y toma las luces de la foto.
+const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup4.jpg", w:1000, h:1000, cojin:{q:[[228.3,217.6],[780.7,228.0],[754.2,785.8],[215.9,765.1]], a:0.025, ref:250}};
 
 // Cojín perrito con globos (niña rosa / niño azul): mismos textos, cambia el color de los datos
 const CAMPOS_PERRITO=nom=>[
@@ -325,35 +325,46 @@ function dibujarMockup(cv,d,diseno,foto){
     g.imageSmoothingQuality="high"; g.drawImage(diseno,0,0);
     g.globalCompositeOperation="source-over"; g.globalAlpha=0.55; g.drawImage(diseno,0,0); g.restore(); return;
   }
-  // 1) Diseño al tamaño impreso en la foto
-  const P=Math.round(2*k.t*k.s), dc=document.createElement("canvas"); dc.width=dc.height=P;
+  // 1) Diseño a su tamaño en la foto
+  const q=k.q, hw=(q[1][0]+q[2][0]-q[0][0]-q[3][0])/4, hh=(q[3][1]+q[2][1]-q[0][1]-q[1][1])/4;
+  const P=Math.round(Math.max(hw,hh)*2), dc=document.createElement("canvas"); dc.width=dc.height=P;
   const dg=dc.getContext("2d"); dg.imageSmoothingQuality="high"; dg.drawImage(diseno,0,0,P,P);
   const D=dg.getImageData(0,0,P,P).data;
-  // 2) Curvarlo como la tela (los lados se meten hacia dentro) y sombrearlo con las luces y arrugas de la foto
-  const x0=Math.max(0,Math.floor(k.c-k.s*k.t-2)), x1=Math.min(mk.w,Math.ceil(k.c+k.s*k.t+2)), W=x1-x0;
-  const Fi=g.getImageData(x0,x0,W,W), F=Fi.data, T=k.t, A=k.a, inv=1/k.alb;
-  for(let py=0;py<W;py++){
-    const Y=(x0+py+0.5-k.c)/k.s;
+  // 2) Para cada píxel de la foto, buscar qué punto del diseño cae ahí (zona impresa curvada) y sombrearlo con la foto
+  const xs=q.map(p=>p[0]), ys=q.map(p=>p[1]);
+  const x0=Math.max(0,Math.floor(Math.min(...xs))-3), x1=Math.min(mk.w,Math.ceil(Math.max(...xs))+3);
+  const y0=Math.max(0,Math.floor(Math.min(...ys))-3), y1=Math.min(mk.h,Math.ceil(Math.max(...ys))+3);
+  const W=x1-x0, H=y1-y0, Fi=g.getImageData(x0,y0,W,H), F=Fi.data, A=k.a, inv=1/k.ref, ext=1+3/Math.min(hw,hh);
+  const [a0,a1]=q[0], [b0,b1]=q[1], [c0,c1]=q[2], [d0,d1]=q[3];
+  let ur=-1, vr=-1;
+  for(let py=0;py<H;py++){
+    const Y=y0+py+0.5; let u=ur, v=vr, primero=true;
     for(let px=0;px<W;px++){
-      const X=(x0+px+0.5-k.c)/k.s;
-      let u=X, v=Y;
-      for(let i=0;i<4;i++){ u=X/(1-A*(1-v*v)); v=Y/(1-A*(1-u*u)); }
-      const e=Math.max(Math.abs(u),Math.abs(v)); if(e>T+2/k.s) continue;
-      const cov=Math.min(1,Math.max(0,(T-e)*k.s+0.5)); if(cov<=0) continue;
-      const sx=Math.min(P-1.001,Math.max(0,(u/T+1)/2*P-0.5)), sy=Math.min(P-1.001,Math.max(0,(v/T+1)/2*P-0.5));
+      const X=x0+px+0.5;
+      for(let it=0;it<4;it++){
+        const s_=(u+1)/2, t_=(v+1)/2;
+        const bx=(1-s_)*(1-t_)*a0+s_*(1-t_)*b0+s_*t_*c0+(1-s_)*t_*d0-A*hw*u*(1-v*v);
+        const by=(1-s_)*(1-t_)*a1+s_*(1-t_)*b1+s_*t_*c1+(1-s_)*t_*d1-A*hh*v*(1-u*u);
+        const jxu=0.5*((1-t_)*(b0-a0)+t_*(c0-d0))-A*hw*(1-v*v), jxv=0.5*((1-s_)*(d0-a0)+s_*(c0-b0))+2*A*hw*u*v;
+        const jyu=0.5*((1-t_)*(b1-a1)+t_*(c1-d1))+2*A*hh*u*v,   jyv=0.5*((1-s_)*(d1-a1)+s_*(c1-b1))-A*hh*(1-u*u);
+        const det=jxu*jyv-jxv*jyu, ex=X-bx, ey=Y-by;
+        u+=( jyv*ex-jxv*ey)/det; v+=(-jyu*ex+jxu*ey)/det;
+      }
+      if(primero){ ur=u; vr=v; primero=false; }
+      const e=Math.max(Math.abs(u),Math.abs(v)); if(e>ext) continue;
+      const cov=Math.min(1,Math.max(0,(1-e)*Math.min(hw,hh)+0.5)); if(cov<=0) continue;
+      const sx=Math.min(P-1.001,Math.max(0,(u+1)/2*P-0.5)), sy=Math.min(P-1.001,Math.max(0,(v+1)/2*P-0.5));
       const ix=sx|0, iy=sy|0, fx=sx-ix, fy=sy-iy, i00=(iy*P+ix)*4, i10=i00+4, i01=i00+P*4, i11=i01+4;
       const w00=(1-fx)*(1-fy)*D[i00+3], w10=fx*(1-fy)*D[i10+3], w01=(1-fx)*fy*D[i01+3], w11=fx*fy*D[i11+3], ws=w00+w10+w01+w11;
-      const da=ws/255; if(da<=0) continue;
-      const o=(py*W+px)*4, r0=F[o], g0=F[o+1], b0=F[o+2];
-      const sh=(r0+g0+b0)/3*inv, lo=Math.min(sh,1)*k.alb/255, hi=Math.max(sh-1,0)*1.2, al=da*cov;
+      if(ws<=0) continue;
+      const o=(py*W+px)*4, sh=(F[o]+F[o+1]+F[o+2])/3*inv, lo=Math.min(sh,1), hi=Math.max(sh-1,0)*1.2, al=ws/255*cov;
       for(let c=0;c<3;c++){
         const dv=(D[i00+c]*w00+D[i10+c]*w10+D[i01+c]*w01+D[i11+c]*w11)/ws;   // media ponderada por la opacidad
-        const out=dv*lo+(255-dv*lo)*hi;
-        F[o+c]=F[o+c]*(1-al)+out*al;
+        F[o+c]=F[o+c]*(1-al)+(dv*lo+(255-dv*lo)*hi)*al;
       }
     }
   }
-  g.putImageData(Fi,x0,x0);
+  g.putImageData(Fi,x0,y0);
 }
 window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
 })();
