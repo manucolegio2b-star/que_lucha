@@ -136,6 +136,26 @@ const DISENOS={
     mockup:MOCKUP_COJIN,
     campos:CAMPOS_PERRITO("Antonio"),
     zonas:ZONAS_PERRITO("#032DB8")
+  },
+  conejo:{
+    id:"conejo", producto:"cojin", nombre:"Cojín Nacimiento Conejito Skate", corto:"Conejito skate",
+    desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_conejo/base.webp", baseFull:"disenos/cojin_conejo/base_full.jpg", mini:"disenos/cojin_conejo/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    campos:CAMPOS_PERRITO("María").map(c=>c.id==="titulo"?Object.assign({},c,{etiqueta:"Título (en rojo)"}):c),
+    zonas:[
+      {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:280, cy:151, w:400, h:118, max:150, min:40, lineas:1, alto:1.0},
+      {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:272, cy:234, w:368, h:76,  max:92,  min:24, lineas:1, alto:1.0},
+      {campo:"titulo",    estilo:"libre", fuente:"QL Script", peso:700, color:"#E3170A", cx:290, cy:335, w:270, h:66, max:70, min:22, lineas:1, alto:1.0},
+      {campo:"padres",    estilo:"libre", fuente:"QL Script", peso:700, color:"#3D3C09", cx:291, cy:404, w:310, h:58, max:50, min:18, lineas:2, alto:1.05},
+      {campo:"dia",       estilo:"libre", fuente:"QL Script", peso:700, color:"#1A0310", cx:152, cy:521, w:70,  h:58, max:66, min:20, lineas:1, alto:1.0},
+      {campo:"mes",       estilo:"libre", fuente:"QL Script", peso:700, color:"#1A0310", cx:157, cy:589, w:150, h:44, max:46, min:16, lineas:1, alto:1.0},
+      {campo:"anio",      estilo:"libre", fuente:"QL Script", peso:700, color:"#1A0310", cx:156, cy:633, w:150, h:46, max:48, min:16, lineas:1, alto:1.0},
+      {campo:"hora",      estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:372, cy:622, w:180, h:60, max:64, min:18, lineas:1, alto:1.0},
+      {campo:"medida",    estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:156, cy:813, w:200, h:60, max:64, min:18, lineas:1, alto:1.0},
+      {campo:"peso",      estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:378, cy:835, w:180, h:60, max:64, min:18, lineas:1, alto:1.0}
+    ]
   }
 };
 
