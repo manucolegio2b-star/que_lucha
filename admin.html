@@ -549,7 +549,7 @@ function pintarFicha(num){
    (esFoto(p)?'<section class="card"><h2>Cojín</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo de impresión ('+esc(pr.tam||"")+').</p>'+(d.fotos_borradas?'<button class="b pri" disabled>Generar archivo</button><p class="sm">Las fotos de este pedido ya se han borrado.</p>':'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar archivo</a>')+'</section>':
    (esTexto(p)?'<section class="card"><h2>'+esc(pr.corto||"Diseño")+'</h2><p class="sm" style="margin:0 0 12px">Revisa los textos y genera el archivo de impresión ('+esc(pr.tam||"")+').</p><a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar archivo</a></section>':
    '<section class="card"><h2>Calendario</h2><p class="sm" style="margin:0 0 12px">Cuando las fotos estén aprobadas, genera el archivo y revisa la vista previa antes de imprimir.</p>'+
-   (p.producto==="12hojas"?(d.hojas&&!d.fotos_borradas?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar las 13 hojas</a>':'<button class="b pri" disabled>Generar las 13 hojas</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este pedido no tiene las hojas guardadas.")+'</p>'):
+   (p.producto==="12hojas"?(d.hojas&&!d.fotos_borradas?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar las 13 páginas</a>':'<button class="b pri" disabled>Generar las 13 páginas</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este pedido no tiene las páginas guardadas.")+'</p>'):
     (dis?(plantilla?'<a class="b pri" style="display:flex;align-items:center;justify-content:center" href="#/imprimir/'+p.numero+'">Generar calendario</a>':'<button class="b pri" disabled>Generar calendario</button><p class="sm">'+(d.fotos_borradas?"Las fotos de este pedido ya se han borrado.":"Este diseño aún no tiene plantilla de impresión cargada.")+'</p>'):'<button class="b pri" disabled>Generar calendario</button><p class="sm">Este pedido no tiene disposición guardada.</p>'))+'</section>'))+
    '</div></div></main>';
   enlazarComun();
@@ -674,13 +674,13 @@ function pintarImprimir12(p){
   const baja=filas.filter(f=>f.ppp<150);
   const rech=Object.keys(p.fotos_ok||{}).filter(k=>p.fotos_ok[k]==="no");
   root.innerHTML=barra("")+'<main><div class="top"><div><h1>Vista previa · calendario de portada y 12 páginas</h1><p class="sub">Compruébalo con calma. No se imprime nada hasta que lo confirmes.</p></div><a class="back" href="#/pedido/'+num+'">'+I.back+'Volver a la ficha</a></div>'+
-   '<div class="big"><div><div id="estadoGen" class="sm" style="margin-bottom:10px">Preparando las hojas a máxima calidad… 0 de 13</div><div class="hojas12">'+hojas.map((h,i)=>'<figure><div class="hx" data-h="'+i+'">…</div><figcaption><b>'+esc(h.hoja)+'</b>'+h.fotos.length+' foto'+(h.fotos.length===1?"":"s")+'</figcaption></figure>').join("")+'</div><div class="sm" style="margin-top:10px">Cada hoja: 32 × 45 cm · 200 ppp · colores '+esc(MODELOS[p.modelo]||p.modelo)+' · sin sangrado. Toca una hoja para verla en grande.</div></div>'+
+   '<div class="big"><div><div id="estadoGen" class="sm" style="margin-bottom:10px">Preparando las páginas a máxima calidad… 0 de 13</div><div class="hojas12">'+hojas.map((h,i)=>'<figure><div class="hx" data-h="'+i+'">…</div><figcaption><b>'+esc(h.hoja)+'</b>'+h.fotos.length+' foto'+(h.fotos.length===1?"":"s")+'</figcaption></figure>').join("")+'</div><div class="sm" style="margin-top:10px">Cada página: 32 × 45 cm · 200 ppp · colores '+esc(MODELOS[p.modelo]||p.modelo)+' · sin sangrado. Toca una página para verla en grande.</div></div>'+
    '<div class="col"><section class="card"><h2>Pedido '+num+' · '+esc(d.nombre)+'</h2><div class="kv"><span>Producto</span><span>'+esc(PRODUCTOS[p.producto].nombre)+'</span></div><div class="kv"><span>Colores</span><span>'+esc(MODELOS[p.modelo]||p.modelo)+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+'</span></div><div class="kv"><span>Fotos</span><span>'+filas.length+'</span></div></section>'+
    '<section class="card"><h2>Calidad de cada foto al imprimir</h2><div class="q" style="font-size:12px;font-weight:700;color:#5B6472"><span>Foto</span><span>% zona</span><span>Resolución</span></div>'+filas.map(f=>'<div class="q"><span>'+esc(f.hoja)+' · '+esc(f.n.replace(/\.jpg$/,"").split("-").pop())+'</span><span>'+f.a+' %</span><span style="'+(f.ppp<150?"color:#7A4B00;font-weight:700":"")+'">'+f.ppp+' ppp</span></div>').join("")+
    (baja.length?'<div class="warn">⚠ '+(baja.length===1?"Una foto sale":baja.length+" fotos salen")+' por debajo de 150 ppp y puede verse pixelada ('+esc([...new Set(baja.map(f=>f.hoja))].join(", "))+').</div>':"")+
    (rech.length?'<div class="warn">⚠ Has rechazado '+rech.length+' foto'+(rech.length>1?"s":"")+' de este pedido ('+esc(rech.join(", "))+').</div>':"")+'</section>'+
-   '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado las 13 hojas y quiero imprimirlas.</span></label>'+
-   '<button class="b pri" id="dpdf" disabled>Descargar PDF (13 páginas)</button><button class="b full" id="djpg" disabled style="margin-top:8px">Descargar las 13 hojas en JPG</button>'+
+   '<section class="card"><h2>Confirmar impresión</h2><label style="display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;margin:0 0 12px"><input id="rev" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:1px"><span>He revisado las 13 páginas y quiero imprimirlas.</span></label>'+
+   '<button class="b pri" id="dpdf" disabled>Descargar PDF (13 páginas)</button><button class="b full" id="djpg" disabled style="margin-top:8px">Descargar las 13 páginas en JPG</button>'+
    '<p class="sm" style="margin:10px 0 0">Cada página mide 32 × 45 cm a 200 ppp. Imprímelo al 100 %, sin "ajustar a página". Orden: portada, enero… diciembre.</p></section></div></div></main>';
   enlazarComun();
   const listo=()=>gen12&&gen12.num===num&&gen12.hojas.length===hojas.length&&gen12.hojas.every(Boolean);
@@ -690,7 +690,7 @@ function pintarImprimir12(p){
   const nom="calendario12_"+num;
   $("#dpdf").onclick=()=>{ descargar(pdfVarias(gen12.hojas.map(h=>h.jpg),QLCal12.ANCHO,QLCal12.ALTO,WC,HC),nom+".pdf"); setTimeout(()=>{ if(p.situacion!=="imp"&&p.situacion!=="ent"&&confirm("¿Lo marco como Impreso? Pulsa Aceptar cuando lo hayas impreso.")) guardarCambios(p,{situacion:"imp"}); },800); };
   $("#djpg").onclick=async()=>{ for(let i=0;i<gen12.hojas.length;i++){ descargar(new Blob([gen12.hojas[i].jpg],{type:"image/jpeg"}),nom+"_"+String(i).padStart(2,"0")+"_"+hojas[i].hoja.toLowerCase()+".jpg"); await esperar(700); } };
-  if(gen12&&gen12.num===num&&listo()){ hojas.forEach((_,i)=>mostrar(i)); $("#estadoGen").textContent="Las 13 hojas están listas."; onList(); return; }
+  if(gen12&&gen12.num===num&&listo()){ hojas.forEach((_,i)=>mostrar(i)); $("#estadoGen").textContent="Las 13 páginas están listas."; onList(); return; }
   if(gen12) gen12.hojas.forEach(h=>{ if(h){ URL.revokeObjectURL(h.url); URL.revokeObjectURL(h.grande); } });
   gen12={num,hojas:[]};
   (async()=>{
@@ -705,7 +705,7 @@ function pintarImprimir12(p){
       const med=document.createElement("canvas"); med.width=1260; med.height=Math.round(1260*cv.height/cv.width); med.getContext("2d").drawImage(cv,0,0,med.width,med.height);
       cv.width=cv.height=1;
       gen12.hojas[i]={jpg,url:URL.createObjectURL(await aBlob(mini,"image/jpeg",.85)),grande:URL.createObjectURL(await aBlob(med,"image/jpeg",.9))};
-      if(ruta().r==="imprimir"&&+ruta().id===num){ mostrar(i); const e=$("#estadoGen"); if(e) e.textContent=i<hojas.length-1?"Preparando las hojas a máxima calidad… "+(i+1)+" de "+hojas.length:"Las 13 hojas están listas."; onList(); }
+      if(ruta().r==="imprimir"&&+ruta().id===num){ mostrar(i); const e=$("#estadoGen"); if(e) e.textContent=i<hojas.length-1?"Preparando las páginas a máxima calidad… "+(i+1)+" de "+hojas.length:"Las 13 páginas están listas."; onList(); }
     }
   })().catch(e=>{ console.error(e); gen12=null; const s=$("#estadoGen"); if(s){ s.style.color="#B42318"; s.textContent="No se pudo generar: "+e.message; } });
 }
