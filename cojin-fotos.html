@@ -20,7 +20,8 @@ h2{margin:0;font-size:18px}
 .head{display:flex;flex-direction:column;gap:6px}
 .cols{display:flex;flex-direction:column;gap:18px}
 .prev{position:relative;background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(17,24,39,.08)}
-.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4}
+.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4;cursor:zoom-in}
+.prev .qlv-lupa{top:auto;bottom:16px;right:16px}
 .vista{display:flex;width:max-content;margin:0 0 8px auto;background:#EEF1F4;border-radius:999px;padding:3px}
 .vista button{border:0;background:none;min-height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;color:#374151;cursor:pointer}
 .vista button[aria-pressed=true]{background:#13A4AA;color:#fff}
@@ -100,7 +101,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="fotocojin.js"></script>
-<script src="visor.js"></script>
+<script src="visor.js?v=2"></script>
 <script src="calidad.js"></script>
 <script>
 (function(){
@@ -181,7 +182,7 @@ function vDiseno(){
     (PRECIO?'<div class="row"><span class="price">'+esc(PRECIO)+'<span class="iva">IVA incluido</span></span></div>':'')+
     '<ul class="ficha"><li>Cojín de 40 × 40 cm, color blanco</li><li>Zona impresa: 29 × 29 cm</li></ul></div>'+
     '<div class="cols"><div class="prev"><div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>'+
-    '<canvas id="cv" width="1000" height="'+(S.vista==="cojin"&&S.mk?1007:1000)+'" aria-label="Vista previa del cojín"></canvas></div>'+
+    '<canvas id="cv" width="1000" height="'+(S.vista==="cojin"&&S.mk?1007:1000)+'" aria-label="Vista previa del cojín"></canvas>'+QLVisor.lupa('id="lupaPrev"','tu cojín')+'</div>'+
     '<div class="form">'+modelos+fotos+texto+degradado+(S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(PRECIO?' · '+esc(PRECIO):'')+'</button></div></div>';
 }
@@ -233,6 +234,7 @@ function render(){
   }
   $$("[data-mod]").forEach(b=>b.addEventListener("click",()=>{ if(S.modelo===b.dataset.mod) return; S.modelo=b.dataset.mod; S.aviso=""; render(); }));
   $$("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
+  { const cvp=$("#cv"); if(cvp){ cvp.addEventListener("click",verPrevia); const lp=$("#lupaPrev"); if(lp) lp.addEventListener("click",verPrevia); } }
   $$("[data-ct]").forEach(b=>b.addEventListener("click",()=>{ S.conTexto=b.dataset.ct==="1"; S.aviso=""; render(); }));
   $$("[data-vista]").forEach(b=>b.addEventListener("click",()=>{ S.vista=b.dataset.vista; $$("[data-vista]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
   const t=$("#texto"); if(t) t.addEventListener("input",()=>{ S.textos[S.modelo]=t.value; $("#nTexto").textContent=t.value.length+"/"+t.maxLength; repintar(); });
@@ -253,6 +255,14 @@ function toast(msg){ const t=document.createElement("div"); t.className="toast";
 // ---------- Lupa: los dos modelos en grande, con fotos de muestra y el texto del cliente ----------
 let ejemplos=null;
 function cargarImg(src){ return new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>ko(new Error("No se pudo cargar "+src)); i.src=src; }); }
+// Tocar la vista previa: tu cojín en grande (copia reducida, no sirve para imprimir)
+function verPrevia(){
+  const imgs=fotosAct().map(f=>f&&f.img), c=cfg(), firma=JSON.stringify(c)+fotosAct().map(f=>f&&f.preview).join("|");
+  const items=[];
+  if(S.mk) items.push({nombre:"En el cojín", clave:"mk"+firma, crear:async()=>{ const pl=document.createElement("canvas"); F.dibujar(pl,c,imgs,1000,true); const cv=document.createElement("canvas"); F.dibujarMockup(cv,pl,S.mk); return QLVisor.marca(cv); }});
+  items.push({nombre:"Diseño", clave:"pl"+firma, crear:async()=>{ const pl=document.createElement("canvas"); F.dibujar(pl,c,imgs,1000); return QLVisor.marca(pl); }});
+  QLVisor.abrir({items, idx:(S.vista==="plano"&&items.length>1)?1:0});
+}
 function verGrande(id){
   const L=Object.values(F.MODELOS);
   const items=L.map(x=>{ const c={modelo:x.id, conTexto:x.id==="collage"?S.conTexto:true, texto:S.textos[x.id], fuente:S.fuente[x.id], color:S.color[x.id], degradado:x.id==="una"?Object.assign({},S.deg):undefined, enc:x.id==="una"?[]:Array.from({length:9},(_,i)=>F.EJEMPLO_ENC[i%8])};

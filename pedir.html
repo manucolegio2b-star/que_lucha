@@ -161,7 +161,7 @@ input.err,select.err{border-color:#C0392B;background:#FFF5F4}
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js?v=9"></script>
 <script src="calendario12.js"></script>
-<script src="visor.js"></script>
+<script src="visor.js?v=2"></script>
 <script src="calidad.js"></script>
 <script>
 (function(){
@@ -534,7 +534,7 @@ function vConfig(){
   } else {
     const t=p.tema;
     const dz=DISENOS[p.id];
-    if(dz) h+='<div class="center" style="padding:6px 0"><div style="position:relative;width:140px;margin:0 auto"><img src="disenos/'+p.id+'/miniatura.jpg?v=10" alt="Diseño '+esc(p.nombre)+'" width="140" height="197" style="width:140px;height:197px;display:block;border-radius:4px;border:1px solid #B8C0CC;background:#fff">'+QLVisor.lupa('data-ver="'+p.id+'"',p.nombre)+'</div><div class="small" style="margin-top:8px">Un solo diseño. Las fotos del ejemplo son de muestra: irán las tuyas. Toca la lupa para verlo en grande.</div></div>';
+    if(dz) h+='<div class="center" style="padding:6px 0"><div style="position:relative;width:140px;margin:0 auto"><img src="disenos/'+p.id+'/miniatura.jpg?v=10" alt="Diseño '+esc(p.nombre)+'" width="140" height="197" data-ver-img="'+p.id+'" style="cursor:zoom-in;width:140px;height:197px;display:block;border-radius:4px;border:1px solid #B8C0CC;background:#fff">'+QLVisor.lupa('data-ver="'+p.id+'"',p.nombre)+'</div><div class="small" style="margin-top:8px">Un solo diseño. Las fotos del ejemplo son de muestra: irán las tuyas. Toca la lupa para verlo en grande.</div></div>';
     else h+='<div class="center" style="padding:6px 0"><div class="mini" style="width:140px;height:197px;margin:0 auto;background:'+t.bg+'"><div class="ph" style="height:58px"></div><div class="ln" style="background:repeating-linear-gradient(to bottom,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 8px),repeating-linear-gradient(to right,'+t.ln+' 0,'+t.ln+' 1px,transparent 1px,transparent 13px)"></div></div><div class="small" style="margin-top:8px">Un solo diseño. Miniatura de ejemplo.</div></div>';
   }
   h+=selAnio();
@@ -655,6 +655,7 @@ function bind(){
   }));
   $$("[data-var]").forEach(b=>b.addEventListener("click",()=>{ S.variante=b.dataset.var; render(); }));
   $$("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
+  $$("[data-ver-img]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.verImg)));
   const an=$("#anio"); if(an) an.addEventListener("change",()=>{ S.anio=+an.value; if(S.step==="config") render(); });
   if(S.step==="datos") bindDatos();
   if(S.step==="fotos") bindFotos();
@@ -784,7 +785,7 @@ function bindPrevia(){
     const ov=document.createElement("div"); ov.className="over"; ov.innerHTML='<div style="font-size:17px;font-weight:600">Preparando tu foto…</div>'; document.body.appendChild(ov);
     try{ const r=await procesar(f), l=listaPrev(); if(!es12()) URL.revokeObjectURL(l[j].preview); l[j]=r; S.montaje=null; }catch(e){ toast("No se ha podido leer esa foto. Prueba con otra."); }
     ov.remove(); render(); });
-  const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const z=document.createElement("div"); z.className="zoom"; z.innerHTML='<img src="'+(es12()?S.hojas[S.hoja12||0].prev.url:S.montaje.url)+'" alt=""><button type="button">Cerrar</button>'; z.addEventListener("click",()=>z.remove()); document.body.appendChild(z); });
+  const pi=$("#posterImg"); if(pi) pi.addEventListener("click",()=>{ const u=es12()?S.hojas[S.hoja12||0].prev.url:S.montaje.url; QLVisor.abrir({items:[{nombre:"Tu calendario", clave:"poster"+u, previa:pi.src, crear:()=>QLVisor.reducida(u)}]}); });
   const c=$("#consent"); c.addEventListener("change",()=>{ S.consent=c.checked; $("#enviar").disabled=!(c.checked&&(es12()||S.montaje)); });
   if(!es12() && !(S.montaje && S.montaje.key===claveMontaje())){
     prepararMontaje().then(()=>{ if(S.step==="previa") render(); });

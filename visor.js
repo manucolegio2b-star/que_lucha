@@ -74,5 +74,7 @@
     document.addEventListener("keydown",tecla);
     document.body.appendChild(el); pinta(); el.querySelector(".qlv-x").focus();
   }
-  window.QLVisor={abrir:abrir,lupa:lupa,marca:marca};
+  // Carga una imagen (url) y devuelve su copia reducida
+  function reducida(u){ return new Promise(function(ok,ko){ var im=new Image(); im.onload=function(){ ok(marca(im)); }; im.onerror=ko; im.src=u; }); }
+  window.QLVisor={abrir:abrir,lupa:lupa,marca:marca,reducida:reducida};
 })();

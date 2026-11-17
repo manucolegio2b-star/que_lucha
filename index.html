@@ -92,6 +92,8 @@ section{padding:44px 0 10px}
 .foto.rota img{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
 .foto.rota img.on{opacity:1}
 .foto.rota .etq{z-index:1}
+/* Tocar la foto la abre en grande (el resto de la tarjeta sigue llevando al producto) */
+.prod .foto.ver{z-index:3;cursor:zoom-in}
 .prod .foto svg{width:64px;height:64px;stroke:var(--ac);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
 .prod .cuerpo{padding:14px 14px 16px;display:flex;flex-direction:column;flex:1}
 .prod h3{margin:0;font-size:18px;color:var(--navy)}
@@ -261,6 +263,24 @@ footer small{display:block;margin-top:14px;opacity:.92}
   <small>© 2026 ¡Qué lucha!! &nbsp;|&nbsp; Hecho con mucho cariño ♥</small>
 </footer>
 
+<script src="visor.js?v=2"></script>
+<script>
+/* Tocar la foto de un producto: se ve en grande y se pasan las demás fotos de esa tarjeta (copias reducidas, no sirven para imprimir) */
+(function(){
+  document.querySelectorAll('.prod').forEach(function(t){
+    var f=t.querySelector('.foto'), ir=t.querySelector('a.boton'), fotos=f?f.querySelectorAll('img'):[];
+    if(!f||!ir||!fotos.length) return;
+    f.classList.add('ver');
+    var nombre=t.querySelector('h3').textContent;
+    f.addEventListener('click',function(){
+      var items=[].map.call(fotos,function(im){ return {nombre:nombre, src:im.getAttribute('src')}; });
+      var i=[].findIndex.call(fotos,function(im){ return im.classList.contains('on'); });
+      QLVisor.abrir({items:items, idx:Math.max(0,i), elegido:-1, boton:ir.textContent.replace('→','').trim(),
+        onElegir:function(){ location.href=ir.getAttribute('href'); }});
+    });
+  });
+})();
+</script>
 <script>
 /* Fotos de las tarjetas: cambian cada 4 segundos; se paran con el ratón encima.
    Para añadir fotos a otro producto: poner class="foto alto rota" y más <img> dentro. */

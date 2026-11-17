@@ -36,7 +36,7 @@ section > .wrap > p{margin:4px 0 16px;color:var(--mute);font-size:15.5px}
 @media(max-width:680px){.rejilla{grid-template-columns:1fr 1fr;gap:12px}}
 .prod{position:relative;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px rgba(12,43,75,.09);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
 .prod:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(12,43,75,.15)}
-.prod .foto{aspect-ratio:1/1;background:#A6F4E4;overflow:hidden}
+.prod .foto{position:relative;z-index:3;aspect-ratio:1/1;background:#A6F4E4;overflow:hidden;cursor:zoom-in}
 .prod .foto img{width:100%;height:100%;object-fit:cover}
 .prod .cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
 .prod h3{margin:0;font-size:17px;color:var(--navy)}
@@ -92,6 +92,7 @@ footer a{color:#fff;font-weight:700}
 
 <footer><a href="./">¡Qué lucha!!</a> · Regalos personalizados hechos por un celador</footer>
 
+<script src="visor.js?v=2"></script>
 <script src="textos.js?v=9"></script>
 <script>
 // Las tarjetas de jubilación y nacimiento salen solas de textos.js (cada diseño con cat y foto)
@@ -104,6 +105,17 @@ footer a{color:#fff;font-weight:700}
         '<div class="cuerpo"><h3>'+esc(d.nombre.replace(/^Cojín (Nacimiento )?/,""))+'</h3>'+
         '<a class="ir" href="personalizar.html?d='+encodeURIComponent(d.id)+'">Personalizar <span aria-hidden="true">→</span></a></div></article>';
     }).join("");
+  });
+  // Tocar la foto: se ve en grande y se puede pasar a las demás de su apartado (fotos reducidas, no sirven para imprimir)
+  document.querySelectorAll(".rejilla").forEach(function(r){
+    var cards=[].slice.call(r.querySelectorAll(".prod"));
+    var items=cards.map(function(c){ return {nombre:c.querySelector("h3").textContent, src:c.querySelector(".foto img").getAttribute("src")}; });
+    cards.forEach(function(c,i){
+      c.querySelector(".foto").addEventListener("click",function(){
+        QLVisor.abrir({items:items, idx:i, elegido:-1, boton:"Personalizar este cojín",
+          onElegir:function(j){ location.href=cards[j].querySelector("a.ir").getAttribute("href"); }});
+      });
+    });
   });
 })();
 </script>

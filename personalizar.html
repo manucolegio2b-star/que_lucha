@@ -20,7 +20,8 @@ h2{margin:0;font-size:18px}
 .head{display:flex;flex-direction:column;gap:6px}
 .cols{display:flex;flex-direction:column;gap:18px}
 .prev{position:relative;background:#fff;border-radius:16px;padding:10px;box-shadow:0 2px 10px rgba(17,24,39,.08)}
-.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4}
+.prev canvas{display:block;width:100%;height:auto;border-radius:10px;background:#EEF1F4;cursor:zoom-in}
+.prev .qlv-lupa{top:auto;bottom:16px;right:16px}
 .vista{display:flex;width:max-content;margin:0 0 8px auto;background:#EEF1F4;border-radius:999px;padding:3px}
 .vista button{border:0;background:none;min-height:32px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;color:#374151;cursor:pointer}
 .vista button[aria-pressed=true]{background:#13A4AA;color:#fff}
@@ -87,7 +88,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
 <script src="textos.js?v=9"></script>
-<script src="visor.js"></script>
+<script src="visor.js?v=2"></script>
 <script>
 (function(){
 "use strict";
@@ -127,7 +128,7 @@ function vDiseno(){
       '<div class="errmsg" id="av_'+c.id+'"></div>'+(c.ayuda||c.quitar?'<p class="small">'+(c.quitar?'<button type="button" class="quitar" data-quitar="'+c.id+'"><span aria-hidden="true">✕</span> Quitar este título</button>':'')+esc(c.ayuda||"")+'</p>':'')+'</div>'; };
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'<span class="iva">IVA incluido</span></span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
-    '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
+    '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+QLVisor.lupa('id="lupaPrev"','tu cojín')+''+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
     '<div class="form">'+vOtros()+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<div class="pjw"><button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>'+QLVisor.lupa('data-ver="'+pj.id+'"',pj.nombre)+'</div>').join("")+'</div><p class="small" style="margin-top:8px">Toca la lupa para verlo en grande, con tus textos.</p>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
@@ -181,7 +182,17 @@ function render(){
   document.querySelectorAll("[data-pj]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.pj; if(id===S.personaje) return; S.personaje=id;
     document.querySelectorAll("[data-pj]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); cambiarPersonaje(id); }));
   document.querySelectorAll("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
+  const cvp=$("#cv"); if(cvp){ cvp.addEventListener("click",verPrevia); const lp=$("#lupaPrev"); if(lp) lp.addEventListener("click",verPrevia); }
   repintar();
+}
+// Tocar la vista previa: se ve en grande (copia reducida, no sirve para imprimir), en el cojín y el diseño plano
+function verPrevia(){
+  if(!S.img) return;
+  const firma=JSON.stringify([S.textos,S.formas,S.personaje]);
+  const items=[];
+  if(D.mockup&&S.foto) items.push({nombre:"En el cojín", clave:"mk"+firma, crear:async()=>{ const pl=document.createElement("canvas"); T.dibujar(pl,D,S.textos,S.img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,pl,S.foto); return QLVisor.marca(cv); }});
+  items.push({nombre:"Diseño", clave:"pl"+firma, crear:async()=>{ const pl=document.createElement("canvas"); T.dibujar(pl,D,S.textos,S.img,1000,S.formas); return QLVisor.marca(pl); }});
+  QLVisor.abrir({items, idx:(S.vista==="plano"&&items.length>1)?1:0});
 }
 // Lupa: cada personaje en grande con los textos que lleva escritos el cliente
 function verGrande(id){
