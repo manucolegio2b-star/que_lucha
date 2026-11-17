@@ -111,7 +111,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 <body>
 <div id="root"></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
-<script src="textos.js?v=11"></script>
+<script src="textos.js?v=12"></script>
 <script src="calendario12.js"></script>
 <script src="fotocojin.js"></script>
 <script>
@@ -190,7 +190,8 @@ const ARCH_IMPRENTA=["disenos/quelucha/base_full.jpg","disenos/colores/base2_ful
   "disenos/cojin_erizo/base_full.jpg","disenos/cojin_animales/base_full_v2.jpg",
   "disenos/cojin_perrito_nina/base_full.jpg","disenos/cojin_perrito_nino/base_full.jpg",
   "disenos/cojin_conejo/base_full.jpg","disenos/cojin_acuarela/base_full.jpg",
-  "disenos/cojin_pareja_marco/marco_full.png","disenos/cojin_pareja_marco/ventana_full.png"];
+  "disenos/cojin_pareja_marco/marco_full.png","disenos/cojin_pareja_marco/ventana_full.png",
+  "disenos/cojin_pareja_love/base_full.jpg"];
 const _plant={};
 function urlPlantilla(ruta){
   if(!_plant[ruta]) _plant[ruta]=api("/storage/v1/object/authenticated/plantillas/"+ruta)

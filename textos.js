@@ -197,6 +197,21 @@ const DISENOS={
       {campo:"nombres", estilo:"libre", fuente:"QL Mano", color:"#1B2226", grosor:0.006, cx:500, cy:856, w:520, h:46, max:48, min:18, lineas:1, alto:1.0},
       {campo:"fecha",   estilo:"libre", fuente:"QL Mano", color:"#1B2226", grosor:0.006, cx:500, cy:899, w:320, h:42, max:44, min:16, lineas:1, alto:1.0}
     ]
+  },
+  pareja_love:{
+    id:"pareja_love", producto:"cojin", cat:"parejas", foto:"img/cojines/pareja_love.jpg", nombre:"Cojín Pareja Love", corto:"Pareja Love",
+    desc:"Cojín blanco de 40 × 40 cm con vuestros nombres y la fecha. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_pareja_love/base.webp", baseFull:"disenos/cojin_pareja_love/base_full.jpg", mini:"disenos/cojin_pareja_love/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    campos:[
+      {id:"nombres", etiqueta:"Vuestros nombres", def:"María y Cayetano", max:40},
+      {id:"fecha", etiqueta:"Fecha", def:"14-2-2027", max:20}
+    ],
+    zonas:[
+      {campo:"nombres", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#0F1A1C", grosor:0.02, cx:500, cy:744, w:700, h:132, max:130, min:36, lineas:2, alto:0.95},
+      {campo:"fecha",   estilo:"libre", fuente:"QL Mano", color:"#0F1A1C", grosor:0.006, cx:500, cy:848, w:420, h:56, max:60, min:18, lineas:1, alto:1.0}
+    ]
   }
 };
 
