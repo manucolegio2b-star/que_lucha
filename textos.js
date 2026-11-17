@@ -79,9 +79,9 @@ const DISENOS={
     base:"disenos/cojin_erizo/base.webp", baseFull:"disenos/cojin_erizo/base_full.jpg", mini:"disenos/cojin_erizo/miniatura.jpg",
     mockup:MOCKUP_COJIN,
     campos:[
-      {id:"nombre", etiqueta:"Nombre", def:"Manu", max:20},
-      {id:"apellidos", etiqueta:"Apellidos", def:"Sevillano Hernández", max:32},
-      {id:"datos", etiqueta:"Datos del nacimiento", def:"Nací el 21 de septiembre\nde 2013 a las 7:30 h.\nCon un peso de 3.500 gr\ny midiendo 53 cm.", max:140, varias:true,
+      {id:"nombre", etiqueta:"Nombre", def:"Hugo", max:20},
+      {id:"apellidos", etiqueta:"Apellidos", def:"Navarro Hernández", max:32},
+      {id:"datos", etiqueta:"Datos del nacimiento", def:"Nací el 21 de septiembre\nde 2027 a las 7:30 h.\nCon un peso de 3.500 gr\ny midiendo 53 cm.", max:140, varias:true,
        ayuda:"Pulsa Intro para empezar una línea nueva."}
     ],
     zonas:[
@@ -167,14 +167,35 @@ const DISENOS={
     mockup:MOCKUP_COJIN,
     campos:[
       {id:"nombre", etiqueta:"Nombre", def:"María", max:20},
-      {id:"apellidos", etiqueta:"Apellidos", def:"Sevillano Huertas", max:32},
-      {id:"datos", etiqueta:"Datos del nacimiento", def:"Nació el 21 de septiembre\nde 2013 a las 7:30 h.\nCon un peso de 3.500 gr\ny midiendo 53 cm.", max:140, varias:true,
+      {id:"apellidos", etiqueta:"Apellidos", def:"Ortega Huertas", max:32},
+      {id:"datos", etiqueta:"Datos del nacimiento", def:"Nació el 21 de septiembre\nde 2027 a las 7:30 h.\nCon un peso de 3.500 gr\ny midiendo 53 cm.", max:140, varias:true,
        ayuda:"Pulsa Intro para empezar una línea nueva."}
     ],
     zonas:[
       {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:712, cy:174, w:390, h:112, max:130, min:40, lineas:1, alto:1.0},
       {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:712, cy:256, w:420, h:72,  max:84,  min:24, lineas:1, alto:1.0},
       {campo:"datos",     estilo:"libre", fuente:"QL Script", peso:400, color:"#1A1A1D", grosor:0.012, cx:706, cy:400, w:470, h:196, max:44, min:17, lineas:6, alto:1.32}
+    ]
+  },
+  pareja_marco:{
+    id:"pareja_marco", producto:"cojin", cat:"parejas", foto:"img/cojines/pareja_marco.jpg", nombre:"Cojín Pareja Marco", corto:"Pareja Marco",
+    desc:"Cojín blanco de 40 × 40 cm con vuestra foto en un marco dibujado, una frase, vuestros nombres y la fecha. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_pareja_marco/base.png", baseFull:"disenos/cojin_pareja_marco/base.png", mini:"disenos/cojin_pareja_marco/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    // Foto del cliente dentro del marco: zona = rectángulo del hueco (milésimas); mascara = forma exacta del hueco; marco = trazo que se colorea
+    ventana:{zona:{x:133.53, y:121.55, w:738.39, h:503.27}, mascara:"disenos/cojin_pareja_marco/ventana.png", mascaraFull:"disenos/cojin_pareja_marco/ventana_full.png",
+      marco:"disenos/cojin_pareja_marco/marco.png", marcoFull:"disenos/cojin_pareja_marco/marco_full.png", ejemplo:"disenos/cojin_pareja_marco/ejemplo.jpg",
+      colores:[["Negro","#111111"],["Gris","#6B7280"],["Azul marino","#1E3A8A"],["Turquesa","#0E9AA0"],["Verde","#2F7D32"],["Rojo","#C62828"],["Rosa","#D6336C"],["Morado","#7B3FA0"],["Dorado","#B8860B"]]},
+    campos:[
+      {id:"frase", etiqueta:"Frase", def:"Eres lo mejor que me\nha pasado en la vida.", max:80, varias:true, ayuda:"Pulsa Intro para empezar una línea nueva."},
+      {id:"nombres", etiqueta:"Vuestros nombres", def:"María y Cayetano", max:40},
+      {id:"fecha", etiqueta:"Fecha", def:"14-2-2027", max:20}
+    ],
+    zonas:[
+      {campo:"frase",   estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#1B2226", grosor:0.012, cx:500, cy:762, w:640, h:142, max:66, min:22, lineas:3, alto:1.0},
+      {campo:"nombres", estilo:"libre", fuente:"QL Mano", color:"#1B2226", grosor:0.006, cx:500, cy:856, w:520, h:46, max:48, min:18, lineas:1, alto:1.0},
+      {campo:"fecha",   estilo:"libre", fuente:"QL Mano", color:"#1B2226", grosor:0.006, cx:500, cy:899, w:320, h:42, max:44, min:16, lineas:1, alto:1.0}
     ]
   }
 };
@@ -194,7 +215,37 @@ function cargar(d,full,pid){
   const pj=personaje(d,pid), src=pj?(full?pj.baseFull:pj.base):(full?d.baseFull:d.base);
   // Los archivos de imprenta (full) están en el almacén privado: el panel pone QLTextos.resolver para leerlos
   const R=window.QLTextos&&QLTextos.resolver, img=(full&&R)?R(src).then(cargarImagen):cargarImagen(src);
-  return Promise.all([cargarFuentes(),img,logo]).then(r=>r[1]);
+  const V=d.ventana, capas=V?Promise.all([
+      (full&&R)?R(V.mascaraFull).then(cargarImagen):cargarImagen(full?V.mascaraFull:V.mascara),
+      (full&&R)?R(V.marcoFull).then(cargarImagen):cargarImagen(full?V.marcoFull:V.marco),
+      full?Promise.resolve(null):cargarImagen(V.ejemplo).catch(()=>null)]):null;
+  return Promise.all([cargarFuentes(),img,logo,capas]).then(r=>{ if(r[3]) r[1].capas={mascara:r[3][0],marco:r[3][1],ejemplo:r[3][2]}; return r[1]; });
+}
+// Parte de la foto que se ve en el hueco. enc = {z: zoom (1 = la foto justo cubre el hueco), x, y: centro (0 a 1)}
+function recorte(iw,ih,h,enc){
+  enc=enc||{}; const z=Math.max(1,enc.z||1);
+  const s=Math.max(h.w/iw,h.h/ih)*z, vw=h.w/s, vh=h.h/s;
+  const cx=(enc.x==null?.5:enc.x)*iw, cy=(enc.y==null?.5:enc.y)*ih;
+  return {sx:Math.min(Math.max(cx-vw/2,0),iw-vw), sy:Math.min(Math.max(cy-vh/2,0),ih-vh), vw, vh};
+}
+function ajustarEnc(iw,ih,h,enc){ const r=recorte(iw,ih,h,enc); return {z:Math.max(1,enc.z||1), x:(r.sx+r.vw/2)/iw, y:(r.sy+r.vh/2)/ih}; }
+// Foto (en color o blanco y negro) dentro del hueco y el marco del color elegido. ex = {img, enc, bn, marco}
+function pintarVentana(g,d,img,px,ex){
+  const V=d.ventana, C=img&&img.capas; if(!V||!C) return;
+  const u=px/1000, h=V.zona, X=Math.round(h.x*u), Y=Math.round(h.y*u), W=Math.round(h.w*u), H=Math.round(h.h*u);
+  const foto=ex.img||C.ejemplo;
+  if(foto){
+    const o=document.createElement("canvas"); o.width=W; o.height=H; const og=o.getContext("2d");
+    const iw=foto.naturalWidth||foto.width, ih=foto.naturalHeight||foto.height, r=recorte(iw,ih,h,ex.img?ex.enc:null);
+    og.imageSmoothingQuality="high"; og.drawImage(foto,r.sx,r.sy,r.vw,r.vh,0,0,W,H);
+    if(ex.bn){ const id=og.getImageData(0,0,W,H), a=id.data; for(let k=0;k<a.length;k+=4){ const y=a[k]*0.299+a[k+1]*0.587+a[k+2]*0.114; a[k]=a[k+1]=a[k+2]=y; } og.putImageData(id,0,0); }
+    og.globalCompositeOperation="destination-in"; og.drawImage(C.mascara,-X,-Y,px,px);
+    g.drawImage(o,X,Y);
+  }
+  const m=document.createElement("canvas"); m.width=m.height=px; const mg=m.getContext("2d");
+  mg.fillStyle=ex.marco||V.colores[0][1]; mg.fillRect(0,0,px,px);
+  mg.globalCompositeOperation="destination-in"; mg.imageSmoothingQuality="high"; mg.drawImage(C.marco,0,0,px,px);
+  g.drawImage(m,0,0);
 }
 
 const FAM={azul:"QL Titulo",rojo:"QL Destacado",mano:"QL Mano"};
@@ -281,11 +332,12 @@ function corazon(g,cx,cy,s,color,grosor){
 
 // Dibuja el diseño completo en un canvas de lado "px". Devuelve los avisos de textos demasiado largos.
 // transparente=true: sin fondo blanco (para ponerlo sobre la foto del cojín)
-function dibujar(cv,d,textos,img,px,formas,transparente){
+function dibujar(cv,d,textos,img,px,formas,transparente,ex){
   cv.width=px; cv.height=px;
   const g=cv.getContext("2d"), u=px/1000;
-  if(!transparente){ g.fillStyle="#fff"; g.fillRect(0,0,px,px); }
+  if(!transparente||d.ventana){ g.fillStyle="#fff"; g.fillRect(0,0,px,px); }
   g.drawImage(img,0,0,px,px);
+  if(d.ventana) pintarVentana(g,d,img,px,ex||{});
   const avisos={};
   const vacio=k=>!String((textos&&textos[k])||"").trim();
   d.zonas.forEach(z=>{
@@ -384,5 +436,5 @@ function dibujarMockup(cv,d,diseno,foto){
   }
   g.putImageData(Fi,x0,y0);
 }
-window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup};
+window.QLTextos={DISENOS,FORMAS,personaje,cargar,cargarFuentes,dibujar,ajustar,cargarMockup,dibujarMockup,recorte,ajustarEnc};
 })();

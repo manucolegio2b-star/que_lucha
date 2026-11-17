@@ -111,7 +111,7 @@ canvas#prev{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 
 <body>
 <div id="root"></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
-<script src="textos.js?v=9"></script>
+<script src="textos.js?v=11"></script>
 <script src="calendario12.js"></script>
 <script src="fotocojin.js"></script>
 <script>
@@ -189,7 +189,8 @@ const ARCH_IMPRENTA=["disenos/quelucha/base_full.jpg","disenos/colores/base2_ful
   "disenos/cojin_jubilacion/base_full.png","disenos/cojin_jubilacion/jubilada_morena_full.png","disenos/cojin_jubilacion/jubilada_rubia_full.png",
   "disenos/cojin_erizo/base_full.jpg","disenos/cojin_animales/base_full_v2.jpg",
   "disenos/cojin_perrito_nina/base_full.jpg","disenos/cojin_perrito_nino/base_full.jpg",
-  "disenos/cojin_conejo/base_full.jpg","disenos/cojin_acuarela/base_full.jpg"];
+  "disenos/cojin_conejo/base_full.jpg","disenos/cojin_acuarela/base_full.jpg",
+  "disenos/cojin_pareja_marco/marco_full.png","disenos/cojin_pareja_marco/ventana_full.png"];
 const _plant={};
 function urlPlantilla(ruta){
   if(!_plant[ruta]) _plant[ruta]=api("/storage/v1/object/authenticated/plantillas/"+ruta)
@@ -537,7 +538,7 @@ function pintarFicha(num){
    (esFoto(p)?(cf=>'<section class="card"><h2>Pedido</h2><div class="kv"><span>Producto</span><span>Cojín con tus fotos</span></div><div class="kv"><span>Modelo</span><span>'+esc((FC.MODELOS[cf.modelo]||{}).nombre||cf.modelo)+'</span></div><div class="kv"><span>Fotos</span><span>'+cf.fotos.length+'</span></div>'+(cf.degradado?'<div class="kv"><span>Degradado</span><span>'+(cf.degradado.on?esc(((FC.TAM_DEG[cf.degradado.tam]||{}).n||"")+" · "+((FC.COLORES[cf.degradado.color]||{}).n||"")+(cf.degradado.op!=null?" · "+Math.round(cf.degradado.op*100)+" %":"")):"Sin degradado")+'</span></div>':'')+'<div class="kv"><span>Tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(precioDe(p))+'</span></div></section>'+
      (cf.con_texto?'<section class="card"><h2>Texto del cliente</h2><div class="kv" style="align-items:flex-start"><span>Texto</span><span style="white-space:pre-line;text-align:right">'+(esc(cf.texto)||'<i class="sm">(vacío)</i>')+'</span></div><div class="kv"><span>Letra</span><span>'+esc((FC.FUENTES[cf.fuente]||{}).n||cf.fuente)+'</span></div><div class="kv"><span>Color</span><span>'+esc((FC.COLORES[cf.color]||{}).n||cf.color)+'</span></div></section>':''))(d.cojin_fotos):
    (esTexto(p)?'<section class="card"><h2>Pedido</h2><div class="kv"><span>Producto</span><span>'+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>Diseño</span><span>'+esc(TXD[p.modelo].nombre)+'</span></div>'+(TXD[p.modelo].personajes?'<div class="kv"><span>Personaje</span><span>'+esc((QLTextos.personaje(TXD[p.modelo],d.personaje)||{}).nombre||"")+'</span></div>':'')+'<div class="kv"><span>Tamaño</span><span>'+esc(pr.tam||"")+'</span></div>'+(TXD[p.modelo].precio?'<div class="kv"><span>Precio</span><span>'+esc(TXD[p.modelo].precio)+'</span></div>':'')+'</section>'+
-     '<section class="card"><h2>Textos del cliente</h2>'+TXD[p.modelo].campos.map(c=>'<div class="kv" style="align-items:flex-start"><span>'+esc(c.etiqueta)+(c.formas?'<br><span class="sm">Forma: '+esc((QLTextos.FORMAS[(d.formas||{})[c.id]]||QLTextos.FORMAS.recto).n)+'</span>':'')+'</span><span style="white-space:pre-line;text-align:right">'+(esc((d.textos||{})[c.id])||'<i class="sm">(vacío)</i>')+'</span></div>').join("")+'</section>':
+     (TXD[p.modelo].ventana&&d.foto?'<section class="card"><h2>Foto del cliente</h2><div class="kv"><span>Foto en</span><span>'+(d.foto.bn?"Blanco y negro":"Color")+'</span></div><div class="kv"><span>Color del marco</span><span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;background:'+esc(d.foto.marco||"#111")+'"></span>'+esc(((TXD[p.modelo].ventana.colores.find(c=>c[1]===d.foto.marco))||[d.foto.marco])[0])+'</span></div><div class="kv"><span>Calidad</span><span>'+esc(String(d.foto.ppp||"?"))+' ppp</span></div></section>':'')+'<section class="card"><h2>Textos del cliente</h2>'+TXD[p.modelo].campos.map(c=>'<div class="kv" style="align-items:flex-start"><span>'+esc(c.etiqueta)+(c.formas?'<br><span class="sm">Forma: '+esc((QLTextos.FORMAS[(d.formas||{})[c.id]]||QLTextos.FORMAS.recto).n)+'</span>':'')+'</span><span style="white-space:pre-line;text-align:right">'+(esc((d.textos||{})[c.id])||'<i class="sm">(vacío)</i>')+'</span></div>').join("")+'</section>':
    '<section class="card"><h2>Pedido</h2><div class="kv"><span>Calendario</span><span>'+(pr.n||"")+' · '+esc(pr.nombre||p.producto)+'</span></div><div class="kv"><span>'+(p.producto==="12hojas"?"Colores":"Diseño")+'</span><span>'+esc(p.producto==="quelucha"?"Único":(MODELOS[p.modelo]||p.modelo||""))+'</span></div><div class="kv"><span>Año</span><span>'+p.anio+' (12 meses)</span></div><div class="kv"><span>Fotos</span><span>'+nFotos(p)+'</span></div><div class="kv"><span>Papel y tamaño</span><span>'+esc(pr.tam||"")+'</span></div><div class="kv"><span>Precio</span><span>'+esc(pr.precio||"")+'</span></div></section>'))+
    (d.montaje?'<section class="card"><h2>Montaje que aprobó el cliente</h2><img id="montaje" alt="Montaje" style="width:260px;max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(17,24,39,.2);cursor:zoom-in;background:#E5E8ED;min-height:200px"><p class="sm">Vista de referencia a poca resolución. El archivo de imprimir se genera abajo, a la derecha.</p></section>':"")+
    (esTexto(p)?'':'<section class="card"><h2>Fotos recibidas</h2>'+(fotosHTML||'<div class="sm">Sin fotos.</div>')+'</section>')+'</div>'+
@@ -710,7 +711,16 @@ function pintarImprimir12(p){
 // Archivo de impresión de los diseños con texto (cojines…), a 200 ppp
 async function componerTexto(p){
   const dz=TXD[p.modelo], img=await QLTextos.cargar(dz,true,(p.datos||{}).personaje), px=Math.round(dz.cm/2.54*200), cv=document.createElement("canvas");
-  const avisos=QLTextos.dibujar(cv,dz,(p.datos||{}).textos||{},img,px,(p.datos||{}).formas||{});
+  let ex;
+  if(dz.ventana){   // diseño con la foto del cliente: se usa la foto original con su encuadre
+    const fo=(p.datos||{}).foto||{}, rutas=p.fotos||[], i=rutas.findIndex(r=>archivo(r)===fo.archivo);
+    if(p.datos.fotos_borradas) throw new Error("La foto de este pedido ya se ha borrado");
+    if(i<0) throw new Error("Falta la foto del cliente");
+    const us=await urlsFirmadas(rutas), bmp=await createImageBitmap(await (await fetch(us[i])).blob());
+    ex={img:bmp, enc:fo.enc, bn:!!fo.bn, marco:fo.marco};
+  }
+  const avisos=QLTextos.dibujar(cv,dz,(p.datos||{}).textos||{},img,px,(p.datos||{}).formas||{},false,ex);
+  if(ex&&ex.img.close) ex.img.close();
   return {cv,avisos};
 }
 function pintarImprimirTexto(p){

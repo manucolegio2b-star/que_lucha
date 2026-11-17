@@ -53,6 +53,13 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 .pronto{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#13A4AA,#0B7C82);color:#fff;border-radius:12px;padding:12px 14px;font-size:15.5px;font-weight:700;line-height:1.35;box-shadow:0 3px 10px rgba(11,124,130,.25)}
 .pronto .ic{font-size:22px;flex:none}
 .pjs{display:flex;gap:10px;flex-wrap:wrap}
+.tonos{display:flex;gap:10px;flex-wrap:wrap}
+.tonos button{width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px #CBD2DA;cursor:pointer;padding:0}
+.tonos button[aria-pressed=true]{box-shadow:0 0 0 3px #13A4AA}
+.enc{position:fixed;inset:0;z-index:60;background:rgba(17,24,39,.94);display:flex;align-items:center;justify-content:center;padding:14px}
+.enc .caja{background:#fff;border-radius:16px;padding:16px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;max-height:100%;overflow:auto}
+.enc canvas{width:100%;display:block;border-radius:8px;touch-action:none;cursor:grab;background:#E5E8ED}
+.enc input[type=range]{accent-color:#13A4AA}
 .pjs button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;border-radius:12px;border:2px solid #E5E8ED;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#374151;width:96px}
 .pjs button img{width:80px;height:80px;border-radius:8px;display:block}
 .pjw{position:relative}
@@ -87,7 +94,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <script src="menu.js"></script>
 <div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
-<script src="textos.js?v=9"></script>
+<script src="textos.js?v=11"></script>
 <script src="visor.js?v=2"></script>
 <script>
 (function(){
@@ -108,13 +115,18 @@ const l=deLista()||{};
 const S={textos:Object.assign({},...D.campos.map(c=>({[c.id]:c.def}))), formas:Object.assign({},...D.campos.filter(c=>c.formas).map(c=>({[c.id]:"recto"}))), datos:{nombre:l.nombre||"",servicio:l.servicio||"",categoria:l.categoria||"",movil:l.movil||""},
   consent:false, E:{}, avisos:{}, img:null, foto:null, vista:"cojin", enviado:null, aviso:"", paso:"diseno", resumen:null, personaje:(D.personajes&&D.personajes[0]?D.personajes[0].id:null), imgs:{}};
 const plano=document.createElement("canvas");
+// Diseños con foto (D.ventana): la foto del cliente, blanco y negro o color, y el color del marco
+S.mifoto=null; S.bn=true; S.marco=D.ventana?D.ventana.colores[0][1]:null;
+const exF=()=>D.ventana?{img:S.mifoto?S.mifoto.img:null, enc:S.mifoto?S.mifoto.enc:null, bn:S.bn, marco:S.marco}:undefined;
+const dib=(...a)=>{ a[7]=exF(); return T.dibujar(...a); };
+const firmaFoto=()=>D.ventana?JSON.stringify([S.mifoto?S.mifoto.preview:"",S.mifoto?S.mifoto.enc:null,S.bn,S.marco]):"";
 
 let pendiente=null;
 function repintar(){
   if(pendiente) return;
   pendiente=requestAnimationFrame(()=>{ pendiente=null; const cv=$("#cv"); if(!cv||!S.img) return;
-    if(S.vista==="cojin"&&S.foto){ S.avisos=T.dibujar(plano,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(cv,D,plano,S.foto); }
-    else S.avisos=T.dibujar(cv,D,S.textos,S.img,1000,S.formas);
+    if(S.vista==="cojin"&&S.foto){ S.avisos=dib(plano,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(cv,D,plano,S.foto); }
+    else S.avisos=dib(cv,D,S.textos,S.img,1000,S.formas);
     D.campos.forEach(c=>{ const m=$("#av_"+c.id); if(m) m.textContent=S.avisos[c.id]?"Es demasiado largo y la letra quedaría muy pequeña. Acórtalo un poco.":""; const f=$("#t_"+c.id); if(f) f.classList.toggle("err",!!S.avisos[c.id]); });
   });
 }
@@ -129,9 +141,76 @@ function vDiseno(){
   return cab+'<div class="head"><h1>'+esc(D.nombre)+'</h1><p class="sub">Escribe tus textos y mira cómo queda al momento. La letra se ajusta sola para que quepa.</p>'+
     '<div class="row">'+(D.precio?'<span class="price">'+esc(D.precio)+'<span class="iva">IVA incluido</span></span>':'')+'</div>'+(D.ficha?'<ul class="ficha">'+D.ficha.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>':'')+'</div>'+
     '<div class="cols"><div class="prev">'+(D.mockup?'<div class="vista" role="group" aria-label="Vista"><button type="button" data-vista="cojin" aria-pressed="'+(S.vista==="cojin")+'">Cojín</button><button type="button" data-vista="plano" aria-pressed="'+(S.vista==="plano")+'">Diseño</button></div>':'')+'<canvas id="cv" width="1000" height="'+(D.mockup&&S.vista==="cojin"?D.mockup.h:1000)+'" aria-label="Vista previa del cojín"></canvas>'+QLVisor.lupa('id="lupaPrev"','tu cojín')+''+(S.img?'':'<div class="cargando" id="carg">Preparando la vista previa…</div>')+'</div>'+
-    '<div class="form">'+vOtros()+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<div class="pjw"><button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>'+QLVisor.lupa('data-ver="'+pj.id+'"',pj.nombre)+'</div>').join("")+'</div><p class="small" style="margin-top:8px">Toca la lupa para verlo en grande, con tus textos.</p>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
+    '<div class="form">'+vOtros()+vFoto()+(D.personajes&&D.personajes.length>1?'<section class="card"><h2>Elige el personaje</h2><div class="pjs" role="group" aria-label="Personaje">'+D.personajes.map(pj=>'<div class="pjw"><button type="button" data-pj="'+pj.id+'" aria-pressed="'+(S.personaje===pj.id)+'"><img src="'+pj.mini+'" alt="" width="80" height="80">'+esc(pj.nombre)+'</button>'+QLVisor.lupa('data-ver="'+pj.id+'"',pj.nombre)+'</div>').join("")+'</div><p class="small" style="margin-top:8px">Toca la lupa para verlo en grande, con tus textos.</p>'+(D.proximamente?'<div class="pronto"><span class="ic" aria-hidden="true">✨</span><span>'+esc(D.proximamente)+'</span></div>':'')+'</section>':'')+'<section class="card"><h2>Tus textos</h2>'+D.campos.map(campo).join("")+'<button type="button" class="link" id="ejemplo">Volver a los textos de ejemplo</button></section>'+
     (S.aviso?'<div class="bad">'+esc(S.aviso)+'</div>':'')+
     '<button type="button" class="btn" id="pedir">Pedir este cojín'+(D.precio?' · '+esc(D.precio):'')+'</button></div></div>';
+}
+// Foto del cliente (solo en los diseños con hueco para foto)
+const PPP_BIEN=150, PPP_MAL=100;
+function pppFoto(){ const f=S.mifoto; if(!f) return 0; const h=D.ventana.zona, r=T.recorte(f.pw,f.ph,h,f.enc); return Math.round(r.vw/(h.w/1000*D.cm/2.54)); }
+function calidadTxt(p){ return p>=PPP_BIEN?'<b style="color:#15803D">Calidad buena</b> · Se verá nítida.':(p>=PPP_MAL?'<b style="color:#A16207">Calidad aceptable</b> · De muy cerca, algo suave.':'<b style="color:#B42318">Calidad baja</b> · Saldrá con poca nitidez: aléjala o usa otra foto.'); }
+function vFoto(){
+  if(!D.ventana) return "";
+  const f=S.mifoto, V=D.ventana;
+  return '<section class="card"><h2>Vuestra foto</h2>'+
+    (f?'<div style="display:flex;gap:12px;align-items:center"><img src="'+f.preview+'" alt="Tu foto" style="width:84px;height:84px;object-fit:cover;border-radius:10px;flex:none"><p class="small" style="margin:0">'+calidadTxt(pppFoto())+'</p></div>'+
+       '<div style="display:flex;gap:8px"><button type="button" class="btn2" id="fenc">Mover y acercar</button><button type="button" class="btn2" id="fcam">Cambiar foto</button></div>'
+      :'<p class="small" style="margin:0">Ahora se ve una foto de ejemplo. Sube la vuestra: se verá al momento.</p><button type="button" class="btn" id="fsub" style="margin:0">Subir foto</button>')+
+    '<input type="file" id="ffile" accept="image/*" hidden>'+
+    '<div><div class="small" style="font-weight:600;color:#374151;margin-bottom:6px">Foto en</div><div class="formas" role="group" aria-label="Color de la foto">'+
+      '<button type="button" data-bn="1" aria-pressed="'+S.bn+'">Blanco y negro</button><button type="button" data-bn="0" aria-pressed="'+!S.bn+'">Color</button></div></div>'+
+    '<div><div class="small" style="font-weight:600;color:#374151;margin-bottom:6px">Color del marco</div><div class="tonos" role="group" aria-label="Color del marco">'+
+      V.colores.map(([n,c])=>'<button type="button" data-marco="'+c+'" aria-pressed="'+(S.marco===c)+'" title="'+esc(n)+'" aria-label="'+esc(n)+'" style="background:'+c+'"></button>').join("")+'</div></div>'+
+    '</section>';
+}
+async function cargarBitmap(file){
+  if(window.createImageBitmap){ try{ return await createImageBitmap(file,{imageOrientation:"from-image"}); }catch(e){} }
+  return await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{URL.revokeObjectURL(u);res(im);}; im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("No se pudo leer la imagen"));}; im.src=u; });
+}
+const aBlob=(cv,q)=>new Promise(r=>cv.toBlob(r,"image/jpeg",q));
+async function subirFoto(file){
+  if(!file) return;
+  const ov=document.createElement("div"); ov.className="over"; ov.innerHTML='<div style="font-size:17px;font-weight:600">Preparando tu foto…</div>'; document.body.appendChild(ov);
+  try{
+    const bmp=await cargarBitmap(file), w0=bmp.width, h0=bmp.height;
+    const k=Math.min(1,3000/Math.max(w0,h0)), cv=document.createElement("canvas"); cv.width=Math.round(w0*k); cv.height=Math.round(h0*k);
+    const g=cv.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,cv.width,cv.height); g.drawImage(bmp,0,0,cv.width,cv.height);
+    const blob=await aBlob(cv,.88), pw=cv.width, ph=cv.height;
+    const kp=Math.min(1,1400/Math.max(w0,h0)), cp=document.createElement("canvas"); cp.width=Math.round(w0*kp); cp.height=Math.round(h0*kp);
+    cp.getContext("2d").drawImage(bmp,0,0,cp.width,cp.height);
+    const pb=await aBlob(cp,.86); if(bmp.close) bmp.close(); cv.width=cv.height=cp.width=cp.height=1;
+    if(!blob||!pb) throw new Error("No se pudo procesar la foto");
+    const preview=URL.createObjectURL(pb), img=await new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=ko; i.src=preview; });
+    if(S.mifoto) URL.revokeObjectURL(S.mifoto.preview);
+    S.mifoto={blob,pw,ph,preview,img,enc:{z:1,x:.5,y:.5}}; S.aviso="";
+  }catch(e){ alert("No se ha podido leer esa foto. Prueba con otra."); }
+  ov.remove(); render();
+}
+// Mover y acercar la foto dentro del marco
+function encuadrar(){
+  const f=S.mifoto; if(!f) return;
+  const h=D.ventana.zona, iw=f.img.naturalWidth, ih=f.img.naturalHeight, R=h.h/h.w;
+  let enc=Object.assign({},f.enc);
+  const ov=document.createElement("div"); ov.className="enc"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true");
+  ov.innerHTML='<div class="caja"><h2 style="margin:0">Vuestra foto</h2><p class="small">Arrastra la foto para moverla. Usa la barra (o dos dedos) para acercarla.</p>'+
+    '<canvas id="ecv" width="800" height="'+Math.round(800*R)+'" aria-label="Encuadre de la foto"></canvas>'+
+    '<div style="display:flex;gap:8px;align-items:center"><span aria-hidden="true">−</span><input type="range" id="ez" min="1" max="4" step="0.01" aria-label="Acercar" style="flex:1"><span aria-hidden="true">+</span></div>'+
+    '<p class="small" id="eq"></p><button type="button" class="btn" id="eok" style="margin:0">Listo</button></div>';
+  document.body.appendChild(ov);
+  const cv=ov.querySelector("#ecv"), g=cv.getContext("2d"), z=ov.querySelector("#ez"), q=ov.querySelector("#eq");
+  const pintar=()=>{ enc=T.ajustarEnc(iw,ih,h,enc); const r=T.recorte(iw,ih,h,enc); g.imageSmoothingQuality="high"; g.drawImage(f.img,r.sx,r.sy,r.vw,r.vh,0,0,cv.width,cv.height); z.value=enc.z;
+    f.enc=enc; q.innerHTML=calidadTxt(pppFoto()); };
+  pintar();
+  z.addEventListener("input",()=>{ enc.z=+z.value; pintar(); });
+  const ptrs=new Map(); let dist0=0, z0=1;
+  const mover=(dx,dy)=>{ const r=T.recorte(iw,ih,h,enc), kk=r.vw/cv.getBoundingClientRect().width; enc.x-=dx*kk/iw; enc.y-=dy*kk/ih; pintar(); };
+  cv.addEventListener("pointerdown",e=>{ cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; dist0=Math.hypot(a.x-b.x,a.y-b.y); z0=enc.z; } });
+  cv.addEventListener("pointermove",e=>{ const p=ptrs.get(e.pointerId); if(!p) return; if(ptrs.size===1) mover(e.clientX-p.x,e.clientY-p.y); p.x=e.clientX; p.y=e.clientY;
+    if(ptrs.size===2&&dist0){ const [a,b]=[...ptrs.values()]; enc.z=Math.min(4,Math.max(1,z0*Math.hypot(a.x-b.x,a.y-b.y)/dist0)); pintar(); } });
+  const fin=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) dist0=0; };
+  cv.addEventListener("pointerup",fin); cv.addEventListener("pointercancel",fin);
+  cv.addEventListener("wheel",e=>{ e.preventDefault(); enc.z=Math.min(4,Math.max(1,enc.z*(e.deltaY<0?1.06:1/1.06))); pintar(); },{passive:false});
+  ov.querySelector("#eok").addEventListener("click",()=>{ ov.remove(); render(); });
 }
 // Otros diseños del mismo producto (p. ej. los cojines de jubilación y de nacimiento)
 function vOtros(){
@@ -182,16 +261,23 @@ function render(){
   document.querySelectorAll("[data-pj]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.pj; if(id===S.personaje) return; S.personaje=id;
     document.querySelectorAll("[data-pj]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); cambiarPersonaje(id); }));
   document.querySelectorAll("[data-ver]").forEach(b=>b.addEventListener("click",()=>verGrande(b.dataset.ver)));
+  if(D.ventana){
+    const fi=$("#ffile"); fi.addEventListener("change",()=>{ subirFoto(fi.files[0]); fi.value=""; });
+    ["#fsub","#fcam"].forEach(k=>{ const b=$(k); if(b) b.addEventListener("click",()=>fi.click()); });
+    const fe=$("#fenc"); if(fe) fe.addEventListener("click",encuadrar);
+    document.querySelectorAll("[data-bn]").forEach(b=>b.addEventListener("click",()=>{ S.bn=b.dataset.bn==="1"; document.querySelectorAll("[data-bn]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+    document.querySelectorAll("[data-marco]").forEach(b=>b.addEventListener("click",()=>{ S.marco=b.dataset.marco; document.querySelectorAll("[data-marco]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); repintar(); }));
+  }
   const cvp=$("#cv"); if(cvp){ cvp.addEventListener("click",verPrevia); const lp=$("#lupaPrev"); if(lp) lp.addEventListener("click",verPrevia); }
   repintar();
 }
 // Tocar la vista previa: se ve en grande (copia reducida, no sirve para imprimir), en el cojín y el diseño plano
 function verPrevia(){
   if(!S.img) return;
-  const firma=JSON.stringify([S.textos,S.formas,S.personaje]);
+  const firma=JSON.stringify([S.textos,S.formas,S.personaje])+firmaFoto();
   const items=[];
-  if(D.mockup&&S.foto) items.push({nombre:"En el cojín", clave:"mk"+firma, crear:async()=>{ const pl=document.createElement("canvas"); T.dibujar(pl,D,S.textos,S.img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,pl,S.foto); return QLVisor.marca(cv); }});
-  items.push({nombre:"Diseño", clave:"pl"+firma, crear:async()=>{ const pl=document.createElement("canvas"); T.dibujar(pl,D,S.textos,S.img,1000,S.formas); return QLVisor.marca(pl); }});
+  if(D.mockup&&S.foto) items.push({nombre:"En el cojín", clave:"mk"+firma, crear:async()=>{ const pl=document.createElement("canvas"); dib(pl,D,S.textos,S.img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,pl,S.foto); return QLVisor.marca(cv); }});
+  items.push({nombre:"Diseño", clave:"pl"+firma, crear:async()=>{ const pl=document.createElement("canvas"); dib(pl,D,S.textos,S.img,1000,S.formas); return QLVisor.marca(pl); }});
   QLVisor.abrir({items, idx:(S.vista==="plano"&&items.length>1)?1:0});
 }
 // Lupa: cada personaje en grande con los textos que lleva escritos el cliente
@@ -200,8 +286,8 @@ function verGrande(id){
   const items=L.map(pj=>({nombre:pj.nombre, clave:pj.id+firma, crear:async()=>{
     const img=S.imgs[pj.id]||(S.imgs[pj.id]=await T.cargar(D,false,pj.id));
     const plano=document.createElement("canvas");
-    if(S.vista==="cojin"&&S.foto){ T.dibujar(plano,D,S.textos,img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,plano,S.foto); return QLVisor.marca(cv); }
-    T.dibujar(plano,D,S.textos,img,1000,S.formas); return QLVisor.marca(plano); }}));
+    if(S.vista==="cojin"&&S.foto){ dib(plano,D,S.textos,img,1000,S.formas,true); const cv=document.createElement("canvas"); T.dibujarMockup(cv,D,plano,S.foto); return QLVisor.marca(cv); }
+    dib(plano,D,S.textos,img,1000,S.formas); return QLVisor.marca(plano); }}));
   QLVisor.abrir({items, idx:Math.max(0,L.findIndex(p=>p.id===id)), elegido:L.findIndex(p=>p.id===S.personaje),
     boton:"Elegir este personaje", botonYa:"✓ Personaje elegido",
     onElegir:j=>{ const b=document.querySelector('[data-pj="'+L[j].id+'"]'); if(b) b.click(); }});
@@ -214,8 +300,9 @@ function cambiarPersonaje(id){
 function irADatos(){
   if(!S.img) return;
   S.aviso="";
-  const pl=document.createElement("canvas"); S.avisos=T.dibujar(pl,D,S.textos,S.img,1000,S.formas,!!S.foto);
-  if(!D.campos.some(c=>(S.textos[c.id]||"").trim())) S.aviso="Escribe al menos un texto.";
+  const pl=document.createElement("canvas"); S.avisos=dib(pl,D,S.textos,S.img,1000,S.formas,!!S.foto);
+  if(D.ventana&&!S.mifoto) S.aviso="Sube vuestra foto para el marco.";
+  else if(!D.campos.some(c=>(S.textos[c.id]||"").trim())) S.aviso="Escribe al menos un texto.";
   else if(Object.keys(S.avisos).length) S.aviso="Hay algún texto demasiado largo. Acórtalo para que se lea bien.";
   if(S.aviso){ render(); const b=document.querySelector(".bad"); if(b) b.scrollIntoView({block:"center"}); return; }
   let url;
@@ -246,20 +333,24 @@ async function enviar(){
     if(err){ ov.insertAdjacentHTML("beforeend",'<div class="bad">'+esc(err)+'</div><button class="btn" style="max-width:340px;margin:0" id="reint">Reintentar</button><button class="btn2" style="max-width:340px" id="cancel">Volver</button>'); $("#reint").onclick=()=>{ov.remove();enviar();}; $("#cancel").onclick=()=>ov.remove(); } };
   try{
     pintar("Enviando tu pedido…",20);
-    const cv=document.createElement("canvas"); T.dibujar(cv,D,S.textos,S.img,1000,S.formas);
+    const cv=document.createElement("canvas"); dib(cv,D,S.textos,S.img,1000,S.formas);
     const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.86));
     const ruta=envio.id+"/montaje.jpg";
     if(!envio.subido){ await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+ruta,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:blob}); envio.subido=true; }
+    let rutaFoto=null;
+    if(D.ventana&&S.mifoto){ rutaFoto=envio.id+"/01.jpg"; pintar("Subiendo tu foto…",45);
+      if(!envio.fotoSubida){ await http(C.SUPABASE_URL+"/storage/v1/object/"+C.BUCKET+"/"+rutaFoto,{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"image/jpeg","Cache-Control":"3600"},body:S.mifoto.blob}); envio.fotoSubida=true; } }
     pintar("Guardando tu pedido…",80);
     const textos={}; D.campos.forEach(c=>textos[c.id]=(S.textos[c.id]||"").trim());
     const fila={id:envio.id,producto:D.producto,modelo:D.id,anio:null,
-      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos,formas:Object.assign({},S.formas),personaje:S.personaje},fotos:[]};
+      datos:{nombre:d.nombre,servicio:d.servicio,categoria:d.categoria,movil:d.movil,codigo:envio.codigo,n_fotos:0,montaje:ruta,textos,formas:Object.assign({},S.formas),personaje:S.personaje},fotos:rutaFoto?[rutaFoto]:[]};
+    if(rutaFoto){ fila.datos.n_fotos=1; fila.datos.etiquetas=["Foto 1"]; fila.datos.foto={archivo:"01.jpg",enc:S.mifoto.enc,bn:S.bn,marco:S.marco,ppp:pppFoto()}; }
     for(let t=0;;t++){
       try{ await http(C.SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",headers:{apikey:C.SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)}); break; }
       catch(er){ if(t<5&&/pedidos_codigo_unico/.test(String(er.message))){ envio.codigo=codigoPedido(); fila.datos.codigo=envio.codigo; continue; } throw er; }
     }
     let url=URL.createObjectURL(blob);
-    if(S.foto){ const mc=document.createElement("canvas"), tr=document.createElement("canvas"); T.dibujar(tr,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(mc,D,tr,S.foto); url=mc.toDataURL("image/jpeg",.85); }
+    if(S.foto){ const mc=document.createElement("canvas"), tr=document.createElement("canvas"); dib(tr,D,S.textos,S.img,1000,S.formas,true); T.dibujarMockup(mc,D,tr,S.foto); url=mc.toDataURL("image/jpeg",.85); }
     S.enviado={nombre:d.nombre,codigo:envio.codigo,url};
     envio=null; ov.remove(); render(); window.scrollTo(0,0);
   }catch(e){ console.error(e); pintar("No se ha podido enviar",0,"Revisa tu conexión e inténtalo de nuevo. Tu pedido no se ha perdido: pulsa Reintentar."); }
