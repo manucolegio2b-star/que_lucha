@@ -112,7 +112,7 @@ const ICO_BACK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stro
 const CHECK='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const PLUS='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const LOGO='<a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a>';
-const cab='<div class="top">'+LOGO+'<a class="back" href="./#productos">'+ICO_BACK+'Productos</a></div>';
+const cab='<div class="top">'+LOGO+'<a class="back" href="cojines.html#fotos">'+ICO_BACK+'Cojines</a></div>';
 const PRECIO=F.PRECIO;
 const PPP_BIEN=F.TRAMOS[1], PPP_MAL=F.TRAMOS[2];   // tramos del cojín (fotocojin.js)
 const TEXTO_DEF={una:"Felicidades Juan", collage:"Los mejores\ncompañeros"};
@@ -218,7 +218,7 @@ function vGracias(){
   return '<div class="top">'+LOGO+'</div><div class="center"><div class="ok">'+CHECK+'</div><h1>¡Gracias, '+esc(e.nombre)+'!</h1><p class="sub" style="margin-top:8px">Hemos recibido tu pedido y tus fotos. Lo revisaremos antes de imprimir.</p>'+
     '<p style="margin:14px 0 0;font-size:14px;color:#5B6472">Tu código de pedido</p><div class="codigo">'+esc(e.codigo)+'</div></div>'+
     '<div class="prev" style="max-width:520px;width:100%;margin:0 auto"><img src="'+e.url+'" alt="Tu cojín" style="display:block;width:100%;border-radius:10px"></div>'+
-    '<a class="btn2" href="./#productos" style="max-width:520px;margin:0 auto">Ver más productos</a><p class="small center">Tus fotos se borrarán cuando tengas tu pedido.</p>';
+    '<a class="btn2" href="cojines.html" style="max-width:520px;margin:0 auto">Ver más cojines</a><p class="small center">Tus fotos se borrarán cuando tengas tu pedido.</p>';
 }
 
 function render(){

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cojines personalizados · ¡Qué lucha!!</title>
+<meta name="description" content="Cojines blancos de 40 × 40 cm personalizados: jubilación, nacimiento y con tus fotos.">
+<meta name="theme-color" content="#13A4AA">
+<link rel="icon" type="image/png" href="logo/icono.png">
+<style>
+:root{--ac:#13A4AA;--ac-d:#0B7C82;--ac-l:#DDF1F3;--navy:#0C2B4B;--txt:#1B2B3A;--mute:#5B6B7A}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#E9F7F8 0,#F7FCFC 420px,#fff 800px);-webkit-text-size-adjust:100%}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--navy);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.display{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;font-weight:800;letter-spacing:-.5px;color:var(--navy)}
+.miga{margin:22px 0 0;font-size:14.5px;color:var(--mute)}
+.miga a{color:var(--ac-d);font-weight:700;text-decoration:none}
+.miga a:hover{text-decoration:underline}
+.cab{text-align:center;margin:10px 0 18px}
+.cab h1{margin:0;font-size:clamp(30px,6.5vw,44px)}
+.cab p{margin:8px auto 0;max-width:560px;color:var(--mute);font-size:16.5px;line-height:1.45}
+.cab .precio{display:inline-block;margin-top:12px;background:#fff;border-radius:999px;padding:6px 16px;font-weight:800;color:var(--ac-d);box-shadow:0 4px 12px rgba(12,43,75,.08)}
+.cab .precio span{font-weight:500;color:var(--mute);font-size:13px;margin-left:4px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 10px;padding:0;list-style:none}
+.chips a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;background:#fff;border:2px solid #CDE8EA;color:var(--navy);font-weight:700;text-decoration:none}
+.chips a:hover{border-color:var(--ac);color:var(--ac-d)}
+section{padding:26px 0 6px}
+section h2{margin:0;font-size:clamp(24px,5vw,32px)}
+section > .wrap > p{margin:4px 0 16px;color:var(--mute);font-size:15.5px}
+.rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:900px){.rejilla{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.rejilla{grid-template-columns:1fr 1fr;gap:12px}}
+.prod{position:relative;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px rgba(12,43,75,.09);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.prod:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(12,43,75,.15)}
+.prod .foto{aspect-ratio:1/1;background:#A6F4E4;overflow:hidden}
+.prod .foto img{width:100%;height:100%;object-fit:cover}
+.prod .cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
+.prod h3{margin:0;font-size:17px;color:var(--navy)}
+.prod p{margin:4px 0 0;color:var(--mute);font-size:14px;line-height:1.4}
+.prod a.ir{margin-top:auto}
+.prod h3{margin-bottom:10px}
+.prod a.ir{margin-top:10px;min-height:42px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:var(--ac);color:#fff;font-weight:800;font-size:15px;text-decoration:none}
+.prod a.ir::after{content:"";position:absolute;inset:0;border-radius:18px}
+.prod:hover a.ir{background:var(--ac-d)}
+@media(max-width:560px){.prod .cuerpo{padding:10px 10px 12px}.prod h3{font-size:15.5px}.prod p{font-size:13px}.prod a.ir{font-size:14px}}
+footer{margin-top:44px;background:var(--ac);color:#fff;text-align:center;padding:26px 20px;border-radius:40px 40px 0 0}
+footer a{color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+<script src="menu.js"></script>
+<main class="wrap">
+  <p class="miga"><a href="./#productos">Productos</a> › Cojines personalizados</p>
+  <div class="cab">
+    <h1 class="display">Cojines personalizados</h1>
+    <p>Cojín blanco de 40 × 40 cm. Elige un diseño y escribe tus textos, o crea el tuyo con tus fotos.</p>
+    <div class="precio">19,50 € <span>IVA incluido</span></div>
+  </div>
+  <ul class="chips" aria-label="Tipos de cojín">
+    <li><a href="#jubilacion">Jubilación</a></li>
+    <li><a href="#nacimiento">Nacimiento</a></li>
+    <li><a href="#fotos">Con tus fotos</a></li>
+  </ul>
+</main>
+
+<section id="jubilacion"><div class="wrap">
+  <h2 class="display">Jubilación</h2>
+  <p>Para despedir a un compañero como se merece. Cambia los textos a tu gusto.</p>
+  <div class="rejilla" data-cat="jubilacion"></div>
+</div></section>
+
+<section id="nacimiento"><div class="wrap">
+  <h2 class="display">Nacimiento</h2>
+  <p>Con el nombre del bebé, los papás, la fecha, la hora, la medida y el peso.</p>
+  <div class="rejilla" data-cat="nacimiento"></div>
+</div></section>
+
+<section id="fotos"><div class="wrap">
+  <h2 class="display">Con tus fotos</h2>
+  <p>Una foto grande o un collage de 8 o 9 fotos, con tu texto.</p>
+  <div class="rejilla">
+    <article class="prod"><div class="foto"><img src="img/ejemplo-cojin-fotos-una.jpg?v=2" alt="Cojín con una foto grande y un texto abajo" loading="lazy"></div>
+      <div class="cuerpo"><h3>Una foto grande</h3><p>Tu mejor foto, con un texto encima.</p><a class="ir" href="cojin-fotos.html">Crear mi cojín <span aria-hidden="true">→</span></a></div></article>
+    <article class="prod"><div class="foto"><img src="img/ejemplo-cojin-fotos-collage.jpg?v=2" alt="Cojín con un collage de fotos y un texto en el centro" loading="lazy"></div>
+      <div class="cuerpo"><h3>Collage de fotos</h3><p>8 o 9 fotos y un texto en el centro.</p><a class="ir" href="cojin-fotos.html">Crear mi cojín <span aria-hidden="true">→</span></a></div></article>
+  </div>
+</div></section>
+
+<footer><a href="./">¡Qué lucha!!</a> · Regalos personalizados hechos por un celador</footer>
+
+<script src="textos.js?v=9"></script>
+<script>
+// Las tarjetas de jubilación y nacimiento salen solas de textos.js (cada diseño con cat y foto)
+(function(){
+  var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+  var L=Object.values(QLTextos.DISENOS);
+  document.querySelectorAll(".rejilla[data-cat]").forEach(function(r){
+    r.innerHTML=L.filter(function(d){return d.producto==="cojin"&&d.cat===r.dataset.cat}).map(function(d){
+      return '<article class="prod"><div class="foto"><img src="'+esc(d.foto||d.mini)+'" alt="'+esc(d.nombre)+'" loading="lazy"></div>'+
+        '<div class="cuerpo"><h3>'+esc(d.nombre.replace(/^Cojín (Nacimiento )?/,""))+'</h3>'+
+        '<a class="ir" href="personalizar.html?d='+encodeURIComponent(d.id)+'">Personalizar <span aria-hidden="true">→</span></a></div></article>';
+    }).join("");
+  });
+})();
+</script>
+</body>
+</html>

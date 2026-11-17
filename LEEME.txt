@@ -22,12 +22,13 @@ COJÍN CON TUS FOTOS (cojin-fotos.html)
 - Precio: en fotocojin.js, PRECIO (vacío = no se muestra).
 - Fotos de ejemplo: disenos/cojin_fotos/ejemplo1..8.jpg. Letras nuevas: Great Vibes, Dancing Script y Amatic SC (licencia OFL, en fuentes/).
 
-COJINES DE NACIMIENTO (personalizar.html?d=erizo, ?d=animales, ?d=perrito_nina, ?d=perrito_nino y ?d=conejo)
+COJINES DE NACIMIENTO (personalizar.html?d=erizo, ?d=animales, ?d=perrito_nina, ?d=perrito_nino, ?d=conejo y ?d=acuarela)
 - Funcionan igual que el de jubilación: el cliente cambia los textos y el panel genera el archivo a 29 × 29 cm a 200 ppp (2283 px).
-- Diseños y zonas de texto en textos.js. Arte limpio (sin textos) en disenos/cojin_erizo, cojin_animales (base_full_v2.jpg), cojin_perrito_nina, cojin_perrito_nino y cojin_conejo (base_full.jpg = imprenta).
+- Diseños y zonas de texto en textos.js. Arte limpio (sin textos) en disenos/cojin_erizo, cojin_animales (base_full_v2.jpg), cojin_perrito_nina, cojin_perrito_nino, cojin_conejo y cojin_acuarela (base_full.jpg = imprenta).
 - Si se cambia un arte que ya estaba en el almacén privado, ponerle otro nombre (p. ej. _v2): el panel no vuelve a copiar un archivo que ya tiene.
 - Letras: Great Vibes (nombre y apellidos), Dancing Script (datos, "Mis papis", papás) y Patrick Hand (fecha, hora, medida, peso). Todas gratuitas (OFL).
-- En personalizar.html sale "Elige el diseño" con todos los cojines de texto (los que tienen "mini" en textos.js).
+- cojines.html: página de Cojines personalizados (Jubilación, Nacimiento, Con tus fotos). Las tarjetas salen solas de textos.js según "cat" y "foto" (img/cojines/<id>.jpg, vista del cojín 640 px).
+- En personalizar.html, "Elige el diseño" muestra los cojines de la misma categoría.
 
 AVISOS DE PEDIDOS POR TELEGRAM
 - Cada pedido nuevo manda un mensaje al bot @quelucha_pedidos_bot (a tu chat de Telegram).

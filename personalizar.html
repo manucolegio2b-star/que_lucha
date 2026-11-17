@@ -86,7 +86,7 @@ input.err,textarea.err{border-color:#C0392B;background:#FFF5F4}
 <script src="menu.js"></script>
 <div id="app"><div class="sub" style="padding:40px 0;text-align:center">Cargando…</div></div>
 <script>document.write('<script src="config.js?v='+Date.now()+'"><\/script>');</script><!-- siempre los ajustes al día -->
-<script src="textos.js?v=7"></script>
+<script src="textos.js?v=9"></script>
 <script src="visor.js"></script>
 <script>
 (function(){
@@ -96,10 +96,10 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const $=s=>document.querySelector(s);
 const ICO_BACK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
 const CHECK='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
-const cab='<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><a class="back" href="pedir.html">'+ICO_BACK+'Productos</a></div>';
 
 const id=new URLSearchParams(location.search).get("d")||"jubilacion";
 const D=T.DISENOS[id];
+const cab='<div class="top"><a class="brand" href="./" aria-label="Ir al inicio"><img src="logo/hexagono.png" alt="" style="height:40px;width:auto"><img src="logo/rotulo.png" alt="¡Qué lucha!!" style="height:34px;width:auto"></a><a class="back" href="'+(D&&D.producto==="cojin"?"cojines.html#"+(D.cat||""):"./#productos")+'">'+ICO_BACK+(D&&D.producto==="cojin"?"Cojines":"Productos")+'</a></div>';
 if(!D){ $("#app").innerHTML=cab+'<div class="bad">Este diseño no existe.</div>'; return; }
 
 function deLista(){ try{ return JSON.parse(localStorage.getItem("ql_lista")||"null"); }catch(e){ return null; } }
@@ -134,7 +134,7 @@ function vDiseno(){
 }
 // Otros diseños del mismo producto (p. ej. los cojines de jubilación y de nacimiento)
 function vOtros(){
-  const L=Object.values(T.DISENOS).filter(x=>x.producto===D.producto&&x.mini);
+  const L=Object.values(T.DISENOS).filter(x=>x.producto===D.producto&&x.cat===D.cat&&x.mini);
   if(L.length<2) return "";
   return '<section class="card"><h2>Elige el diseño</h2><div class="pjs" role="group" aria-label="Diseño">'+L.map(x=>'<a href="personalizar.html?d='+encodeURIComponent(x.id)+'" class="dis" aria-current="'+(x.id===D.id?"true":"false")+'"><img src="'+esc(x.mini)+'" alt="" width="80" height="80">'+esc(x.corto)+'</a>').join("")+'</div></section>';
 }

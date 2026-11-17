@@ -41,7 +41,7 @@ const ZONAS_PERRITO=c=>[
 
 const DISENOS={
   jubilacion:{
-    id:"jubilacion", producto:"cojin", nombre:"Cojín Jubilación", corto:"Jubilación",
+    id:"jubilacion", producto:"cojin", cat:"jubilacion", foto:"img/cojines/jubilacion.jpg", nombre:"Cojín Jubilación", corto:"Jubilación",
     desc:"Cojín blanco de 40 × 40 cm con tus textos en el título, la pizarra y el cartel. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"],
     precio:"19,50 €",              // vacío = no se muestra
@@ -73,7 +73,7 @@ const DISENOS={
   },
   // estilo "libre": fuente, peso y color propios de cada zona (grosor = trazo extra para engordar la letra)
   erizo:{
-    id:"erizo", producto:"cojin", nombre:"Cojín Nacimiento Erizo", corto:"Nacimiento Erizo",
+    id:"erizo", producto:"cojin", cat:"nacimiento", foto:"img/cojines/erizo.jpg", nombre:"Cojín Nacimiento Erizo", corto:"Nacimiento Erizo",
     desc:"Cojín blanco de 40 × 40 cm con el nombre y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
     base:"disenos/cojin_erizo/base.webp", baseFull:"disenos/cojin_erizo/base_full.jpg", mini:"disenos/cojin_erizo/miniatura.jpg",
@@ -91,7 +91,7 @@ const DISENOS={
     ]
   },
   animales:{
-    id:"animales", producto:"cojin", nombre:"Cojín Nacimiento Animalitos", corto:"Nacimiento Animalitos",
+    id:"animales", producto:"cojin", cat:"nacimiento", foto:"img/cojines/animales.jpg", nombre:"Cojín Nacimiento Animalitos", corto:"Nacimiento Animalitos",
     desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
     base:"disenos/cojin_animales/base.webp", baseFull:"disenos/cojin_animales/base_full_v2.jpg", mini:"disenos/cojin_animales/miniatura.jpg",
@@ -122,7 +122,7 @@ const DISENOS={
     ]
   },
   perrito_nina:{
-    id:"perrito_nina", producto:"cojin", nombre:"Cojín Nacimiento Perrito (niña)", corto:"Perrito niña",
+    id:"perrito_nina", producto:"cojin", cat:"nacimiento", foto:"img/cojines/perrito_nina.jpg", nombre:"Cojín Nacimiento Perrito (niña)", corto:"Perrito niña",
     desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
     base:"disenos/cojin_perrito_nina/base.webp", baseFull:"disenos/cojin_perrito_nina/base_full.jpg", mini:"disenos/cojin_perrito_nina/miniatura.jpg",
@@ -131,7 +131,7 @@ const DISENOS={
     zonas:ZONAS_PERRITO("#E033C7")
   },
   perrito_nino:{
-    id:"perrito_nino", producto:"cojin", nombre:"Cojín Nacimiento Perrito (niño)", corto:"Perrito niño",
+    id:"perrito_nino", producto:"cojin", cat:"nacimiento", foto:"img/cojines/perrito_nino.jpg", nombre:"Cojín Nacimiento Perrito (niño)", corto:"Perrito niño",
     desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
     base:"disenos/cojin_perrito_nino/base.webp", baseFull:"disenos/cojin_perrito_nino/base_full.jpg", mini:"disenos/cojin_perrito_nino/miniatura.jpg",
@@ -140,7 +140,7 @@ const DISENOS={
     zonas:ZONAS_PERRITO("#032DB8")
   },
   conejo:{
-    id:"conejo", producto:"cojin", nombre:"Cojín Nacimiento Conejito Skate", corto:"Conejito skate",
+    id:"conejo", producto:"cojin", cat:"nacimiento", foto:"img/cojines/conejo.jpg", nombre:"Cojín Nacimiento Conejito Skate", corto:"Conejito skate",
     desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
     base:"disenos/cojin_conejo/base.webp", baseFull:"disenos/cojin_conejo/base_full.jpg", mini:"disenos/cojin_conejo/miniatura.jpg",
@@ -157,6 +157,24 @@ const DISENOS={
       {campo:"hora",      estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:372, cy:622, w:180, h:60, max:64, min:18, lineas:1, alto:1.0},
       {campo:"medida",    estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:156, cy:813, w:200, h:60, max:64, min:18, lineas:1, alto:1.0},
       {campo:"peso",      estilo:"libre", fuente:"QL Mano", color:"#1A0310", grosor:0.04, cx:378, cy:835, w:180, h:60, max:64, min:18, lineas:1, alto:1.0}
+    ]
+  },
+  acuarela:{
+    id:"acuarela", producto:"cojin", cat:"nacimiento", foto:"img/cojines/acuarela.jpg", nombre:"Cojín Nacimiento Acuarela", corto:"Nacimiento Acuarela",
+    desc:"Cojín blanco de 40 × 40 cm con el nombre y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_acuarela/base.webp", baseFull:"disenos/cojin_acuarela/base_full.jpg", mini:"disenos/cojin_acuarela/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    campos:[
+      {id:"nombre", etiqueta:"Nombre", def:"María", max:20},
+      {id:"apellidos", etiqueta:"Apellidos", def:"Sevillano Huertas", max:32},
+      {id:"datos", etiqueta:"Datos del nacimiento", def:"Nació el 21 de septiembre\nde 2013 a las 7:30 h.\nCon un peso de 3.500 gr\ny midiendo 53 cm.", max:140, varias:true,
+       ayuda:"Pulsa Intro para empezar una línea nueva."}
+    ],
+    zonas:[
+      {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:712, cy:174, w:390, h:112, max:130, min:40, lineas:1, alto:1.0},
+      {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:712, cy:256, w:420, h:72,  max:84,  min:24, lineas:1, alto:1.0},
+      {campo:"datos",     estilo:"libre", fuente:"QL Script", peso:400, color:"#1A1A1D", grosor:0.012, cx:706, cy:400, w:470, h:196, max:44, min:17, lineas:6, alto:1.32}
     ]
   }
 };
