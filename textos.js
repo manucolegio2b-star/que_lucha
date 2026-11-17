@@ -11,7 +11,7 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
 const COJIN_FICHA=["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"];
 // Foto real de cojín (fondo cambiado a verde menta). q = esquinas de la zona impresa (29 cm) en la foto,
 // a = cuánto se meten los lados hacia dentro, ref = gris de la tela más iluminada. El diseño se curva y toma las luces de la foto.
-const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup4.jpg", w:1000, h:1000, cojin:{q:[[228.3,217.6],[780.7,228.0],[754.2,785.8],[215.9,765.1]], a:0.025, ref:250}};
+const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup4.jpg", w:1000, h:1000, cojin:{q:[[209.6,197.9],[800.7,209.0],[772.4,805.9],[196.4,783.7]], a:0.025, ref:250}};
 
 // Cojín perrito con globos (niña rosa / niño azul): mismos textos, cambia el color de los datos
 const CAMPOS_PERRITO=nom=>[
@@ -202,7 +202,7 @@ const DISENOS={
     id:"pareja_love", producto:"cojin", cat:"parejas", foto:"img/cojines/pareja_love.jpg", nombre:"Cojín Pareja Love", corto:"Pareja Love",
     desc:"Cojín blanco de 40 × 40 cm con vuestros nombres y la fecha. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
-    base:"disenos/cojin_pareja_love/base.webp", baseFull:"disenos/cojin_pareja_love/base_full.jpg", mini:"disenos/cojin_pareja_love/miniatura.jpg",
+    base:"disenos/cojin_pareja_love/base.webp", baseFull:"disenos/cojin_pareja_love/base_full_v2.jpg", mini:"disenos/cojin_pareja_love/miniatura.jpg",
     mockup:MOCKUP_COJIN,
     campos:[
       {id:"nombres", etiqueta:"Vuestros nombres", def:"María y Cayetano", max:40},
@@ -442,10 +442,10 @@ function dibujarMockup(cv,d,diseno,foto){
       const ix=sx|0, iy=sy|0, fx=sx-ix, fy=sy-iy, i00=(iy*P+ix)*4, i10=i00+4, i01=i00+P*4, i11=i01+4;
       const w00=(1-fx)*(1-fy)*D[i00+3], w10=fx*(1-fy)*D[i10+3], w01=(1-fx)*fy*D[i01+3], w11=fx*fy*D[i11+3], ws=w00+w10+w01+w11;
       if(ws<=0) continue;
-      const o=(py*W+px)*4, sh=(F[o]+F[o+1]+F[o+2])/3*inv, lo=Math.min(sh,1), hi=Math.max(sh-1,0)*1.2, al=ws/255*cov;
+      const o=(py*W+px)*4, al=ws/255*cov;
       for(let c=0;c<3;c++){
         const dv=(D[i00+c]*w00+D[i10+c]*w10+D[i01+c]*w01+D[i11+c]*w11)/ws;   // media ponderada por la opacidad
-        F[o+c]=F[o+c]*(1-al)+(dv*lo+(255-dv*lo)*hi)*al;
+        F[o+c]=F[o+c]*(1-al)+F[o+c]*dv/255*al;
       }
     }
   }
