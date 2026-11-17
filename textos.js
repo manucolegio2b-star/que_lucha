@@ -11,6 +11,32 @@ const FUENTES=[["QL Titulo","fuentes/LilitaOne-Regular.ttf"],["QL Destacado","fu
 const COJIN_FICHA=["Cojín de 40 × 40 cm, color blanco","Zona impresa: 29 × 29 cm aprox.","Material: 100 % poliéster"];
 const MOCKUP_COJIN={src:"disenos/cojin_jubilacion/mockup.jpg", w:1000, h:1007, m:[0.72373,0.02998,-0.02989,0.72307,150.25,125.91]};
 
+// Cojín perrito con globos (niña rosa / niño azul): mismos textos, cambia el color de los datos
+const CAMPOS_PERRITO=nom=>[
+  {id:"nombre", etiqueta:"Nombre", def:nom, max:20},
+  {id:"apellidos", etiqueta:"Apellidos", def:"Jiménez Beltrán", max:32},
+  {id:"titulo", etiqueta:"Título (en morado)", def:"Mis papis", max:20},
+  {id:"padres", etiqueta:"Nombres de los papás", def:"David y Tamara", max:40},
+  {id:"dia", etiqueta:"Día (en el calendario)", def:"4", max:2},
+  {id:"mes", etiqueta:"Mes", def:"Mayo", max:12},
+  {id:"anio", etiqueta:"Año", def:"2018", max:4},
+  {id:"hora", etiqueta:"Hora (junto al reloj)", def:"1:10", max:8},
+  {id:"medida", etiqueta:"Medida (junto a la regla)", def:"50 cm", max:9},
+  {id:"peso", etiqueta:"Peso (junto a la balanza)", def:"2.840 gr", max:10}
+];
+const ZONAS_PERRITO=c=>[
+  {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:458, cy:444, w:360, h:118, max:150, min:40, lineas:1, alto:1.0},
+  {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:455, cy:528, w:380, h:72,  max:88,  min:24, lineas:1, alto:1.0},
+  {campo:"titulo",    estilo:"libre", fuente:"QL Titulo", color:"#A244E9", cx:477, cy:632, w:300, h:64, max:66, min:22, lineas:1, alto:1.0},
+  {campo:"padres",    estilo:"libre", fuente:"QL Script", peso:700, color:"#3E3B0A", cx:492, cy:692, w:330, h:56, max:50, min:18, lineas:2, alto:1.05},
+  {campo:"dia",       estilo:"libre", fuente:"QL Script", peso:700, color:c, cx:102, cy:791, w:66,  h:58, max:66, min:20, lineas:1, alto:1.0},
+  {campo:"mes",       estilo:"libre", fuente:"QL Script", peso:700, color:c, cx:106, cy:862, w:150, h:36, max:40, min:16, lineas:1, alto:1.0},
+  {campo:"anio",      estilo:"libre", fuente:"QL Script", peso:700, color:c, cx:106, cy:905, w:150, h:44, max:48, min:16, lineas:1, alto:1.0},
+  {campo:"hora",      estilo:"libre", fuente:"QL Mano", color:c, grosor:0.04, cx:351, cy:906, w:190, h:62, max:66, min:18, lineas:1, alto:1.0},
+  {campo:"medida",    estilo:"libre", fuente:"QL Mano", color:c, grosor:0.04, cx:642, cy:888, w:210, h:62, max:66, min:18, lineas:1, alto:1.0},
+  {campo:"peso",      estilo:"libre", fuente:"QL Mano", color:c, grosor:0.04, cx:873, cy:914, w:220, h:62, max:66, min:18, lineas:1, alto:1.0}
+];
+
 const DISENOS={
   jubilacion:{
     id:"jubilacion", producto:"cojin", nombre:"Cojín Jubilación", corto:"Jubilación",
@@ -66,7 +92,7 @@ const DISENOS={
     id:"animales", producto:"cojin", nombre:"Cojín Nacimiento Animalitos", corto:"Nacimiento Animalitos",
     desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
     ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
-    base:"disenos/cojin_animales/base.webp", baseFull:"disenos/cojin_animales/base_full.jpg", mini:"disenos/cojin_animales/miniatura.jpg",
+    base:"disenos/cojin_animales/base.webp", baseFull:"disenos/cojin_animales/base_full_v2.jpg", mini:"disenos/cojin_animales/miniatura.jpg",
     mockup:MOCKUP_COJIN,
     campos:[
       {id:"nombre", etiqueta:"Nombre", def:"María", max:20},
@@ -81,17 +107,35 @@ const DISENOS={
       {id:"peso", etiqueta:"Peso (junto a la balanza)", def:"2.840 gr", max:10}
     ],
     zonas:[
-      {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:480, cy:298, w:400, h:118, max:150, min:40, lineas:1, alto:1.0},
-      {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:480, cy:392, w:400, h:64,  max:80,  min:24, lineas:1, alto:1.0},
+      {campo:"nombre",    estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.035, cx:478, cy:305, w:420, h:128, max:160, min:40, lineas:1, alto:1.0},
+      {campo:"apellidos", estilo:"libre", fuente:"QL Elegante", sep:"\u00A0\u00A0", color:"#141416", grosor:0.03,  cx:478, cy:398, w:420, h:70,  max:86,  min:24, lineas:1, alto:1.0},
       {campo:"titulo",    estilo:"libre", fuente:"QL Script", peso:700, color:"#D7261E", cx:162, cy:546, w:232, h:60, max:64, min:22, lineas:1, alto:1.0},
       {campo:"padres",    estilo:"libre", fuente:"QL Script", peso:700, color:"#363C12", cx:162, cy:622, w:250, h:66, max:48, min:18, lineas:2, alto:1.08},
-      {campo:"dia",       estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:392, cy:561, w:58,  h:58, max:62, min:20, grosor:0.05, lineas:1, alto:1.0},
+      {campo:"dia",       estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:392, cy:557, w:62,  h:58, max:62, min:20, grosor:0.05, lineas:1, alto:1.0},
       {campo:"mes",       estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:392, cy:607, w:124, h:32, max:34, min:16, lineas:1, alto:1.0},
       {campo:"anio",      estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:392, cy:641, w:124, h:36, max:40, min:16, lineas:1, alto:1.0},
       {campo:"hora",      estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:558, cy:634, w:140, h:44, max:48, min:18, lineas:1, alto:1.0},
-      {campo:"medida",    estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:751, cy:634, w:150, h:44, max:48, min:18, lineas:1, alto:1.0},
-      {campo:"peso",      estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:904, cy:634, w:150, h:44, max:48, min:18, lineas:1, alto:1.0}
+      {campo:"medida",    estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:749, cy:628, w:150, h:44, max:48, min:18, lineas:1, alto:1.0},
+      {campo:"peso",      estilo:"libre", fuente:"QL Mano", color:"#34303A", cx:899, cy:634, w:150, h:44, max:48, min:18, lineas:1, alto:1.0}
     ]
+  },
+  perrito_nina:{
+    id:"perrito_nina", producto:"cojin", nombre:"Cojín Nacimiento Perrito (niña)", corto:"Perrito niña",
+    desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_perrito_nina/base.webp", baseFull:"disenos/cojin_perrito_nina/base_full.jpg", mini:"disenos/cojin_perrito_nina/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    campos:CAMPOS_PERRITO("María"),
+    zonas:ZONAS_PERRITO("#E033C7")
+  },
+  perrito_nino:{
+    id:"perrito_nino", producto:"cojin", nombre:"Cojín Nacimiento Perrito (niño)", corto:"Perrito niño",
+    desc:"Cojín blanco de 40 × 40 cm con el nombre, los papás y los datos del nacimiento. Zona impresa de 29 × 29 cm aprox. 100 % poliéster.",
+    ficha:COJIN_FICHA, precio:"19,50 €", cm:29,
+    base:"disenos/cojin_perrito_nino/base.webp", baseFull:"disenos/cojin_perrito_nino/base_full.jpg", mini:"disenos/cojin_perrito_nino/miniatura.jpg",
+    mockup:MOCKUP_COJIN,
+    campos:CAMPOS_PERRITO("Antonio"),
+    zonas:ZONAS_PERRITO("#032DB8")
   }
 };
 
